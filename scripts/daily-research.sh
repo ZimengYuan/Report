@@ -48,10 +48,7 @@ write_index() {
     local schedule_label="$3"
     local section_dir="$PUBLIC_ROOT/$research_type"
     local index_file="$section_dir/README.md"
-    local date_dir
     local file_path
-    local rel_path
-    local date_part
     local file_name
     local title
 
@@ -66,21 +63,17 @@ write_index() {
         echo
         echo "## Reports"
         echo
-        echo "| Date | Topic | File |"
-        echo "|------|-------|------|"
+        echo "| Topic | File |"
+        echo "|-------|------|"
 
-        while IFS= read -r date_dir; do
-            while IFS= read -r file_path; do
-                rel_path="${file_path#$section_dir/}"
-                date_part="${rel_path%%/*}"
-                file_name="${rel_path#*/}"
-                title="$(awk -F'"' '/^title: / {print $2; exit}' "$file_path")"
-                if [ -z "$title" ]; then
-                    title="$file_name"
-                fi
-                printf '| %s | %s | [%s](./%s) |\n' "$date_part" "$title" "$file_name" "$rel_path"
-            done < <(find "$date_dir" -mindepth 1 -maxdepth 1 -type f -name '*.md' ! -name 'README.md' ! -name '*-raw*.md' ! -path '*/raw/*' | sort)
-        done < <(find "$section_dir" -mindepth 1 -maxdepth 1 -type d | sort -r)
+        while IFS= read -r file_path; do
+            file_name="$(basename "$file_path")"
+            title="$(awk -F'"' '/^title: / {print $2; exit}' "$file_path")"
+            if [ -z "$title" ]; then
+                title="$file_name"
+            fi
+            printf '| %s | [%s](./%s) |\n' "$title" "$file_name" "$file_name"
+        done < <(find "$section_dir" -mindepth 1 -maxdepth 1 -type f -name '*.md' ! -name 'README.md' ! -name '*-raw*.md' ! -path '*/raw/*' | sort)
     } > "$index_file"
 }
 
@@ -99,7 +92,7 @@ else
     SCHEDULE_LABEL="20:00 Beijing time"
 fi
 
-PUBLIC_DIR="$PUBLIC_ROOT/$RESEARCH_TYPE/$DATE"
+PUBLIC_DIR="$PUBLIC_ROOT/$RESEARCH_TYPE"
 ARTIFACT_DIR="$ARTIFACT_ROOT/$RESEARCH_TYPE/$DATE"
 ALL_SEARCH_SOURCES="reddit,x,hn,bluesky,truthsocial,youtube,tiktok,instagram,polymarket,web,xiaohongshu"
 
@@ -141,7 +134,7 @@ title: "$report_title"
 type: "$RESEARCH_TYPE"
 public_report: true
 date: $DATE
-permalink: /research/$RESEARCH_TYPE/$DATE/$permalink_slug/
+permalink: /research/$RESEARCH_TYPE/$permalink_slug/
 ---
 
 EOF

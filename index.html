@@ -26,10 +26,10 @@ title: 首页
         <div class="research-section">
             <h3>早间研究</h3>
             <ul>
-                {% assign public_reports = site.research | where: "public_report", true | sort: "date" | reverse %}
+                {% assign public_reports = site.research | where: "public_report", true | sort: "title" %}
                 {% for doc in public_reports %}
                     {% if doc.type == 'morning' %}
-                        <li><a href="{{ doc.url }}">{{ doc.title }}</a> - {{ doc.date | date: "%Y-%m-%d" }}</li>
+                        <li><a href="{{ doc.url }}">{{ doc.title }}</a></li>
                     {% endif %}
                 {% endfor %}
             </ul>
@@ -38,10 +38,10 @@ title: 首页
         <div class="research-section">
             <h3>晚间研究</h3>
             <ul>
-                {% assign public_reports = site.research | where: "public_report", true | sort: "date" | reverse %}
+                {% assign public_reports = site.research | where: "public_report", true | sort: "title" %}
                 {% for doc in public_reports %}
                     {% if doc.type == 'evening' %}
-                        <li><a href="{{ doc.url }}">{{ doc.title }}</a> - {{ doc.date | date: "%Y-%m-%d" }}</li>
+                        <li><a href="{{ doc.url }}">{{ doc.title }}</a></li>
                     {% endif %}
                 {% endfor %}
             </ul>
