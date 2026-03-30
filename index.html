@@ -1,0 +1,47 @@
+---
+layout: default
+title: Home
+---
+
+<div class="home">
+    <h1>Daily Research Report</h1>
+
+    <p class="lead">
+        Automated AI research reports, updated twice daily using last30days.
+        Research covers Claude Code, Codex, and broader AI development trends.
+    </p>
+
+    <div class="research-schedule">
+        <h2>Research Schedule</h2>
+        <ul>
+            <li><strong>Morning (10:00 Beijing)</strong> - Claude Code && Codex</li>
+            <li><strong>Evening (20:00 Beijing)</strong> - AI Development Overview</li>
+        </ul>
+    </div>
+
+    <div class="latest-research">
+        <h2>Latest Research</h2>
+
+        <div class="research-section">
+            <h3>Morning Research</h3>
+            <ul>
+                {% for file in site.static_files %}
+                    {% if file.path contains '_research/morning' and file.extension == 'md' %}
+                        <li><a href="{{ file.path }}">{{ file.basename }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="research-section">
+            <h3>Evening Research</h3>
+            <ul>
+                {% for file in site.static_files %}
+                    {% if file.path contains '_research/evening' and file.extension == 'md' %}
+                        <li><a href="{{ file.path }}">{{ file.basename }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>

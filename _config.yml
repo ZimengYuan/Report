@@ -1,0 +1,26 @@
+title: Daily Research Report
+description: Automated AI research reports using last30days
+theme: minima
+repository: ZimengYuan/Report
+
+# GitHub Pages configuration
+github:
+  repository_url: https://github.com/ZimengYuan/Report
+
+# Build settings
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+# Exclude research files from Jekyll processing
+exclude:
+  - scripts/
+  - memory/
+  - .env
+  - logs/
+
+# Keep research directories
+include:
+  - _research/
+  - assets/
