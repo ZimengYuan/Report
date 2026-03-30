@@ -13,7 +13,7 @@ Automated research system that runs twice daily (10am, 8pm Beijing time) using l
 ## GitHub Integration
 - **Repository**: https://github.com/ZimengYuan/Report.git
 - **Branch**: main (for GitHub Pages)
-- **Token**: Pending user configuration
+- **Token**: Configured (ghp_1WGt...R2IE)
 
 ## Project Structure
 ```
