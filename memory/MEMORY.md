@@ -1,26 +1,28 @@
 # Project Memory
 
 ## System Overview
-Automated research system that runs twice daily (10am, 8pm Beijing time) using last30days to research specified topics and deploy results to GitHub Pages.
+Automated research system that runs twice daily (10am, 8pm Beijing time) using last30days to generate a public report and deploy it to GitHub Pages.
 
 ## last30days Configuration
 - **Status**: Installed and configured
 - **X/Twitter Data Source**: Temporarily unavailable (Bearer token expired)
 - **ScrapeCreators API**: Configured
 - **xAI API Key**: Configured (network connectivity issues)
-- **Active Data Sources**: Reddit, Hacker News, Polymarket, YouTube, TikTok, Instagram
+- **Configured / Conditional Sources**: Reddit, X, Hacker News, Polymarket, YouTube, TikTok, Instagram, Bluesky, Truth Social, Xiaohongshu, native web
+- **Public Automation Policy**: Both time slots run both standard topics and attempt all configured data sources.
 
 ## GitHub Integration
 - **Repository**: https://github.com/ZimengYuan/Report.git
 - **Branch**: main (for GitHub Pages)
-- **Token**: Configured (ghp_1WGt...R2IE)
+- **Token**: Configured locally (not documented in repo files)
 
 ## Project Structure
 ```
 Report/
+├── README.md            # Operating notes
 ├── memory/              # Configuration and state
-├── _research/           # Research outputs (morning/evening)
-├── _includes/           # Jekyll includes
+├── _research/           # Public reports served by GitHub Pages
+├── artifacts/           # Raw local-only outputs (excluded from the site)
 ├── _layouts/            # Jekyll layouts
 ├── assets/              # Static assets
 └── scripts/             # Automation scripts
@@ -32,8 +34,10 @@ Report/
 
 ## Data Flow
 1. Cron triggers daily-research.sh
-2. Script runs last30days for each topic
-3. Results saved to _research/morning/ or _research/evening/
-4. Jekyll site regenerated
-5. Committed and pushed to GitHub
-6. GitHub Pages serves the updated site
+2. Script selects the active time slot
+3. last30days runs both standard topics for that slot
+4. Public Markdown reports are written to `_research/<slot>/<date>/`
+5. Raw compact output is stored under `artifacts/raw-research/`
+6. Public indexes are regenerated
+7. Only `_research/` is committed and pushed
+8. GitHub Pages serves the updated site

@@ -13,7 +13,7 @@ kramdown:
   input: GFM
   syntax_highlighter: rouge
 
-# Exclude research files from Jekyll processing
+# Exclude unnecessary files
 exclude:
   - scripts/
   - memory/
@@ -21,6 +21,8 @@ exclude:
   - logs/
   - artifacts/
 
-# Keep research and assets accessible
-include:
-  - _research/
+# Collections configuration
+collections:
+  research:
+    output: true
+    permalink: /research/:path/:basename/

@@ -26,9 +26,10 @@ title: 首页
         <div class="research-section">
             <h3>早间研究</h3>
             <ul>
-                {% for file in site.static_files %}
-                    {% if file.path contains '_research/morning' and file.extension == 'md' and file.name != 'README.md' %}
-                        <li><a href="{{ file.path }}">{{ file.name | replace: '.md', '' }}</a></li>
+                {% assign public_reports = site.research | where: "public_report", true | sort: "date" | reverse %}
+                {% for doc in public_reports %}
+                    {% if doc.type == 'morning' %}
+                        <li><a href="{{ doc.url }}">{{ doc.title }}</a> - {{ doc.date | date: "%Y-%m-%d" }}</li>
                     {% endif %}
                 {% endfor %}
             </ul>
@@ -37,9 +38,10 @@ title: 首页
         <div class="research-section">
             <h3>晚间研究</h3>
             <ul>
-                {% for file in site.static_files %}
-                    {% if file.path contains '_research/evening' and file.extension == 'md' and file.name != 'README.md' %}
-                        <li><a href="{{ file.path }}">{{ file.name | replace: '.md', '' }}</a></li>
+                {% assign public_reports = site.research | where: "public_report", true | sort: "date" | reverse %}
+                {% for doc in public_reports %}
+                    {% if doc.type == 'evening' %}
+                        <li><a href="{{ doc.url }}">{{ doc.title }}</a> - {{ doc.date | date: "%Y-%m-%d" }}</li>
                     {% endif %}
                 {% endfor %}
             </ul>

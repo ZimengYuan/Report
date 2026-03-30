@@ -13,5 +13,10 @@
 ## Research Schedule
 | Time | Topics |
 |------|--------|
-| Morning (10:00) | Topic 1: Claude Code && Codex |
-| Evening (20:00) | Topic 2: AI Development Overview |
+| Morning (10:00) | Topic 1: Claude Code && Codex / Topic 2: AI Development Overview |
+| Evening (20:00) | Topic 1: Claude Code && Codex / Topic 2: AI Development Overview |
+
+## Public Source Policy
+- Both public slots run both topics
+- The automation attempts all configured last30days sources by default
+- Public pages still expose only the formal report files, not raw captures

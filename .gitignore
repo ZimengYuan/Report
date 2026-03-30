@@ -18,3 +18,5 @@ Thumbs.db
 # last30days
 node_modules/
 .cache/
+.codex
+artifacts/
