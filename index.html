@@ -8,15 +8,16 @@ title: 首页
 
     <p class="lead">
         基于 last30days 的自动化 AI 研究报告，每日更新。
-        研究主题包括 Claude Code、Codex 及更广泛的 AI 发展趋势。
+        公共页面只展示整理后的正式报告，原始抓取和调试输出不再直接列出。
     </p>
 
     <div class="research-schedule">
         <h2>研究时间表</h2>
         <ul>
-            <li><strong>早间研究（10:00 北京时间）</strong> - Claude Code && Codex</li>
-            <li><strong>晚间研究（20:00 北京时间）</strong> - AI 发展总览</li>
+            <li><strong>早间研究（10:00 北京时间）</strong> - Claude Code && Codex / AI 发展总览</li>
+            <li><strong>晚间研究（20:00 北京时间）</strong> - Claude Code && Codex / AI 发展总览</li>
         </ul>
+        <p>默认自动化会尝试所有已配置数据源；公开页面仍只展示整理后的正式报告。</p>
     </div>
 
     <div class="latest-research">
@@ -25,9 +26,9 @@ title: 首页
         <div class="research-section">
             <h3>早间研究</h3>
             <ul>
-                {% for doc in site.research %}
-                    {% if doc.type == 'morning' %}
-                        <li><a href="{{ doc.url }}">{{ doc.title }}</a> - {{ doc.date | date: "%Y-%m-%d" }}</li>
+                {% for file in site.static_files %}
+                    {% if file.path contains '_research/morning' and file.extension == 'md' and file.name != 'README.md' %}
+                        <li><a href="{{ file.path }}">{{ file.name | replace: '.md', '' }}</a></li>
                     {% endif %}
                 {% endfor %}
             </ul>
@@ -36,9 +37,9 @@ title: 首页
         <div class="research-section">
             <h3>晚间研究</h3>
             <ul>
-                {% for doc in site.research %}
-                    {% if doc.type == 'evening' %}
-                        <li><a href="{{ doc.url }}">{{ doc.title }}</a> - {{ doc.date | date: "%Y-%m-%d" }}</li>
+                {% for file in site.static_files %}
+                    {% if file.path contains '_research/evening' and file.extension == 'md' and file.name != 'README.md' %}
+                        <li><a href="{{ file.path }}">{{ file.name | replace: '.md', '' }}</a></li>
                     {% endif %}
                 {% endfor %}
             </ul>

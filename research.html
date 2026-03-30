@@ -5,21 +5,22 @@ title: 研究归档
 
 <div class="research-archive">
     <h1>研究归档</h1>
+    <p>这里只保留正式发布的研究报告。原始抓取、compact 输出和调试材料已从公开归档里移除。</p>
 
-    <h2>早间研究 - Claude Code && Codex</h2>
+    <h2>早间研究</h2>
     <ul>
-    {% for doc in site.research %}
-        {% if doc.type == 'morning' %}
-            <li><a href="{{ doc.url }}">{{ doc.title }}</a> - {{ doc.date | date: "%Y-%m-%d" }}</li>
+    {% for file in site.static_files %}
+        {% if file.path contains '_research/morning' and file.extension == 'md' and file.name != 'README.md' %}
+            <li><a href="{{ file.path }}">{{ file.name | replace: '.md', '' }}</a></li>
         {% endif %}
     {% endfor %}
     </ul>
 
-    <h2>晚间研究 - AI 发展总览</h2>
+    <h2>晚间研究</h2>
     <ul>
-    {% for doc in site.research %}
-        {% if doc.type == 'evening' %}
-            <li><a href="{{ doc.url }}">{{ doc.title }}</a> - {{ doc.date | date: "%Y-%m-%d" }}</li>
+    {% for file in site.static_files %}
+        {% if file.path contains '_research/evening' and file.extension == 'md' and file.name != 'README.md' %}
+            <li><a href="{{ file.path }}">{{ file.name | replace: '.md', '' }}</a></li>
         {% endif %}
     {% endfor %}
     </ul>

@@ -19,13 +19,8 @@ exclude:
   - memory/
   - .env
   - logs/
+  - artifacts/
 
-# Collections configuration
-collections:
-  research:
-    output: true
-    permalink: /research/:path/:basename/
-
-# Keep assets directory
+# Keep research and assets accessible
 include:
-  - assets/
+  - _research/
