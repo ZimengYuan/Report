@@ -1,29 +1,29 @@
 ---
 layout: default
-title: Home
+title: 首页
 ---
 
 <div class="home">
-    <h1>Daily Research Report</h1>
+    <h1>每日研究简报</h1>
 
     <p class="lead">
-        Automated AI research reports, updated twice daily using last30days.
-        Research covers Claude Code, Codex, and broader AI development trends.
+        基于 last30days 的自动化 AI 研究报告，每日更新。
+        研究主题包括 Claude Code、Codex 及更广泛的 AI 发展趋势。
     </p>
 
     <div class="research-schedule">
-        <h2>Research Schedule</h2>
+        <h2>研究时间表</h2>
         <ul>
-            <li><strong>Morning (10:00 Beijing)</strong> - Claude Code && Codex</li>
-            <li><strong>Evening (20:00 Beijing)</strong> - AI Development Overview</li>
+            <li><strong>早间研究（10:00 北京时间）</strong> - Claude Code && Codex</li>
+            <li><strong>晚间研究（20:00 北京时间）</strong> - AI 发展总览</li>
         </ul>
     </div>
 
     <div class="latest-research">
-        <h2>Latest Research</h2>
+        <h2>最新研究</h2>
 
         <div class="research-section">
-            <h3>Morning Research</h3>
+            <h3>早间研究</h3>
             <ul>
                 {% for file in site.static_files %}
                     {% if file.path contains '_research/morning' and file.extension == 'md' %}
@@ -34,7 +34,7 @@ title: Home
         </div>
 
         <div class="research-section">
-            <h3>Evening Research</h3>
+            <h3>晚间研究</h3>
             <ul>
                 {% for file in site.static_files %}
                     {% if file.path contains '_research/evening' and file.extension == 'md' %}

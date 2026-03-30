@@ -1,12 +1,12 @@
 ---
 layout: default
-title: Research Archive
+title: 研究归档
 ---
 
 <div class="research-archive">
-    <h1>Research Archive</h1>
+    <h1>研究归档</h1>
 
-    <h2>Morning Research - Claude Code && Codex</h2>
+    <h2>早间研究 - Claude Code && Codex</h2>
     <ul>
     {% for file in site.static_files %}
         {% if file.path contains '_research/morning' and file.extension == 'md' %}
@@ -15,7 +15,7 @@ title: Research Archive
     {% endfor %}
     </ul>
 
-    <h2>Evening Research - AI Development Overview</h2>
+    <h2>晚间研究 - AI 发展总览</h2>
     <ul>
     {% for file in site.static_files %}
         {% if file.path contains '_research/evening' and file.extension == 'md' %}
