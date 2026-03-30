@@ -25,4 +25,4 @@ exclude:
 collections:
   research:
     output: true
-    permalink: /research/:path/:basename/
+    permalink: /research/:path/
