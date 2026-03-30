@@ -25,12 +25,3 @@ exclude:
 collections:
   research:
     output: true
-    permalink: /research/:path/
-
-# Front matter defaults
-defaults:
-  - scope:
-      path: "_collections/research"
-      type: research
-    values:
-      layout: research
