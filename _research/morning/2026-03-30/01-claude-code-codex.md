@@ -1,3 +1,12 @@
+---
+layout: default
+title: "Claude Code && Codex"
+type: "morning"
+public_report: true
+date: 2026-03-30
+permalink: /research/morning/2026-03-30/claude-code-codex/
+---
+
 # Claude Code && Codex 技术发展、使用方法研究报告
 
 **生成时间：** 2026-03-30 10:00 北京时间

@@ -2,11 +2,10 @@
 
 Research conducted at 10:00 Beijing time.
 
-Topics covered:
-- Claude Code && Codex development and usage
+This index lists public reports only. Raw captures are written to `artifacts/raw-research/` and are excluded from the site.
 
-## Research Log
+## Reports
 
 | Date | Topic | File |
 |------|-------|------|
-| 2026-03-30 | Claude Code && Codex 技术发展、使用方法 | [2026-03-30/research-1000.md](./2026-03-30/research-1000.md) |
+| 2026-03-30 | Claude Code && Codex | [01-claude-code-codex.md](./2026-03-30/01-claude-code-codex.md) |

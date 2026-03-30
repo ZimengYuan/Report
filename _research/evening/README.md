@@ -2,17 +2,11 @@
 
 Research conducted at 20:00 Beijing time.
 
-Topics covered:
-- Claude Code && Codex 技术发展、使用方法
-- AI 发展总览
+This index lists public reports only. Raw captures are written to `artifacts/raw-research/` and are excluded from the site.
 
-## Research Log
+## Reports
 
-| Date | Topics | Files |
-|------|--------|-------|
-| 2026-03-30 (第一轮) | Claude Code && Codex / AI 发展总览 | [01-Claude-Code-Codex.md](./2026-03-30/01-Claude-Code-Codex.md), [02-AI-发展总览.md](./2026-03-30/02-AI-发展总览.md) |
-| 2026-03-30 (第二轮) | Claude Code && Codex / AI 发展总览 | [Claude-Code-Codex-HN-2026-03-30.md](./2026-03-30/Claude-Code-Codex-HN-2026-03-30.md), [AI-Overview-2026-03-30.md](./2026-03-30/AI-Overview-2026-03-30.md) |
-
-## 2026-03-30 2105
-- Claude Code && Codex 技术发展、使用方法
-- AI 发展总览
+| Date | Topic | File |
+|------|-------|------|
+| 2026-03-30 | Claude Code && Codex | [01-claude-code-codex.md](./2026-03-30/01-claude-code-codex.md) |
+| 2026-03-30 | AI 发展总览 | [02-ai-overview.md](./2026-03-30/02-ai-overview.md) |
