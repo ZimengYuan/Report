@@ -20,7 +20,12 @@ exclude:
   - .env
   - logs/
 
-# Keep research directories
+# Collections configuration
+collections:
+  research:
+    output: true
+    permalink: /research/:path/:basename/
+
+# Keep assets directory
 include:
-  - _research/
   - assets/

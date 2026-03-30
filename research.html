@@ -8,18 +8,18 @@ title: 研究归档
 
     <h2>早间研究 - Claude Code && Codex</h2>
     <ul>
-    {% for file in site.static_files %}
-        {% if file.path contains '_research/morning' and file.extension == 'md' %}
-            <li><a href="{{ file.path }}">{{ file.basename }}</a></li>
+    {% for doc in site.research %}
+        {% if doc.type == 'morning' %}
+            <li><a href="{{ doc.url }}">{{ doc.title }}</a> - {{ doc.date | date: "%Y-%m-%d" }}</li>
         {% endif %}
     {% endfor %}
     </ul>
 
     <h2>晚间研究 - AI 发展总览</h2>
     <ul>
-    {% for file in site.static_files %}
-        {% if file.path contains '_research/evening' and file.extension == 'md' %}
-            <li><a href="{{ file.path }}">{{ file.basename }}</a></li>
+    {% for doc in site.research %}
+        {% if doc.type == 'evening' %}
+            <li><a href="{{ doc.url }}">{{ doc.title }}</a> - {{ doc.date | date: "%Y-%m-%d" }}</li>
         {% endif %}
     {% endfor %}
     </ul>
