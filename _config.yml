@@ -25,5 +25,4 @@ exclude:
 collections:
   research:
     output: true
-    recursive_output: true
     permalink: /research/:path/:basename/
