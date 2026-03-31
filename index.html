@@ -24,27 +24,57 @@ title: 首页
         <h2>最新研究</h2>
 
         <div class="research-section">
-            <h3>早间研究</h3>
-            <ul>
+            <h3 class="section-title">早间研究</h3>
+            <div class="card-grid">
                 {% assign public_reports = site.research | where: "public_report", true | sort: "title" %}
                 {% for doc in public_reports %}
                     {% if doc.type == 'morning' %}
-                        <li><a href="{{ doc.url | relative_url }}">{{ doc.title }}</a>{% if doc.updated_at %} - {{ doc.updated_at | date: "%Y-%m-%d %H:%M:%S" }}{% endif %}</li>
+                        <article class="report-card">
+                            <div class="card-kicker">Morning Brief</div>
+                            <h4>{{ doc.title }}</h4>
+                            <p class="card-summary">最多 15 条精华条目，附带热度、链接与趋势总结。</p>
+                            <div class="card-chip-row">
+                                <span class="card-chip">趋势简报</span>
+                                <span class="card-chip">秒级更新</span>
+                            </div>
+                            <ul class="card-meta-list">
+                                <li><strong>更新时间：</strong>{% if doc.updated_at %}{{ doc.updated_at | date: "%Y-%m-%d %H:%M:%S" }}{% endif %}</li>
+                                <li><strong>触发方式：</strong>{{ doc.trigger_mode | default: "cron" }}</li>
+                            </ul>
+                            <div class="card-link-row">
+                                <a class="card-link" href="{{ doc.url | relative_url }}">查看简报</a>
+                            </div>
+                        </article>
                     {% endif %}
                 {% endfor %}
-            </ul>
+            </div>
         </div>
 
         <div class="research-section">
-            <h3>晚间研究</h3>
-            <ul>
+            <h3 class="section-title">晚间研究</h3>
+            <div class="card-grid">
                 {% assign public_reports = site.research | where: "public_report", true | sort: "title" %}
                 {% for doc in public_reports %}
                     {% if doc.type == 'evening' %}
-                        <li><a href="{{ doc.url | relative_url }}">{{ doc.title }}</a>{% if doc.updated_at %} - {{ doc.updated_at | date: "%Y-%m-%d %H:%M:%S" }}{% endif %}</li>
+                        <article class="report-card">
+                            <div class="card-kicker">Evening Brief</div>
+                            <h4>{{ doc.title }}</h4>
+                            <p class="card-summary">最多 15 条精华条目，附带热度、链接与趋势总结。</p>
+                            <div class="card-chip-row">
+                                <span class="card-chip">趋势简报</span>
+                                <span class="card-chip">秒级更新</span>
+                            </div>
+                            <ul class="card-meta-list">
+                                <li><strong>更新时间：</strong>{% if doc.updated_at %}{{ doc.updated_at | date: "%Y-%m-%d %H:%M:%S" }}{% endif %}</li>
+                                <li><strong>触发方式：</strong>{{ doc.trigger_mode | default: "cron" }}</li>
+                            </ul>
+                            <div class="card-link-row">
+                                <a class="card-link" href="{{ doc.url | relative_url }}">查看简报</a>
+                            </div>
+                        </article>
                     {% endif %}
                 {% endfor %}
-            </ul>
+            </div>
         </div>
     </div>
 </div>

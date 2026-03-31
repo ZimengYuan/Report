@@ -7,23 +7,55 @@ title: 研究归档
     <h1>研究归档</h1>
     <p>这里只保留整理后的趋势页。每篇最多展示 15 条精华条目，并附上秒级更新时间。</p>
 
-    <h2>早间研究</h2>
-    <ul>
+    <h2 class="section-title">早间研究</h2>
+    <div class="card-grid">
     {% assign public_reports = site.research | where: "public_report", true | where: "type", "morning" | sort: "title" %}
     {% for doc in public_reports %}
         {% if doc.type == 'morning' %}
-            <li><a href="{{ doc.url | relative_url }}">{{ doc.title }}</a>{% if doc.updated_at %} - {{ doc.updated_at | date: "%Y-%m-%d %H:%M:%S" }}{% elsif doc.date %} - {{ doc.date | date: "%Y-%m-%d" }}{% endif %}</li>
+            <article class="report-card">
+                <div class="card-kicker">Morning Brief</div>
+                <h3>{{ doc.title }}</h3>
+                <p class="card-summary">精华条目卡片页，保留近 30 天内最值得看的趋势信号。</p>
+                <div class="card-chip-row">
+                    <span class="card-chip">最多 15 条</span>
+                    <span class="card-chip">趋势总结</span>
+                </div>
+                <ul class="card-meta-list">
+                    <li><strong>更新时间：</strong>{% if doc.updated_at %}{{ doc.updated_at | date: "%Y-%m-%d %H:%M:%S" }}{% elsif doc.date %}{{ doc.date | date: "%Y-%m-%d" }}{% endif %}</li>
+                    <li><strong>触发方式：</strong>{{ doc.trigger_mode | default: "cron" }}</li>
+                    <li><strong>研究时段：</strong>早间</li>
+                </ul>
+                <div class="card-link-row">
+                    <a class="card-link" href="{{ doc.url | relative_url }}">打开页面</a>
+                </div>
+            </article>
         {% endif %}
     {% endfor %}
-    </ul>
+    </div>
 
-    <h2>晚间研究</h2>
-    <ul>
+    <h2 class="section-title">晚间研究</h2>
+    <div class="card-grid">
     {% assign public_reports = site.research | where: "public_report", true | where: "type", "evening" | sort: "title" %}
     {% for doc in public_reports %}
         {% if doc.type == 'evening' %}
-            <li><a href="{{ doc.url | relative_url }}">{{ doc.title }}</a>{% if doc.updated_at %} - {{ doc.updated_at | date: "%Y-%m-%d %H:%M:%S" }}{% elsif doc.date %} - {{ doc.date | date: "%Y-%m-%d" }}{% endif %}</li>
+            <article class="report-card">
+                <div class="card-kicker">Evening Brief</div>
+                <h3>{{ doc.title }}</h3>
+                <p class="card-summary">精华条目卡片页，保留近 30 天内最值得看的趋势信号。</p>
+                <div class="card-chip-row">
+                    <span class="card-chip">最多 15 条</span>
+                    <span class="card-chip">趋势总结</span>
+                </div>
+                <ul class="card-meta-list">
+                    <li><strong>更新时间：</strong>{% if doc.updated_at %}{{ doc.updated_at | date: "%Y-%m-%d %H:%M:%S" }}{% elsif doc.date %}{{ doc.date | date: "%Y-%m-%d" }}{% endif %}</li>
+                    <li><strong>触发方式：</strong>{{ doc.trigger_mode | default: "cron" }}</li>
+                    <li><strong>研究时段：</strong>晚间</li>
+                </ul>
+                <div class="card-link-row">
+                    <a class="card-link" href="{{ doc.url | relative_url }}">打开页面</a>
+                </div>
+            </article>
         {% endif %}
     {% endfor %}
-    </ul>
+    </div>
 </div>
