@@ -17,9 +17,14 @@ TIME="$(date +%H%M)"
 HOUR="$(date +%H)"
 TIMESTAMP="$(date +"%Y-%m-%d %H:%M:%S")"
 RESEARCH_DEPTH="${LAST30DAYS_RESEARCH_DEPTH:-quick}"
+RESEARCH_TIMEOUT="${LAST30DAYS_TIMEOUT:-180}"
 
 mkdir -p "$LOG_DIR"
 cd "$REPO_DIR"
+
+if [ -x "$HOME/miniconda3/envs/node22/bin/node" ]; then
+    export PATH="$HOME/miniconda3/envs/node22/bin:$PATH"
+fi
 
 find_skill_root() {
     local dir
@@ -105,6 +110,7 @@ mkdir -p "$PUBLIC_DIR" "$ARTIFACT_DIR"
 
 echo "[$TIMESTAMP] Starting $RESEARCH_TYPE research for both topics" >> "$LOG_FILE"
 echo "[$TIMESTAMP] Raw artifacts -> $ARTIFACT_DIR" >> "$LOG_FILE"
+echo "[$TIMESTAMP] Node runtime: $(command -v node 2>/dev/null || echo unavailable) ($(node -v 2>/dev/null || echo unavailable))" >> "$LOG_FILE"
 
 if [ -n "${LAST30DAYS_FORCE_SEARCH_SOURCES:-}" ]; then
     ALL_SEARCH_SOURCES="$LAST30DAYS_FORCE_SEARCH_SOURCES"
@@ -123,6 +129,7 @@ fi
 
 echo "[$TIMESTAMP] Using search sources: $ALL_SEARCH_SOURCES" >> "$LOG_FILE"
 echo "[$TIMESTAMP] Research depth: $RESEARCH_DEPTH" >> "$LOG_FILE"
+echo "[$TIMESTAMP] Global timeout: $RESEARCH_TIMEOUT" >> "$LOG_FILE"
 
 overall_status=0
 completed_reports=0
@@ -146,6 +153,7 @@ for spec in "${TOPIC_SPECS[@]}"; do
         --emit=compact
         --search="$ALL_SEARCH_SOURCES"
         "--$RESEARCH_DEPTH"
+        --timeout "$RESEARCH_TIMEOUT"
     )
 
     if "${LAST30DAYS_CMD[@]}" > "$temp_capture" 2>>"$LOG_FILE"; then
