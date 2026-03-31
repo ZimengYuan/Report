@@ -45,8 +45,8 @@ The script:
 
 1. infers the active slot from the current hour
 2. runs `last30days` for both standard topics
-3. writes public reports into `_research/<slot>/<date>/`
-4. refreshes the index README for both slots
+3. writes public reports into `_research/<slot>/01-claude-code-codex.md` and `_research/<slot>/02-ai-overview.md`
+4. refreshes the slot-level index files under `_research/morning/` and `_research/evening/`
 5. commits only `_research/` when there are public changes
 
 ## Safety Notes

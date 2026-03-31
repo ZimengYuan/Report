@@ -36,7 +36,7 @@ Report/
 1. Cron triggers daily-research.sh
 2. Script selects the active time slot
 3. last30days runs both standard topics for that slot
-4. Public Markdown reports are written to `_research/<slot>/<date>/`
+4. Public Markdown reports are written to `_research/<slot>/01-claude-code-codex.md` and `_research/<slot>/02-ai-overview.md`
 5. Raw compact output is stored under `artifacts/raw-research/`
 6. Public indexes are regenerated
 7. Only `_research/` is committed and pushed
