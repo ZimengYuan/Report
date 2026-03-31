@@ -34,15 +34,9 @@ jobs:
         uses: actions/configure-pages@v4
 
       - name: Build Jekyll
-        run: jekyll build --baseurl "${{ steps.pages.outputs.base_path }}" --verbose 2>&1 | tee build.log
+        run: jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
         env:
           JEKYLL_ENV: production
-
-      - name: Upload Build Log
-        uses: actions/upload-artifact@v4
-        with:
-          name: jekyll-build-log
-          path: build.log
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
