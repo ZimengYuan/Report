@@ -7,6 +7,7 @@ import argparse
 import html
 import re
 from dataclasses import dataclass, field
+from datetime import date
 from pathlib import Path
 
 
@@ -387,6 +388,9 @@ def pick_curated_items(report: ParsedCompactReport, topic_key: str) -> tuple[lis
 
     for source, items in report.items_by_source.items():
         for item in items:
+            if not item_within_window(item, report):
+                stats["filtered_weak"] += 1
+                continue
             topic_score, positive_hits, noise_hits = score_item_for_topic(item, topic_key)
             overall = item.score + topic_score * 8 + SOURCE_PRIORITY.get(source, 0)
             if noise_hits:
@@ -453,6 +457,30 @@ def error_summary(report: ParsedCompactReport) -> str:
             trimmed = trimmed[:71].rstrip() + "…"
         parts.append(f"{SOURCE_LABELS[source]}：{trimmed}")
     return "；".join(parts)
+
+
+def parse_iso_date(value: str) -> date | None:
+    if not value:
+        return None
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def report_window(report: ParsedCompactReport) -> tuple[date | None, date | None]:
+    if " to " not in report.date_range:
+        return None, None
+    start_raw, end_raw = report.date_range.split(" to ", 1)
+    return parse_iso_date(start_raw.strip()), parse_iso_date(end_raw.strip())
+
+
+def item_within_window(item: Item, report: ParsedCompactReport) -> bool:
+    item_date = parse_iso_date(item.date)
+    start_date, end_date = report_window(report)
+    if not item_date or not start_date or not end_date:
+        return True
+    return start_date <= item_date <= end_date
 
 
 def combined_heat_score(item: Item, topic_key: str) -> int:
