@@ -26,10 +26,10 @@ permalink: /research/morning/claude-code-codex/
 
 ## 代表样本
 
-- [X | 2026-03-31] 汇报一下我现在的workflow claude code -> codex -> openclaw...，[链接](https://x.com/LINXIVERSE/status/2038864035123458400)
-- [X | 2026-03-31] @karpathy when running Claude Code / Codex on your machine, you actually get the worst of…，[链接](https://x.com/augustincnr690/status/2038864232297685064)
-- [X | 2026-03-31] Does Codex in Claude Code handle edge cases better than standalone Codex? Or is it just a…，[链接](https://x.com/LL_AIlo/status/2038864118032011320)
-- [X | 2026-03-31] @thekitze What if I said I made something that looked near identical and took like 500 MB…，[链接](https://x.com/BennettBuhner/status/2038864195777888635)
+- X 2026-03-31: 汇报一下我现在的workflow claude code -> codex -> openclaw...，[链接](https://x.com/LINXIVERSE/status/2038864035123458400)
+- X 2026-03-31: @karpathy when running Claude Code / Codex on your machine, you actually get the worst of…，[链接](https://x.com/augustincnr690/status/2038864232297685064)
+- X 2026-03-31: Does Codex in Claude Code handle edge cases better than standalone Codex? Or is it just a…，[链接](https://x.com/LL_AIlo/status/2038864118032011320)
+- X 2026-03-31: @thekitze What if I said I made something that looked near identical and took like 500 MB…，[链接](https://x.com/BennettBuhner/status/2038864195777888635)
 
 ## 数据质量
 

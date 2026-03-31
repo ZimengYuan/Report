@@ -27,11 +27,11 @@ permalink: /research/evening/ai-overview/
 
 ## 代表样本
 
-- [X | 2026-03-30] El Gemini 3.1. Pro va a dejar de reinar. Según parece el Claude Mythos (Capybara) y el Sp…，[链接](https://x.com/virginiog/status/2038750618609648053)
-- [Hacker News | 2026-03-12] Show HN: CloudCLI-Web/Mobile UI for Claude Code,Codex and Gemini(8.2k stars)，[链接](https://news.ycombinator.com/item?id=47352564)
-- [YouTube | 2026-02-24] Anthropic’s Claude CO Work AI Shakes World | How To Use Claude AI | Claude, Chat GPT, Gem…，[链接](https://www.youtube.com/watch?v=5hmNFidFao8)
-- [YouTube | 2026-02-26] The most powerful AI Agent I’ve ever used in my life，[链接](https://www.youtube.com/watch?v=D_YzcH0VsGY)
-- [YouTube | 2026-02-06] Anthropic Claude Opus 4.6 vs OpenAI GPT-5.3-Codex: The AI "big game”，[链接](https://www.youtube.com/watch?v=C6PZwrsaii0)
+- X 2026-03-30: El Gemini 3.1. Pro va a dejar de reinar. Según parece el Claude Mythos (Capybara) y el Sp…，[链接](https://x.com/virginiog/status/2038750618609648053)
+- Hacker News 2026-03-12: Show HN: CloudCLI-Web/Mobile UI for Claude Code,Codex and Gemini(8.2k stars)，[链接](https://news.ycombinator.com/item?id=47352564)
+- YouTube 2026-02-24: Anthropic’s Claude CO Work AI Shakes World \| How To Use Claude AI \| Claude, Chat GPT, G…，[链接](https://www.youtube.com/watch?v=5hmNFidFao8)
+- YouTube 2026-02-26: The most powerful AI Agent I’ve ever used in my life，[链接](https://www.youtube.com/watch?v=D_YzcH0VsGY)
+- YouTube 2026-02-06: Anthropic Claude Opus 4.6 vs OpenAI GPT-5.3-Codex: The AI "big game”，[链接](https://www.youtube.com/watch?v=C6PZwrsaii0)
 
 ## 数据质量
 

@@ -220,6 +220,11 @@ def strip_markdown(text: str) -> str:
     return text.replace("**", "").replace("*", "")
 
 
+def markdown_safe_text(text: str) -> str:
+    text = strip_markdown(text)
+    return text.replace("|", "\\|")
+
+
 def parse_item_block(source: str, header_line: str, block_lines: list[str]) -> Item:
     header_match = re.match(r"^\*\*(?P<identifier>[^*]+)\*\* \(score:(?P<score>\d+)\) (?P<rest>.+)$", header_line.strip())
     if not header_match:
@@ -419,7 +424,7 @@ def assign_theme(item: Item, topic_key: str) -> str:
 
 def short_snippet(item: Item, limit: int = 58) -> str:
     text = item.summary or item.why_relevant or item.byline
-    text = strip_markdown(text)
+    text = markdown_safe_text(text)
     if len(text) <= limit:
         return text
     return text[: limit - 1].rstrip() + "…"
@@ -469,7 +474,7 @@ def render_sample_bullets(curated_items: list[Item]) -> list[str]:
         date_part = item.date or "日期未识别"
         headline = short_snippet(item, 90)
         link = f"[链接]({item.url})" if item.url else "无链接"
-        bullets.append(f"- [{source_label} | {date_part}] {headline}，{link}")
+        bullets.append(f"- {source_label} {date_part}: {headline}，{link}")
     return bullets
 
 

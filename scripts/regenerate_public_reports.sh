@@ -57,3 +57,21 @@ render_report \
     "/research/morning/ai-overview/" \
     "ai-overview" \
     "$REPO_DIR/_research/morning/02-ai-overview.md"
+
+render_report \
+    "$REPO_DIR/artifacts/raw-research/evening/2026-03-31/claude-code-codex-raw.md" \
+    "Claude Code && Codex" \
+    "evening" \
+    "2026-03-31" \
+    "/research/evening/claude-code-codex/" \
+    "claude-code-codex" \
+    "$REPO_DIR/_research/evening/01-claude-code-codex.md"
+
+render_report \
+    "$REPO_DIR/artifacts/raw-research/evening/2026-03-31/ai-raw.md" \
+    "AI 发展总览" \
+    "evening" \
+    "2026-03-31" \
+    "/research/evening/ai-overview/" \
+    "ai-overview" \
+    "$REPO_DIR/_research/evening/02-ai-overview.md"
