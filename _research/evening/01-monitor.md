@@ -4,141 +4,95 @@ title: "四主题监控简报"
 type: "evening"
 public_report: true
 date: 2026-03-31
-updated_at: "2026-03-31 22:29:39 +0800"
+updated_at: "2026-03-31 22:37:58 +0800"
 trigger_mode: "cron"
 trigger_schedule: "0 10,20 * * * Asia/Shanghai"
-window_start: "2026-03-31 20:00:00 +0800"
-window_end: "2026-03-31 22:29:39 +0800"
+window_start: "2026-03-31 10:00:00 +0800"
+window_end: "2026-03-31 22:37:58 +0800"
 search_sources: "x,youtube,hn"
 permalink: /research/evening/monitor/
 ---
 
-# 四主题监控简报
 
-**时段：** 晚间
-**日期：** 2026-03-31
-**抓取窗口：** 2026-03-31 20:00:00 +0800 至 2026-03-31 22:29:39 +0800
-**启用数据源：** x,youtube,hn
+═══════════════════════════════════════
+  🤖 四主题监控简报  ·  晚间版
+  📅 2026-03-31  ·  🕐 窗口 2026-03-31 至今
+═══════════════════════════════════════
 
-## 当前总览
+### 📊 本轮总览
 
-- 本轮监控的主题是：Claude Code、Codex、大模型、Obsidian。
-- 本页最终只保留了 13 条精华内容，全部来自当前窗口里更值得看的条目。
-- 当前最值得优先看的来源是：X。
-- 本轮没有拿到可用的博客/网页结果；如果要更稳定抓博客，需要补上原生 web 搜索后端。
-- 推文侧本轮保留了 13 条高相关内容，适合看一线使用反馈和即时观点。
+| 主题数 | 收录条数 | X | YouTube | HN | 博客 |
+|------|------|---|---|---|---|---|
+| 4 | **13** | 13 | 0 | 0 | 0 |
 
-## 分主题监控
+**数据来源**：x,youtube,hn
+**抓取窗口**：2026-03-31 → 2026-03-31
 
-## Claude Code
+---
 
-- 工具整合与生态：讨论重点落在 Claude Code 如何接入真实开发链路，包括插件、命令行、IDE 和 review 流程。 当前保留 4 条较强样本。
-- 工作流与一线体验：可用样本主要反映真实开发体验，包括终端工作流、配额消耗和人与 agent 的协作方式。 当前保留 1 条较强样本。
-- 本轮有效来源：X 5 条、YouTube 1 条
+### 📋 分主题详情
 
-### 精华条目
+🤖 **Claude Code**
 
-#### 1. X · 2026-03-31
+- 工具整合与生态：讨论重点落在 Claude Code 如何接入真实开发链路，包括插件、命令行、IDE 和 review 流程。 当前保留 3 条较强样本。
+- 工作流与一线体验：可用样本主要反映真实开发体验，包括终端工作流、配额消耗和人与 agent 的协作方式。 当前保留 2 条较强样本。
+来源：X 5 条、YouTube 3 条
 
-- 热度：爆热（190；1likes）
-- 总结：Claude Code CLI 工具源码因 sourcemap 暴露问题被开源社区发现并传播，触发安全与隐私层面的审视。
-- 链接：[打开原文](https://x.com/grok/status/2038985496164962636)
+| # | 热度 | 来源 | 摘要 |
+|---|------|------|------|
+| **1** | <span style="background:#e63946;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">🔥 爆热</span> <span style="color:#666;font-size:12px">(154)</span> · 2likes | <span style="background:#1da1f2;color:#fff;padding:1px 7px;border-radius:8px;font-size:11px">X</span> 2026-03-31 | Claude Code CLI 工具源码因 sourcemap 暴露问题被开源社区发现并传播，触发安全与隐私层面的审视。 [🔗](https://x.com/grok/status/2038986897423270392) |
+| **2** | <span style="background:#e63946;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">🔥 爆热</span> <span style="color:#666;font-size:12px">(150)</span> | <span style="background:#1da1f2;color:#fff;padding:1px 7px;border-radius:8px;font-size:11px">X</span> 2026-03-31 | Claude Code CLI 工具源码因 sourcemap 暴露问题被开源社区发现并传播，触发安全与隐私层面的审视。 [🔗](https://x.com/grok/status/2038987578901229865) |
+| **3** | <span style="background:#e63946;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">🔥 爆热</span> <span style="color:#666;font-size:12px">(142)</span> · 4likes | <span style="background:#1da1f2;color:#fff;padding:1px 7px;border-radius:8px;font-size:11px">X</span> 2026-03-31 | Claude Code CLI 工具源码因 sourcemap 暴露问题被开源社区发现并传播，触发安全与隐私层面的审视。 [🔗](https://x.com/CodeByNZ/status/2038987303335457062) |
+| **4** | <span style="background:#f4845f;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">🔶 高热</span> <span style="color:#666;font-size:12px">(127)</span> | <span style="background:#1da1f2;color:#fff;padding:1px 7px;border-radius:8px;font-size:11px">X</span> 2026-03-31 | Claude Code 相关动态，关键词：claude, code, source, code。点击原文了解更多细节。 [🔗](https://x.com/satvikps/status/2038988575329661430) |
+| **5** | <span style="background:#f4845f;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">🔶 高热</span> <span style="color:#666;font-size:12px">(112)</span> · 1likes | <span style="background:#1da1f2;color:#fff;padding:1px 7px;border-radius:8px;font-size:11px">X</span> 2026-03-31 | Claude Code CLI 工具源码因 sourcemap 暴露问题被开源社区发现并传播，触发安全与隐私层面的审视。 [🔗](https://x.com/zach_babiarz/status/2038985511952630018) |
 
-#### 2. X · 2026-03-31
-
-- 热度：爆热（147）
-- 总结：Claude Code CLI 工具源码因 sourcemap 暴露问题被开源社区发现并传播，触发安全与隐私层面的审视。
-- 链接：[打开原文](https://x.com/grok/status/2038986897423270392)
-
-#### 3. X · 2026-03-31
-
-- 热度：爆热（132）
-- 总结：Claude Code CLI 工具源码因 sourcemap 暴露问题被开源社区发现并传播，触发安全与隐私层面的审视。
-- 链接：[打开原文](https://x.com/rhrits/status/2038980323980259514)
-
-#### 4. X · 2026-03-31
-
-- 热度：爆热（127；1likes）
-- 总结：Claude Code CLI 工具源码因 sourcemap 暴露问题被开源社区发现并传播，触发安全与隐私层面的审视。
-- 链接：[打开原文](https://x.com/zach_babiarz/status/2038985511952630018)
-
-#### 5. X · 2026-03-31
-
-- 热度：爆热（116）
-- 总结：Claude Code 相关动态，关键词：and, anthropic, said, wait。点击原文了解更多细节。
-- 链接：[打开原文](https://x.com/rhrits/status/2038982723596104047)
-
-## Codex
+⚡ **Codex**
 
 - 产品能力与入口：可靠信号通常集中在 Codex 的产品入口、命令行能力和可交付的 agent 体验，而不是泛泛提及。 当前保留 3 条较强样本。
-- 本轮有效来源：X 3 条、YouTube 3 条
+来源：X 3 条、YouTube 3 条
 
-### 精华条目
+| # | 热度 | 来源 | 摘要 |
+|---|------|------|------|
+| **1** | <span style="background:#e63946;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">🔥 爆热</span> <span style="color:#666;font-size:12px">(178)</span> | <span style="background:#1da1f2;color:#fff;padding:1px 7px;border-radius:8px;font-size:11px">X</span> 2026-03-31 | Codex 产品动态，核心提及：reach_vb, no, not, a。点击原文了解更多。 [🔗](https://x.com/grok/status/2038981607449620785) |
+| **2** | <span style="background:#e63946;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">🔥 爆热</span> <span style="color:#666;font-size:12px">(158)</span> · 1likes | <span style="background:#1da1f2;color:#fff;padding:1px 7px;border-radius:8px;font-size:11px">X</span> 2026-03-31 | Codex CLI 发布新版本（0.117.0），引入 Agents v2、MCP 协议支持和插件安装机制，大幅提升工具链可扩展性。 [🔗](https://x.com/yutaaaalll/status/2038949994074648713) |
+| **3** | <span style="background:#e63946;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">🔥 爆热</span> <span style="color:#666;font-size:12px">(154)</span> | <span style="background:#1da1f2;color:#fff;padding:1px 7px;border-radius:8px;font-size:11px">X</span> 2026-03-31 | Codex 产品动态，核心提及：just, open, sourced, the。点击原文了解更多。 [🔗](https://x.com/Eric_M_Stevens/status/2038977536160645147) |
 
-#### 1. X · 2026-03-31
-
-- 热度：爆热（178）
-- 总结：Codex 产品动态，核心提及：reach_vb, no, not, a。点击原文了解更多。
-- 链接：[打开原文](https://x.com/grok/status/2038981607449620785)
-
-#### 2. X · 2026-03-31
-
-- 热度：爆热（158；1likes）
-- 总结：Codex CLI 发布新版本（0.117.0），引入 Agents v2、MCP 协议支持和插件安装机制，大幅提升工具链可扩展性。
-- 链接：[打开原文](https://x.com/yutaaaalll/status/2038949994074648713)
-
-#### 3. X · 2026-03-31
-
-- 热度：爆热（154）
-- 总结：Codex 产品动态，核心提及：just, open, sourced, the。点击原文了解更多。
-- 链接：[打开原文](https://x.com/Eric_M_Stevens/status/2038977536160645147)
-
-## 大模型
+🧠 **大模型**
 
 - 模型发布与版本竞争：更可靠的信号往往来自模型版本更新、能力对比和官方技术说明，而不是泛行业口号。 当前保留 3 条较强样本。
-- 本轮有效来源：X 3 条、YouTube 3 条
+来源：X 3 条、YouTube 3 条
 
-### 精华条目
+| # | 热度 | 来源 | 摘要 |
+|---|------|------|------|
+| **1** | <span style="background:#457b9d;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">📊 中热</span> <span style="color:#666;font-size:12px">(84)</span> | <span style="background:#1da1f2;color:#fff;padding:1px 7px;border-radius:8px;font-size:11px">X</span> 2026-03-31 | OpenAI、Gemini 的版本迭代和能力对比成为焦点，核心在看推理速度、多模态支持和实际产品落地速度的差异。 [🔗](https://x.com/AiAutod/status/2038989431898583170) |
+| **2** | <span style="background:#457b9d;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">📊 中热</span> <span style="color:#666;font-size:12px">(84)</span> | <span style="background:#1da1f2;color:#fff;padding:1px 7px;border-radius:8px;font-size:11px">X</span> 2026-03-31 | OpenAI、Anthropic 的版本迭代和能力对比成为焦点，核心在看推理速度、多模态支持和实际产品落地速度的差异。 [🔗](https://x.com/swarmctrl/status/2038989690947223570) |
+| **3** | <span style="background:#457b9d;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">📊 中热</span> <span style="color:#666;font-size:12px">(80)</span> | <span style="background:#1da1f2;color:#fff;padding:1px 7px;border-radius:8px;font-size:11px">X</span> 2026-03-31 | OpenAI、Anthropic 的版本迭代和能力对比成为焦点，核心在看推理速度、多模态支持和实际产品落地速度的差异。 [🔗](https://x.com/thedataroom/status/2038989217955762246) |
 
-#### 1. X · 2026-03-31
-
-- 热度：爆热（110；3likes, 1rt）
-- 总结：OpenAI、Anthropic 的版本迭代和能力对比成为焦点，核心在看推理速度、多模态支持和实际产品落地速度的差异。
-- 链接：[打开原文](https://x.com/vishisinghal_/status/2038986465687015843)
-
-#### 2. X · 2026-03-31
-
-- 热度：高热（83）
-- 总结：OpenAI、Anthropic 的版本迭代和能力对比成为焦点，核心在看推理速度、多模态支持和实际产品落地速度的差异。
-- 链接：[打开原文](https://x.com/ContextoIA/status/2038987454003229129)
-
-#### 3. X · 2026-03-31
-
-- 热度：中热（75）
-- 总结：OpenAI、Anthropic 的版本迭代和能力对比成为焦点，核心在看推理速度、多模态支持和实际产品落地速度的差异。
-- 链接：[打开原文](https://x.com/uncleJim21/status/2038987207009276116)
-
-## Obsidian
+📎 **Obsidian**
 
 - 知识库组织方式：本轮更有价值的样本通常在讨论 Obsidian 如何组织知识、卡片和长期积累。 当前保留 2 条较强样本。
-- 本轮有效来源：X 2 条、YouTube 1 条
+来源：X 2 条、YouTube 1 条
 
-### 精华条目
+| # | 热度 | 来源 | 摘要 |
+|---|------|------|------|
+| **1** | <span style="background:#f4845f;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">🔶 高热</span> <span style="color:#666;font-size:12px">(112)</span> | <span style="background:#1da1f2;color:#fff;padding:1px 7px;border-radius:8px;font-size:11px">X</span> 2026-03-31 | Obsidian vault 同步方案成为讨论热点，涉及 iCloud、OneDrive、Git 等方案的稳定性对比和移动端访问体验。 [🔗](https://x.com/dayson/status/2038893027301654622) |
+| **2** | <span style="background:#f4845f;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">🔶 高热</span> <span style="color:#666;font-size:12px">(96)</span> | <span style="background:#1da1f2;color:#fff;padding:1px 7px;border-radius:8px;font-size:11px">X</span> 2026-03-31 | 用户分享将 reMarkable 等手写设备与 Obsidian 联动的工作流，把纸质笔记拍照转 Markdown 后纳入知识库，实现模拟与数字笔记的融合管理。 [🔗](https://x.com/dSebastien/status/2038919283410137256) |
 
-#### 1. X · 2026-03-31
+---
 
-- 热度：爆热（112）
-- 总结：Obsidian vault 同步方案成为讨论热点，涉及 iCloud、OneDrive、Git 等方案的稳定性对比和移动端访问体验。
-- 链接：[打开原文](https://x.com/dayson/status/2038893027301654622)
+### 🔮 当前整体趋势
 
-#### 2. X · 2026-03-31
+**📈 整体热度排序（按本轮最高热度）**
+⚡ **codex**：▓▓▓▓▓▓▓▓▓▓ 178（均163） · 3条 · 主要来源：X
+🤖 **claude-code**：▓▓▓▓▓▓▓▓▓▓ 154（均137） · 5条 · 主要来源：X
+📎 **obsidian**：▓▓▓▓▓▓▓▓▓▓ 112（均104） · 2条 · 主要来源：X
+🧠 **large-models**：▓▓▓▓▓▓▓▓░░ 84（均82） · 3条 · 主要来源：X
 
-- 热度：爆热（96）
-- 总结：用户分享将 reMarkable 等手写设备与 Obsidian 联动的工作流，把纸质笔记拍照转 Markdown 后纳入知识库，实现模拟与数字笔记的融合管理。
-- 链接：[打开原文](https://x.com/dSebastien/status/2038919283410137256)
+**🔍 各主题核心看点**
+- **Codex**：Codex 产品动态，核心提及：reach_vb, no, not, a。点击原文了解更多。
+- **Claude Code**：Claude Code CLI 工具源码因 sourcemap 暴露问题被开源社区发现并传播，触发安全与隐私层面的审视。
+- **Obsidian**：Obsidian vault 同步方案成为讨论热点，涉及 iCloud、OneDrive、Git 等方案的稳定性对比和移动端访问体验。
+- **大模型**：OpenAI、Gemini 的版本迭代和能力对比成为焦点，核心在看推理速度、多模态支持和实际产品落地速度的差异。
 
-## 当前整体趋势
-
-- 过去这个时段里，更强的公共信号集中在 Claude Code、Codex、大模型、Obsidian 这几条线上，而不是泛 AI 新闻。
-- 如果某个主题本轮没有进入页面，通常不是完全没有讨论，而是没有筛到足够强、足够干净的优质条目。
-- 这页会优先保留博客、技术文章、Hacker News 与高信噪比推文；泛广告、低质量转发和弱相关内容会被直接过滤。
+---
+💡 **阅读建议**：优先看热度 ≥🔥 的条目；博客/Hacker News 条目信息密度通常高于推文。若某主题本轮空白，不代表无讨论，往往是数据源未抓取到够强的信号。
