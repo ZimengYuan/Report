@@ -27,7 +27,7 @@ jobs:
           ruby-version: '3.2'
 
       - name: Install Jekyll
-        run: gem install jekyll
+        run: gem install jekyll minima
 
       - name: Setup Pages
         id: pages
