@@ -8,7 +8,7 @@ title: 首页
 
     <p class="lead">
         基于 last30days 的自动化 AI 研究报告，每日更新。
-        公共页面只展示整理后的正式报告，原始抓取和调试输出不再直接列出。
+        页面只展示整理后的精华条目与趋势总结，原始抓取和调试输出不再直接列出。
     </p>
 
     <div class="research-schedule">
@@ -17,7 +17,7 @@ title: 首页
             <li><strong>早间研究（10:00 北京时间）</strong> - Claude Code && Codex / AI 发展总览</li>
             <li><strong>晚间研究（20:00 北京时间）</strong> - Claude Code && Codex / AI 发展总览</li>
         </ul>
-        <p>默认自动化会尝试所有已配置数据源；公开页面仍只展示整理后的正式报告。</p>
+        <p>默认自动化会尝试所有已配置数据源；每篇页面展示最多 15 条精华条目，并给出整体趋势总结。</p>
     </div>
 
     <div class="latest-research">
@@ -29,7 +29,7 @@ title: 首页
                 {% assign public_reports = site.research | where: "public_report", true | sort: "title" %}
                 {% for doc in public_reports %}
                     {% if doc.type == 'morning' %}
-                        <li><a href="{{ doc.url | relative_url }}">{{ doc.title }}</a></li>
+                        <li><a href="{{ doc.url | relative_url }}">{{ doc.title }}</a>{% if doc.updated_at %} - {{ doc.updated_at | date: "%Y-%m-%d %H:%M:%S" }}{% endif %}</li>
                     {% endif %}
                 {% endfor %}
             </ul>
@@ -41,7 +41,7 @@ title: 首页
                 {% assign public_reports = site.research | where: "public_report", true | sort: "title" %}
                 {% for doc in public_reports %}
                     {% if doc.type == 'evening' %}
-                        <li><a href="{{ doc.url | relative_url }}">{{ doc.title }}</a></li>
+                        <li><a href="{{ doc.url | relative_url }}">{{ doc.title }}</a>{% if doc.updated_at %} - {{ doc.updated_at | date: "%Y-%m-%d %H:%M:%S" }}{% endif %}</li>
                     {% endif %}
                 {% endfor %}
             </ul>

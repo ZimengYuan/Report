@@ -3,6 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+REPORT_UPDATED_AT="${REPORT_UPDATED_AT:-$(date +"%Y-%m-%d %H:%M:%S %z")}"
 
 render_report() {
     local raw_input="$1"
@@ -30,6 +31,9 @@ title: "$report_title"
 type: "$slot"
 public_report: true
 date: $date
+updated_at: "$REPORT_UPDATED_AT"
+trigger_mode: "cron"
+trigger_schedule: "0 10,20 * * * Asia/Shanghai"
 permalink: $permalink
 ---
 

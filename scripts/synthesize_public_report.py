@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Convert last30days compact output into a cleaner public report."""
+"""Convert last30days compact output into a concise trend brief."""
 
 from __future__ import annotations
 
@@ -382,9 +382,8 @@ def score_item_for_topic(item: Item, topic_key: str) -> tuple[int, list[str], li
 
 
 def pick_curated_items(report: ParsedCompactReport, topic_key: str) -> tuple[list[Item], dict[str, int]]:
-    curated: list[tuple[int, Item]] = []
+    candidates: list[tuple[int, Item]] = []
     stats = {"kept": 0, "filtered_noise": 0, "filtered_weak": 0}
-    per_source_kept: dict[str, int] = {}
 
     for source, items in report.items_by_source.items():
         for item in items:
@@ -396,13 +395,21 @@ def pick_curated_items(report: ParsedCompactReport, topic_key: str) -> tuple[lis
             if topic_score <= 0 or not positive_hits:
                 stats["filtered_weak"] += 1
                 continue
-            if per_source_kept.get(source, 0) >= 4:
-                continue
-            curated.append((overall, item))
-            per_source_kept[source] = per_source_kept.get(source, 0) + 1
+            candidates.append((overall, item))
 
-    curated.sort(key=lambda pair: pair[0], reverse=True)
-    selected = [item for _, item in curated[:6]]
+    candidates.sort(key=lambda pair: pair[0], reverse=True)
+
+    selected: list[Item] = []
+    per_source_kept: dict[str, int] = {}
+
+    for _overall, item in candidates:
+        if per_source_kept.get(item.source, 0) >= 6:
+            continue
+        selected.append(item)
+        per_source_kept[item.source] = per_source_kept.get(item.source, 0) + 1
+        if len(selected) >= 15:
+            break
+
     stats["kept"] = len(selected)
     return selected, stats
 
@@ -448,9 +455,29 @@ def error_summary(report: ParsedCompactReport) -> str:
     return "；".join(parts)
 
 
+def combined_heat_score(item: Item, topic_key: str) -> int:
+    topic_score, _positive_hits, _noise_hits = score_item_for_topic(item, topic_key)
+    return item.score + topic_score * 8 + SOURCE_PRIORITY.get(item.source, 0)
+
+
+def heat_label(item: Item, topic_key: str) -> str:
+    heat = combined_heat_score(item, topic_key)
+    if heat >= 95:
+        label = "爆热"
+    elif heat >= 80:
+        label = "高热"
+    elif heat >= 65:
+        label = "中热"
+    else:
+        label = "观察"
+
+    engagement = f"；{markdown_safe_text(item.engagement)}" if item.engagement else ""
+    return f"{label}（{heat}{engagement}）"
+
+
 def render_theme_bullets(curated_items: list[Item], topic_key: str) -> list[str]:
     if not curated_items:
-        return ["- 本轮没有筛出足够可靠的高相关样本，正式报告只保留数据质量判断。"]
+        return ["- 本轮没有筛出足够可靠的高相关样本，当前只适合继续观察，不适合下明确趋势结论。"]
 
     grouped: dict[str, list[Item]] = {}
     for item in curated_items:
@@ -467,36 +494,47 @@ def render_theme_bullets(curated_items: list[Item], topic_key: str) -> list[str]
     return bullets
 
 
-def render_sample_bullets(curated_items: list[Item]) -> list[str]:
-    bullets = []
-    for item in curated_items[:5]:
+def render_item_sections(curated_items: list[Item], topic_key: str) -> list[str]:
+    sections: list[str] = []
+    for index, item in enumerate(curated_items[:15], start=1):
         source_label = SOURCE_LABELS.get(item.source, item.source)
         date_part = item.date or "日期未识别"
-        headline = short_snippet(item, 90)
-        link = f"[链接]({item.url})" if item.url else "无链接"
-        bullets.append(f"- {source_label} {date_part}: {headline}，{link}")
-    return bullets
+        summary = short_snippet(item, 180)
+        link = f"[打开原文]({item.url})" if item.url else "无链接"
+        sections.extend(
+            [
+                f"### {index}. {source_label} · {date_part}",
+                "",
+                f"- 热度：{heat_label(item, topic_key)}",
+                f"- 总结：{summary}",
+                f"- 链接：{link}",
+                "",
+            ]
+        )
+    return sections
 
 
-def render_judgement(report: ParsedCompactReport, curated_items: list[Item], stats: dict[str, int], topic_key: str) -> list[str]:
+def render_overall_summary(report: ParsedCompactReport, curated_items: list[Item], stats: dict[str, int], topic_key: str) -> list[str]:
     active_sources = sorted({SOURCE_LABELS[item.source] for item in curated_items})
-    lines = []
+    source_text = "、".join(active_sources) if active_sources else "单一弱来源"
+    lines: list[str] = []
 
-    if not curated_items:
-        lines.append("本轮没有形成可靠的公开结论。原始样本要么明显跑题，要么集中在单一来源且信息密度不足。")
-    elif len(curated_items) < 3 or len(active_sources) < 2:
-        lines.append(f"本轮只保留了 {len(curated_items)} 条相对可靠样本，主要来自 {'、'.join(active_sources)}，更适合作为观察记录而不是趋势判断。")
+    if curated_items:
+        lines.append(f"- 当前更值得关注的是 {source_text} 里反复出现的共识信号，而不是零散单条爆点；这轮最终保留了 {len(curated_items)} 条精华条目。")
     else:
-        lines.append(f"本轮保留了 {len(curated_items)} 条相对可靠样本，主要来自 {'、'.join(active_sources)}，可以形成一版轻量趋势快照。")
+        lines.append("- 当前没有形成足够稳的跨来源趋势，建议先观察下一轮数据。")
 
     if report.limited_recent:
-        lines.append("原始抓取已经提示“最近 30 天有效样本偏少”，因此这版报告刻意降低了结论强度。")
-    if stats["filtered_noise"] > 0:
-        lines.append(f"二次整理时剔除了 {stats['filtered_noise']} 条明显跑题或高噪声样本，避免把弱相关内容直接公开。")
-    if topic_key == "ai-overview":
-        lines.append("这个主题本身过宽，后续最好继续依赖更聚焦的搜索词，否则“AI 总览”会持续吸进加密和泛科技噪声。")
+        lines.append("- 抓取阶段已经提示最近有效数据偏少，所以这次结论强度需要下调。")
+    if stats["filtered_noise"] > 0 or stats["filtered_weak"] > 0:
+        lines.append(f"- 本轮过滤了 {stats['filtered_weak']} 条弱相关样本和 {stats['filtered_noise']} 条明显噪声，列表只保留更能代表趋势的条目。")
 
-    return [f"- {line}" for line in lines]
+    if topic_key == "claude-code-codex":
+        lines.append("- 整体上，这个主题的真实热度还在“agent 工作流、工具整合、开发体验”上，不在单个模型宣传口径上。")
+    else:
+        lines.append("- 整体上，这个主题的有效信号仍偏产品发布和 agent 工作流，宏观行业判断的可信度明显低于具体产品动态。")
+
+    return lines
 
 
 def render_report(report: ParsedCompactReport, topic_key: str, report_title: str, slot: str, report_date: str) -> str:
@@ -505,56 +543,38 @@ def render_report(report: ParsedCompactReport, topic_key: str, report_title: str
     errors = error_summary(report)
 
     lines = [
-        f"# {report_title} 研究报告",
+        f"# {report_title} 趋势简报",
         "",
         f"**时段：** {slot_label}",
         f"**日期：** {report_date}",
         f"**时间范围：** {report.date_range or '未识别'}",
         f"**生成模型：** {report.model or '未识别'}",
+        f"**有效来源：** {source_summary(report)}",
         "",
-        "## 本轮判断",
+        "## 当前趋势",
         "",
     ]
-    lines.extend(render_judgement(report, curated_items, stats, topic_key))
-    lines.extend(
-        [
-            "",
-            "## 核心信号",
-            "",
-        ]
-    )
     lines.extend(render_theme_bullets(curated_items, topic_key))
     lines.extend(
         [
             "",
-            "## 代表样本",
+            "## 精华条目（最多15条）",
             "",
         ]
     )
-    lines.extend(render_sample_bullets(curated_items) or ["- 本轮没有保留到足够可靠的公开样本。"])
+    lines.extend(render_item_sections(curated_items, topic_key) or ["- 本轮没有保留到足够可靠的精华条目。"])
     lines.extend(
         [
+            "## 当前趋势总结",
             "",
-            "## 数据质量",
-            "",
-            f"- 原始抓取中实际拿到的来源：{source_summary(report)}。",
-            f"- 二次整理后保留：{len(curated_items)} 条；过滤弱相关样本 {stats['filtered_weak']} 条，过滤明显噪声 {stats['filtered_noise']} 条。",
         ]
     )
+    lines.extend(render_overall_summary(report, curated_items, stats, topic_key))
     if report.quality_line:
         lines.append(f"- {report.quality_line}。")
     if errors:
         lines.append(f"- 本轮异常来源：{errors}。")
-    lines.extend(
-        [
-            f"- 编辑备注：{TOPIC_RULES[topic_key]['editor_note']}",
-            "",
-            "## 编辑说明",
-            "",
-            "这份公开报告不再直接发布 last30days 的原始 md dump，而是基于 compact 研究结果做了第二轮筛噪和整理。",
-            "如果后续需要更强结论，优先应修复数据源可用性，其次再继续收紧搜索词。",
-        ]
-    )
+    lines.append(f"- 备注：{TOPIC_RULES[topic_key]['editor_note']}")
     return "\n".join(lines).rstrip() + "\n"
 
 

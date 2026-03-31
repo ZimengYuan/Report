@@ -5,14 +5,14 @@ title: 研究归档
 
 <div class="research-archive">
     <h1>研究归档</h1>
-    <p>这里只保留正式发布的研究报告。原始抓取、compact 输出和调试材料已从公开归档里移除。</p>
+    <p>这里只保留整理后的趋势页。每篇最多展示 15 条精华条目，并附上秒级更新时间。</p>
 
     <h2>早间研究</h2>
     <ul>
     {% assign public_reports = site.research | where: "public_report", true | where: "type", "morning" | sort: "title" %}
     {% for doc in public_reports %}
         {% if doc.type == 'morning' %}
-            <li><a href="{{ doc.url | relative_url }}">{{ doc.title }}</a>{% if doc.date %} - {{ doc.date | date: "%Y-%m-%d" }}{% endif %}</li>
+            <li><a href="{{ doc.url | relative_url }}">{{ doc.title }}</a>{% if doc.updated_at %} - {{ doc.updated_at | date: "%Y-%m-%d %H:%M:%S" }}{% elsif doc.date %} - {{ doc.date | date: "%Y-%m-%d" }}{% endif %}</li>
         {% endif %}
     {% endfor %}
     </ul>
@@ -22,7 +22,7 @@ title: 研究归档
     {% assign public_reports = site.research | where: "public_report", true | where: "type", "evening" | sort: "title" %}
     {% for doc in public_reports %}
         {% if doc.type == 'evening' %}
-            <li><a href="{{ doc.url | relative_url }}">{{ doc.title }}</a>{% if doc.date %} - {{ doc.date | date: "%Y-%m-%d" }}{% endif %}</li>
+            <li><a href="{{ doc.url | relative_url }}">{{ doc.title }}</a>{% if doc.updated_at %} - {{ doc.updated_at | date: "%Y-%m-%d %H:%M:%S" }}{% elsif doc.date %} - {{ doc.date | date: "%Y-%m-%d" }}{% endif %}</li>
         {% endif %}
     {% endfor %}
     </ul>

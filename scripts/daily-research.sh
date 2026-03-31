@@ -16,6 +16,7 @@ DATE="$(date +%Y-%m-%d)"
 TIME="$(date +%H%M)"
 HOUR="$(date +%H)"
 TIMESTAMP="$(date +"%Y-%m-%d %H:%M:%S")"
+REPORT_UPDATED_AT="$(date +"%Y-%m-%d %H:%M:%S %z")"
 RESEARCH_DEPTH="${LAST30DAYS_RESEARCH_DEPTH:-quick}"
 RESEARCH_TIMEOUT="${LAST30DAYS_TIMEOUT:-180}"
 
@@ -180,6 +181,9 @@ title: "$report_title"
 type: "$RESEARCH_TYPE"
 public_report: true
 date: $DATE
+updated_at: "$REPORT_UPDATED_AT"
+trigger_mode: "cron"
+trigger_schedule: "0 10,20 * * * Asia/Shanghai"
 permalink: /research/$RESEARCH_TYPE/$permalink_slug/
 ---
 

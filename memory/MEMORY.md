@@ -1,7 +1,7 @@
 # Project Memory
 
 ## System Overview
-Automated research system that runs twice daily (10am, 8pm Beijing time) using last30days to generate a public report and deploy it to GitHub Pages.
+Automated research system that runs twice daily (10am, 8pm Beijing time) using last30days to generate a concise trend brief and deploy it to GitHub Pages.
 
 ## last30days Configuration
 - **Status**: Installed and configured
@@ -21,7 +21,7 @@ Automated research system that runs twice daily (10am, 8pm Beijing time) using l
 Report/
 ├── README.md            # Operating notes
 ├── memory/              # Configuration and state
-├── _research/           # Public reports served by GitHub Pages
+├── _research/           # Published trend briefs served by GitHub Pages
 ├── artifacts/           # Raw local-only outputs (excluded from the site)
 ├── _layouts/            # Jekyll layouts
 ├── assets/              # Static assets
@@ -31,6 +31,8 @@ Report/
 ## Cron Jobs
 - `0 10 * * *` - Morning research (10:00 Beijing)
 - `0 20 * * *` - Evening research (20:00 Beijing)
+- Canonical file: `cron/research.cron`
+- Installer: `scripts/install-cron.sh`
 
 ## Data Flow
 1. Cron triggers daily-research.sh
@@ -38,8 +40,9 @@ Report/
 3. `scripts/select_last30days_sources.py` chooses healthy sources for the current machine
 4. last30days runs both standard topics for that slot in compact mode
 5. Raw compact output is stored under `artifacts/raw-research/<slot>/<date>/`
-6. `scripts/synthesize_public_report.py` converts the raw capture into a curated public report
-7. Public Markdown reports are written to `_research/<slot>/01-claude-code-codex.md` and `_research/<slot>/02-ai-overview.md`
-8. Public indexes are regenerated
-9. Only `_research/` is committed and pushed
-10. GitHub Pages serves the updated site
+6. `scripts/synthesize_public_report.py` converts the raw capture into a concise trend brief with at most 15 curated items
+7. Published Markdown briefs are written to `_research/<slot>/01-claude-code-codex.md` and `_research/<slot>/02-ai-overview.md`
+8. Each page front matter records `updated_at` with second-level precision plus cron trigger metadata
+9. Public indexes are regenerated
+10. Only `_research/` is committed and pushed during automated runs
+11. GitHub Pages serves the updated site
