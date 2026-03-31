@@ -97,8 +97,8 @@ ARTIFACT_DIR="$ARTIFACT_ROOT/$RESEARCH_TYPE/$DATE"
 ALL_SEARCH_SOURCES="reddit,x,hn,bluesky,truthsocial,youtube,tiktok,instagram,polymarket,web,xiaohongshu"
 
 TOPIC_SPECS=(
-    "01|Claude Code && Codex|Claude Code && Codex 技术发展、使用方法|01-claude-code-codex|claude-code-codex"
-    "02|AI 发展总览|AI 发展总览|02-ai-overview|ai-overview"
+    "01|Claude Code && Codex|Claude Code Codex AI coding agent|01-claude-code-codex|claude-code-codex|claude-code-codex-raw|claude-code-codex"
+    "02|AI 发展总览|OpenAI Anthropic Gemini Claude AI agents|02-ai-overview|ai-overview|ai-raw|ai-overview"
 )
 
 mkdir -p "$PUBLIC_DIR" "$ARTIFACT_DIR"
@@ -110,24 +110,43 @@ overall_status=0
 completed_reports=0
 
 for spec in "${TOPIC_SPECS[@]}"; do
-    IFS='|' read -r order report_title topic report_slug permalink_slug <<< "$spec"
+    IFS='|' read -r order report_title search_topic report_slug permalink_slug raw_slug topic_key <<< "$spec"
     public_report="$PUBLIC_DIR/$report_slug.md"
+    raw_capture="$ARTIFACT_DIR/$raw_slug.md"
+    temp_body="$(mktemp)"
+    temp_capture="$(mktemp)"
     temp_report="$(mktemp)"
 
-    echo "[$TIMESTAMP] Running research for: $topic" >> "$LOG_FILE"
+    echo "[$TIMESTAMP] Running research for: $search_topic" >> "$LOG_FILE"
     echo "[$TIMESTAMP] Public report -> $public_report" >> "$LOG_FILE"
+    echo "[$TIMESTAMP] Raw capture -> $raw_capture" >> "$LOG_FILE"
 
     LAST30DAYS_CMD=(
         python3
         "${SKILL_ROOT}/scripts/last30days.py"
-        "$topic"
-        --emit=md
+        "$search_topic"
+        --emit=compact
         --search="$ALL_SEARCH_SOURCES"
-        --save-dir="$ARTIFACT_DIR"
     )
 
-    if {
-        cat <<EOF
+    if "${LAST30DAYS_CMD[@]}" > "$temp_capture" 2>>"$LOG_FILE"; then
+        mv "$temp_capture" "$raw_capture"
+    else
+        status=$?
+        rm -f "$temp_capture" "$temp_body" "$temp_report"
+        overall_status=1
+        echo "[$TIMESTAMP] Research failed: $search_topic (exit $status)" >> "$LOG_FILE"
+        continue
+    fi
+
+    if python3 "$REPO_DIR/scripts/synthesize_public_report.py" \
+        --input "$raw_capture" \
+        --topic-key "$topic_key" \
+        --report-title "$report_title" \
+        --slot "$RESEARCH_TYPE" \
+        --date "$DATE" > "$temp_body" 2>>"$LOG_FILE"; then
+        {
+            cat <<EOF
 ---
 layout: research
 title: "$report_title"
@@ -138,17 +157,19 @@ permalink: /research/$RESEARCH_TYPE/$permalink_slug/
 ---
 
 EOF
-        "${LAST30DAYS_CMD[@]}" 2>>"$LOG_FILE"
-    } > "$temp_report"; then
+            cat "$temp_body"
+        } > "$temp_report"
         mv "$temp_report" "$public_report"
         completed_reports=$((completed_reports + 1))
-        echo "[$TIMESTAMP] Research completed: $topic" >> "$LOG_FILE"
+        echo "[$TIMESTAMP] Research completed: $search_topic" >> "$LOG_FILE"
     else
         status=$?
-        rm -f "$temp_report"
+        rm -f "$temp_body" "$temp_report"
         overall_status=1
-        echo "[$TIMESTAMP] Research failed: $topic (exit $status)" >> "$LOG_FILE"
+        echo "[$TIMESTAMP] Report synthesis failed: $report_title (exit $status)" >> "$LOG_FILE"
     fi
+
+    rm -f "$temp_body"
 done
 
 write_index "morning" "Morning Research" "10:00 Beijing time"

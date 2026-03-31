@@ -25,7 +25,7 @@ Report/
 ├── artifacts/           # Raw local-only outputs (excluded from the site)
 ├── _layouts/            # Jekyll layouts
 ├── assets/              # Static assets
-└── scripts/             # Automation scripts
+└── scripts/             # Automation + second-stage synthesis
 ```
 
 ## Cron Jobs
@@ -35,9 +35,10 @@ Report/
 ## Data Flow
 1. Cron triggers daily-research.sh
 2. Script selects the active time slot
-3. last30days runs both standard topics for that slot
-4. Public Markdown reports are written to `_research/<slot>/01-claude-code-codex.md` and `_research/<slot>/02-ai-overview.md`
-5. Raw compact output is stored under `artifacts/raw-research/`
-6. Public indexes are regenerated
-7. Only `_research/` is committed and pushed
-8. GitHub Pages serves the updated site
+3. last30days runs both standard topics for that slot in compact mode
+4. Raw compact output is stored under `artifacts/raw-research/<slot>/<date>/`
+5. `scripts/synthesize_public_report.py` converts the raw capture into a curated public report
+6. Public Markdown reports are written to `_research/<slot>/01-claude-code-codex.md` and `_research/<slot>/02-ai-overview.md`
+7. Public indexes are regenerated
+8. Only `_research/` is committed and pushed
+9. GitHub Pages serves the updated site
