@@ -9,7 +9,8 @@ Automated research system that runs twice daily (10am, 8pm Beijing time) using l
 - **ScrapeCreators API**: Configured but currently credit-limited (`402` on live probe)
 - **YouTube**: `yt-dlp` installed and working, but slower in default-depth runs
 - **Configured / Conditional Sources**: Reddit, X, Hacker News, Polymarket, YouTube, TikTok, Instagram, Bluesky, Truth Social, Xiaohongshu, native web
-- **Public Automation Policy**: Both time slots run both standard topics and auto-select healthy sources before each run.
+- **Public Automation Policy**: Both time slots run both standard topics, auto-select healthy sources before each run, and use a rolling window from the previous official slot to now.
+- **Blog Priority**: When native web search is configured, blog/docs/official-post results should be treated as higher-value references.
 
 ## GitHub Integration
 - **Repository**: https://github.com/ZimengYuan/Report.git
@@ -37,12 +38,13 @@ Report/
 ## Data Flow
 1. Cron triggers daily-research.sh
 2. Script selects the active time slot
-3. `scripts/select_last30days_sources.py` chooses healthy sources for the current machine
-4. last30days runs both standard topics for that slot in compact mode
-5. Raw compact output is stored under `artifacts/raw-research/<slot>/<date>/`
-6. `scripts/synthesize_public_report.py` converts the raw capture into a concise trend brief with at most 15 curated items
-7. Published Markdown briefs are written to `_research/<slot>/01-claude-code-codex.md` and `_research/<slot>/02-ai-overview.md`
-8. Each page front matter records `updated_at` with second-level precision plus cron trigger metadata
-9. Public indexes are regenerated
-10. Only `_research/` is committed and pushed during automated runs
-11. GitHub Pages serves the updated site
+3. Script computes the rolling window from the previous official slot to now
+4. `scripts/select_last30days_sources.py` chooses healthy sources for the current machine
+5. last30days runs both standard topics for that slot in compact mode
+6. Raw compact output is stored under `artifacts/raw-research/<slot>/<date>/`
+7. `scripts/synthesize_public_report.py` converts the raw capture into a concise trend brief with at most 15 curated items
+8. Published Markdown briefs are written to `_research/<slot>/01-claude-code-codex.md` and `_research/<slot>/02-ai-overview.md`
+9. Each page front matter records `updated_at`, `window_start`, `window_end`, and cron trigger metadata
+10. Public indexes are regenerated
+11. Only `_research/` is committed and pushed during automated runs
+12. GitHub Pages serves the updated site

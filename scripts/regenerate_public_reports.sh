@@ -4,6 +4,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd)"
 REPORT_UPDATED_AT="${REPORT_UPDATED_AT:-$(date +"%Y-%m-%d %H:%M:%S %z")}"
+WINDOW_START="${WINDOW_START:-$(date +"%Y-%m-%d 10:00:00 %z")}"
+WINDOW_END="${WINDOW_END:-$(date +"%Y-%m-%d %H:%M:%S %z")}"
+SEARCH_SOURCES="${SEARCH_SOURCES:-x,youtube,hn}"
 
 render_report() {
     local raw_input="$1"
@@ -21,7 +24,10 @@ render_report() {
         --topic-key "$topic_key" \
         --report-title "$report_title" \
         --slot "$slot" \
-        --date "$date" > "$temp_body"
+        --date "$date" \
+        --window-start "$WINDOW_START" \
+        --window-end "$WINDOW_END" \
+        --search-sources "$SEARCH_SOURCES" > "$temp_body"
 
     {
         cat <<EOF
@@ -34,6 +40,9 @@ date: $date
 updated_at: "$REPORT_UPDATED_AT"
 trigger_mode: "cron"
 trigger_schedule: "0 10,20 * * * Asia/Shanghai"
+window_start: "$WINDOW_START"
+window_end: "$WINDOW_END"
+search_sources: "$SEARCH_SOURCES"
 permalink: $permalink
 ---
 

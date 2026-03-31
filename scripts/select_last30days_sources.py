@@ -16,6 +16,7 @@ USER_AGENT = "ReportSourceSelector/1.0"
 SOURCE_ORDER = [
     "reddit",
     "x",
+    "web",
     "youtube",
     "hn",
     "bluesky",
@@ -23,7 +24,6 @@ SOURCE_ORDER = [
     "tiktok",
     "instagram",
     "polymarket",
-    "web",
     "xiaohongshu",
 ]
 

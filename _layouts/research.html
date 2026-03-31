@@ -6,8 +6,14 @@ layout: default
         {% if page.updated_at %}
         <p><strong>更新时间：</strong> {{ page.updated_at | date: "%Y-%m-%d %H:%M:%S %z" }}</p>
         {% endif %}
+        {% if page.window_start and page.window_end %}
+        <p><strong>最近时段窗口：</strong> {{ page.window_start }} 至 {{ page.window_end }}</p>
+        {% endif %}
         {% if page.trigger_mode %}
-        <p><strong>触发方式：</strong> {{ page.trigger_mode }}{% if page.trigger_schedule %} · {{ page.trigger_schedule }}{% endif %}</p>
+        <p><strong>触发方式：</strong> {% if page.trigger_mode == "cron" %}计划任务 cron{% else %}{{ page.trigger_mode }}{% endif %}{% if page.trigger_schedule %} · {{ page.trigger_schedule }}{% endif %}</p>
+        {% endif %}
+        {% if page.search_sources %}
+        <p><strong>启用数据源：</strong> {{ page.search_sources }}</p>
         {% endif %}
         {% if page.type %}
         <p><strong>研究时段：</strong> {% if page.type == "morning" %}早间{% elsif page.type == "evening" %}晚间{% else %}{{ page.type }}{% endif %}</p>

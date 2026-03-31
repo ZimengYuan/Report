@@ -30,19 +30,19 @@ SOURCE_LABELS = {
     "youtube": "YouTube",
     "tiktok": "TikTok",
     "instagram": "Instagram",
-    "hn": "Hacker News",
+    "hn": "黑客新闻",
     "bluesky": "Bluesky",
     "truthsocial": "Truth Social",
     "polymarket": "Polymarket",
-    "web": "Web",
+    "web": "博客/网页",
 }
 
 SOURCE_PRIORITY = {
     "reddit": 6,
-    "hn": 6,
+    "hn": 5,
     "youtube": 5,
     "x": 4,
-    "web": 3,
+    "web": 7,
     "polymarket": 2,
     "bluesky": 2,
     "truthsocial": 1,
@@ -542,15 +542,32 @@ def render_item_sections(curated_items: list[Item], topic_key: str) -> list[str]
     return sections
 
 
-def render_overall_summary(report: ParsedCompactReport, curated_items: list[Item], stats: dict[str, int], topic_key: str) -> list[str]:
+def render_overall_summary(
+    report: ParsedCompactReport,
+    curated_items: list[Item],
+    stats: dict[str, int],
+    topic_key: str,
+    window_start: str,
+    window_end: str,
+    search_sources: str,
+) -> list[str]:
     active_sources = sorted({SOURCE_LABELS[item.source] for item in curated_items})
     source_text = "、".join(active_sources) if active_sources else "单一弱来源"
     lines: list[str] = []
+    blog_items = [item for item in curated_items if item.source == "web"]
 
     if curated_items:
         lines.append(f"- 当前更值得关注的是 {source_text} 里反复出现的共识信号，而不是零散单条爆点；这轮最终保留了 {len(curated_items)} 条精华条目。")
     else:
         lines.append("- 当前没有形成足够稳的跨来源趋势，建议先观察下一轮数据。")
+
+    lines.append(f"- 本轮抓取窗口按“最近一个时段”处理：{window_start} 至 {window_end}。")
+    lines.append(f"- 本轮启用的数据源：{search_sources or '未记录'}。")
+
+    if blog_items:
+        lines.append(f"- 本轮命中了 {len(blog_items)} 条博客/网页信号，博客与官方文章会被优先视作更稳的参考。")
+    else:
+        lines.append("- 本轮没有拿到可用的博客/网页结果；如果要稳定抓博客，需要在本机补上原生 web 搜索后端。")
 
     if report.limited_recent:
         lines.append("- 抓取阶段已经提示最近有效数据偏少，所以这次结论强度需要下调。")
@@ -560,12 +577,21 @@ def render_overall_summary(report: ParsedCompactReport, curated_items: list[Item
     if topic_key == "claude-code-codex":
         lines.append("- 整体上，这个主题的真实热度还在“agent 工作流、工具整合、开发体验”上，不在单个模型宣传口径上。")
     else:
-        lines.append("- 整体上，这个主题的有效信号仍偏产品发布和 agent 工作流，宏观行业判断的可信度明显低于具体产品动态。")
+        lines.append("- 整体上，这个主题的有效信号仍偏产品发布、博客文章和 agent 工作流，宏观行业判断的可信度明显低于具体产品动态。")
 
     return lines
 
 
-def render_report(report: ParsedCompactReport, topic_key: str, report_title: str, slot: str, report_date: str) -> str:
+def render_report(
+    report: ParsedCompactReport,
+    topic_key: str,
+    report_title: str,
+    slot: str,
+    report_date: str,
+    window_start: str,
+    window_end: str,
+    search_sources: str,
+) -> str:
     curated_items, stats = pick_curated_items(report, topic_key)
     slot_label = "早间" if slot == "morning" else "晚间"
     errors = error_summary(report)
@@ -575,7 +601,8 @@ def render_report(report: ParsedCompactReport, topic_key: str, report_title: str
         "",
         f"**时段：** {slot_label}",
         f"**日期：** {report_date}",
-        f"**时间范围：** {report.date_range or '未识别'}",
+        f"**抓取窗口：** {window_start} 至 {window_end}",
+        f"**底层检索日期范围：** {report.date_range or '未识别'}",
         f"**生成模型：** {report.model or '未识别'}",
         f"**有效来源：** {source_summary(report)}",
         "",
@@ -597,7 +624,7 @@ def render_report(report: ParsedCompactReport, topic_key: str, report_title: str
             "",
         ]
     )
-    lines.extend(render_overall_summary(report, curated_items, stats, topic_key))
+    lines.extend(render_overall_summary(report, curated_items, stats, topic_key, window_start, window_end, search_sources))
     if report.quality_line:
         lines.append(f"- {report.quality_line}。")
     if errors:
@@ -613,13 +640,28 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--report-title", required=True)
     parser.add_argument("--slot", required=True, choices=["morning", "evening"])
     parser.add_argument("--date", required=True)
+    parser.add_argument("--window-start", default="未记录")
+    parser.add_argument("--window-end", default="未记录")
+    parser.add_argument("--search-sources", default="未记录")
     return parser
 
 
 def main() -> int:
     args = build_parser().parse_args()
     report = parse_compact_report(Path(args.input))
-    print(render_report(report, args.topic_key, args.report_title, args.slot, args.date), end="")
+    print(
+        render_report(
+            report,
+            args.topic_key,
+            args.report_title,
+            args.slot,
+            args.date,
+            args.window_start,
+            args.window_end,
+            args.search_sources,
+        ),
+        end="",
+    )
     return 0
 
 

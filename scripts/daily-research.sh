@@ -19,6 +19,9 @@ TIMESTAMP="$(date +"%Y-%m-%d %H:%M:%S")"
 REPORT_UPDATED_AT="$(date +"%Y-%m-%d %H:%M:%S %z")"
 RESEARCH_DEPTH="${LAST30DAYS_RESEARCH_DEPTH:-quick}"
 RESEARCH_TIMEOUT="${LAST30DAYS_TIMEOUT:-180}"
+WINDOW_START=""
+WINDOW_END=""
+WINDOW_DAYS=1
 
 mkdir -p "$LOG_DIR"
 cd "$REPO_DIR"
@@ -47,6 +50,27 @@ find_skill_root() {
     done
 
     return 1
+}
+
+compute_recent_window() {
+    local now_epoch today_10 today_20 yesterday_20 last_slot_epoch
+
+    now_epoch="$(date +%s)"
+    today_10="$(date -d "$(date +%F) 10:00:00" +%s)"
+    today_20="$(date -d "$(date +%F) 20:00:00" +%s)"
+    yesterday_20="$(date -d "yesterday 20:00:00" +%s)"
+
+    if [ "$now_epoch" -le "$today_10" ]; then
+        last_slot_epoch="$yesterday_20"
+    elif [ "$now_epoch" -le "$today_20" ]; then
+        last_slot_epoch="$today_10"
+    else
+        last_slot_epoch="$today_20"
+    fi
+
+    WINDOW_START="$(date -d "@$last_slot_epoch" +"%Y-%m-%d %H:%M:%S %z")"
+    WINDOW_END="$(date +"%Y-%m-%d %H:%M:%S %z")"
+    WINDOW_DAYS=1
 }
 
 write_index() {
@@ -108,10 +132,12 @@ TOPIC_SPECS=(
 )
 
 mkdir -p "$PUBLIC_DIR" "$ARTIFACT_DIR"
+compute_recent_window
 
 echo "[$TIMESTAMP] Starting $RESEARCH_TYPE research for both topics" >> "$LOG_FILE"
 echo "[$TIMESTAMP] Raw artifacts -> $ARTIFACT_DIR" >> "$LOG_FILE"
 echo "[$TIMESTAMP] Node runtime: $(command -v node 2>/dev/null || echo unavailable) ($(node -v 2>/dev/null || echo unavailable))" >> "$LOG_FILE"
+echo "[$TIMESTAMP] Rolling window -> $WINDOW_START to $WINDOW_END" >> "$LOG_FILE"
 
 if [ -n "${LAST30DAYS_FORCE_SEARCH_SOURCES:-}" ]; then
     ALL_SEARCH_SOURCES="$LAST30DAYS_FORCE_SEARCH_SOURCES"
@@ -153,6 +179,7 @@ for spec in "${TOPIC_SPECS[@]}"; do
         "$search_topic"
         --emit=compact
         --search="$ALL_SEARCH_SOURCES"
+        --days "$WINDOW_DAYS"
         "--$RESEARCH_DEPTH"
         --timeout "$RESEARCH_TIMEOUT"
     )
@@ -172,7 +199,10 @@ for spec in "${TOPIC_SPECS[@]}"; do
         --topic-key "$topic_key" \
         --report-title "$report_title" \
         --slot "$RESEARCH_TYPE" \
-        --date "$DATE" > "$temp_body" 2>>"$LOG_FILE"; then
+        --date "$DATE" \
+        --window-start "$WINDOW_START" \
+        --window-end "$WINDOW_END" \
+        --search-sources "$ALL_SEARCH_SOURCES" > "$temp_body" 2>>"$LOG_FILE"; then
         {
             cat <<EOF
 ---
@@ -184,6 +214,9 @@ date: $DATE
 updated_at: "$REPORT_UPDATED_AT"
 trigger_mode: "cron"
 trigger_schedule: "0 10,20 * * * Asia/Shanghai"
+window_start: "$WINDOW_START"
+window_end: "$WINDOW_END"
+search_sources: "$ALL_SEARCH_SOURCES"
 permalink: /research/$RESEARCH_TYPE/$permalink_slug/
 ---
 

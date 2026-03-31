@@ -8,6 +8,7 @@ Automated research briefs published to GitHub Pages.
 - `20:00` Beijing time: generate the evening briefs for both topics
 - publish only the curated Markdown briefs under `_research/`
 - keep raw compact captures under `artifacts/raw-research/`, then synthesize them into trend pages with at most 15 条精选条目
+- each run now uses a rolling window from the previous official slot to "now"
 
 Raw compact outputs are saved under `artifacts/raw-research/` for local debugging and are excluded from both git and the public site.
 
@@ -26,6 +27,7 @@ Raw compact outputs are saved under `artifacts/raw-research/` for local debuggin
 The public automation now auto-selects the healthiest currently available `last30days` sources before each run.
 
 - always prefers healthy configured sources such as `X`, `YouTube`, `Hacker News`, and native web search when available
+- when native web search is configured, `web` results are treated as blog / documentation / official-post signals and receive higher priority
 - probes `ScrapeCreators` before enabling `Reddit`, `TikTok`, and `Instagram`
 - skips sources that are configured but currently unhealthy, such as `402` credit exhaustion or unreachable public APIs
 - can still be overridden manually with `LAST30DAYS_FORCE_SEARCH_SOURCES=x,youtube,hn`
@@ -54,13 +56,15 @@ bash scripts/daily-research.sh
 The script:
 
 1. infers the active slot from the current hour
-2. runs `scripts/select_last30days_sources.py` to pick healthy sources for the current machine
-3. runs `last30days --emit=compact --quick` for both standard topics using focused search queries
-4. stores raw captures under `artifacts/raw-research/<slot>/<date>/`
-5. synthesizes curated briefs into `_research/<slot>/01-claude-code-codex.md` and `_research/<slot>/02-ai-overview.md`
-6. refreshes the slot-level index files under `_research/morning/` and `_research/evening/`
-7. writes `updated_at` with second-level precision into each page front matter
-8. commits only `_research/` when there are published changes
+2. computes a rolling window from the previous official slot to the current time
+3. runs `scripts/select_last30days_sources.py` to pick healthy sources for the current machine
+4. runs `last30days --emit=compact --quick --days 1` for both standard topics using focused search queries
+5. records the exact slot window in both front matter and the page body
+6. stores raw captures under `artifacts/raw-research/<slot>/<date>/`
+7. synthesizes curated briefs into `_research/<slot>/01-claude-code-codex.md` and `_research/<slot>/02-ai-overview.md`
+8. refreshes the slot-level index files under `_research/morning/` and `_research/evening/`
+9. writes `updated_at` with second-level precision into each page front matter
+10. commits only `_research/` when there are published changes
 
 Useful overrides:
 
