@@ -9,20 +9,20 @@ title: 研究归档
 
     <h2>早间研究</h2>
     <ul>
-    {% assign public_reports = site.research | where: "public_report", true | sort: "date" | reverse %}
+    {% assign public_reports = site.research | where: "public_report", true | where: "type", "morning" | sort: "title" %}
     {% for doc in public_reports %}
         {% if doc.type == 'morning' %}
-            <li><a href="{{ doc.url }}">{{ doc.title }}</a> - {{ doc.date | date: "%Y-%m-%d" }}</li>
+            <li><a href="{{ doc.url | relative_url }}">{{ doc.title }}</a>{% if doc.date %} - {{ doc.date | date: "%Y-%m-%d" }}{% endif %}</li>
         {% endif %}
     {% endfor %}
     </ul>
 
     <h2>晚间研究</h2>
     <ul>
-    {% assign public_reports = site.research | where: "public_report", true | sort: "date" | reverse %}
+    {% assign public_reports = site.research | where: "public_report", true | where: "type", "evening" | sort: "title" %}
     {% for doc in public_reports %}
         {% if doc.type == 'evening' %}
-            <li><a href="{{ doc.url }}">{{ doc.title }}</a> - {{ doc.date | date: "%Y-%m-%d" }}</li>
+            <li><a href="{{ doc.url | relative_url }}">{{ doc.title }}</a>{% if doc.date %} - {{ doc.date | date: "%Y-%m-%d" }}{% endif %}</li>
         {% endif %}
     {% endfor %}
     </ul>

@@ -3,7 +3,8 @@ layout: research
 title: "AI 发展总览"
 type: evening
 public_report: true
-permalink: /research/evening/02-ai-overview/
+date: 2026-03-31
+permalink: /research/evening/ai-overview/
 ---
 
 # AI 发展总览研究报告

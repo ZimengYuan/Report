@@ -3,7 +3,8 @@ layout: research
 title: "Claude Code && Codex"
 type: evening
 public_report: true
-permalink: /research/evening/01-claude-code-codex/
+date: 2026-03-31
+permalink: /research/evening/claude-code-codex/
 ---
 
 # Claude Code && Codex 技术发展、使用方法研究报告

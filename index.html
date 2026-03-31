@@ -29,7 +29,7 @@ title: 首页
                 {% assign public_reports = site.research | where: "public_report", true | sort: "title" %}
                 {% for doc in public_reports %}
                     {% if doc.type == 'morning' %}
-                        <li><a href="{{ doc.url }}">{{ doc.title }}</a></li>
+                        <li><a href="{{ doc.url | relative_url }}">{{ doc.title }}</a></li>
                     {% endif %}
                 {% endfor %}
             </ul>
@@ -41,7 +41,7 @@ title: 首页
                 {% assign public_reports = site.research | where: "public_report", true | sort: "title" %}
                 {% for doc in public_reports %}
                     {% if doc.type == 'evening' %}
-                        <li><a href="{{ doc.url }}">{{ doc.title }}</a></li>
+                        <li><a href="{{ doc.url | relative_url }}">{{ doc.title }}</a></li>
                     {% endif %}
                 {% endfor %}
             </ul>
