@@ -61,20 +61,21 @@ compute_recent_window() {
     yesterday_20="$(date -d "yesterday 20:00:00" +%s)"
 
     if [ "$now_epoch" -le "$today_10" ]; then
+        # 早间 -> 抓昨晚20点到今早10点
         last_slot_epoch="$yesterday_20"
+        WINDOW_DAYS=1
     elif [ "$now_epoch" -le "$today_20" ]; then
+        # 晚间 -> 抓今早10点到当前（而非只抓20:00后的2小时）
         last_slot_epoch="$today_10"
+        WINDOW_DAYS=0
     else
-        last_slot_epoch="$today_20"
+        # 夜间（>20:00）-> 抓今早10点到当前，与晚间同窗口
+        last_slot_epoch="$today_10"
+        WINDOW_DAYS=0
     fi
 
     WINDOW_START="$(date -d "@$last_slot_epoch" +"%Y-%m-%d %H:%M:%S %z")"
     WINDOW_END="$(date +"%Y-%m-%d %H:%M:%S %z")"
-    if [ "$(date -d "@$last_slot_epoch" +"%Y-%m-%d")" = "$(date +"%Y-%m-%d")" ]; then
-        WINDOW_DAYS=0
-    else
-        WINDOW_DAYS=1
-    fi
 }
 
 write_index() {

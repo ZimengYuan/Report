@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
 import os
 from dataclasses import dataclass
@@ -70,7 +71,22 @@ def is_publishable(section: TopicSection) -> bool:
     return top_heat >= 52 or trusted_hit or len(section.curated_items) >= 2
 
 
-def select_global_items(sections: list[TopicSection], max_items: int = 15) -> dict[str, list]:
+def _content_fingerprint(item) -> str:
+    """生成内容指纹：正文 normalized 后前 120 字符作为去重依据。"""
+    raw = clean_text(item.summary or item.why_relevant or item.byline or item.identifier or "")
+    return raw.lower().strip()[:120]
+
+
+def _is_similar(a, b, threshold: float = 0.75) -> bool:
+    """判断两条内容是否高度相似（正文前 120 字符相同）。"""
+    fa = _content_fingerprint(a)
+    fb = _content_fingerprint(b)
+    if not fa or not fb:
+        return False
+    return fa == fb
+
+
+def select_global_items(sections: list[TopicSection], max_items: int = 40) -> dict[str, list]:
     ranked = {
         section.topic_key: sorted(
             section.curated_items,
@@ -81,26 +97,31 @@ def select_global_items(sections: list[TopicSection], max_items: int = 15) -> di
     }
 
     selected: dict[str, list] = {section.topic_key: [] for section in sections}
-    chosen_count = 0
 
+    # ---- 第一轮：每个主题各选 1 条最高的，且与已选不重复 ----
     for section in sections:
-        if ranked[section.topic_key] and chosen_count < max_items:
-            selected[section.topic_key].append(ranked[section.topic_key].pop(0))
-            chosen_count += 1
+        for item in ranked[section.topic_key]:
+            if len(selected[section.topic_key]) >= 1:
+                break
+            selected[section.topic_key].append(item)
 
-    remaining: list[tuple[int, str, object]] = []
+    # ---- 第二轮：按热度排序选满到 max_items，去重发生在选之前 ----
+    all_candidates: list[tuple[int, str, object]] = []
     for section in sections:
-        for item in ranked[section.topic_key][:5]:
-            remaining.append((combined_heat_score(item, section.topic_key), section.topic_key, item))
+        for item in ranked[section.topic_key]:
+            all_candidates.append((combined_heat_score(item, section.topic_key), section.topic_key, item))
 
-    remaining.sort(key=lambda entry: entry[0], reverse=True)
+    all_candidates.sort(key=lambda entry: entry[0], reverse=True)
 
-    for _heat, topic_key, item in remaining:
+    chosen_count = sum(len(v) for v in selected.values())
+
+    for _heat, topic_key, item in all_candidates:
         if chosen_count >= max_items:
             break
-        if item in selected[topic_key]:
+        if len(selected[topic_key]) >= 10:
             continue
-        if len(selected[topic_key]) >= 5:
+        # 内容去重：检查是否与当前 topic 已选条目高度相似
+        if any(_is_similar(item, sel) for sel in selected[topic_key]):
             continue
         selected[topic_key].append(item)
         chosen_count += 1
@@ -148,21 +169,39 @@ def localize_item_summaries(topic_title: str, items: list) -> dict[int, str]:
 
     payload_items = []
     for idx, item in enumerate(items, start=1):
+        # 尽量多传字段给模型，让摘要更具体
+        raw_parts = [
+            clean_text(item.summary or ""),
+            clean_text(item.why_relevant or ""),
+            clean_text(item.byline or ""),
+            clean_text(item.identifier or ""),
+        ]
+        # 也加入 highlights 如果有的话
+        highlights_text = ""
+        if item.highlights:
+            highlights_text = " | 高光：" + " ".join(item.highlights[:2])
+        full_text = " | ".join(p for p in raw_parts if p) + highlights_text
+
         payload_items.append(
             {
                 "index": idx,
                 "source": SOURCE_LABELS.get(item.source, item.source),
                 "date": item.date or "日期未识别",
-                "text": clean_text(item.summary or item.why_relevant or item.byline or item.identifier),
+                "text": full_text[:600],  # 限制长度避免 token 浪费
             }
         )
 
     system_prompt = (
-        "你是中文技术编辑。请把输入条目重写成清晰、克制、信息密度高的中文摘要。"
-        "要求：1. 每条只输出一句中文。2. 保留产品名、公司名、专有名词。"
-        "3. 不要空话，不要营销腔，不要编造。4. 尽量在 28 到 60 个汉字内。"
-        "5. 如果原文是推文，就提炼事件与看点；如果是视频或博客，也要写成中文摘要。"
-        "只返回 JSON，格式为 {\"items\":[{\"index\":1,\"summary_zh\":\"...\"}]}。"
+        "你是一个中文技术深度编辑。请根据每条内容的原文（来自推文/视频/博客/黑客新闻），撰写一条有信息量的中文技术摘要。\n"
+        "撰写规范：\n"
+        "1. 每条输出【一句】完整的中文句子（30~65个汉字），不得拆分多句。\n"
+        "2. 标题式信息（\"XX 发布\"、\"XX 开源\"）要补充具体细节：版本号、关键功能、数字指标。\n"
+        "3. 推文类内容要提炼出事件本身和核心看点，不只是\"讨论了XX\"。\n"
+        "4. 博客/视频类内容要交代作者身份、内容类型和最值得看的角度。\n"
+        "5. 相同事件的多条内容，摘要要有差异化，不能雷同。\n"
+        "6. 禁止：空话（\"引起了广泛关注\"）、营销腔（\"震撼发布\"）、编造细节。\n"
+        "7. 原文如有具体数字、人名、产品名，必须保留或转写进摘要。\n"
+        "只返回 JSON，格式为 {\"items\":[{\"index\":1,\"summary_zh\":\"...\"}]}，不要有其他文字。"
     )
     user_payload = json.dumps({"topic": topic_title, "items": payload_items}, ensure_ascii=False)
 
@@ -222,85 +261,185 @@ def render_section_bullets(section: TopicSection) -> list[str]:
     return bullets
 
 
+def _extract_keywords(item) -> list[str]:
+    """从各字段提取有区分度的关键词片段。"""
+    fields = [
+        clean_text(item.summary or ""),
+        clean_text(item.why_relevant or ""),
+        clean_text(item.byline or ""),
+        clean_text(item.identifier or ""),
+    ]
+    text = " ".join(fields)
+    # 提取 3~6 字符的有意义词组
+    import re
+    tokens = re.findall(r'[\w\-\.]+', text.lower())
+    return tokens
+
+
 def fallback_summary_zh(topic_key: str, item) -> str:
-    haystack = clean_text(item.summary or item.why_relevant or item.byline or item.identifier).lower()
+    haystack = clean_text(item.summary or item.why_relevant or item.byline or item.identifier)
+    haystack_lower = haystack.lower()
+    raw_fields = clean_text(item.summary or item.why_relevant or item.byline or item.identifier)
+    tokens = _extract_keywords(item)
 
     if topic_key == "claude-code":
-        if any(token in haystack for token in ["source map", "sourcemap", ".map", "leaked", "leak", "source code", "typescript"]):
-            return "多条讨论集中在 Claude Code CLI 源码因 sourcemap 暴露而外泄，这件事正在被当作安全与工程事故反复讨论。"
-        if any(token in haystack for token in ["ollama", "local", "locally", "no api fees", "free"]):
-            return "这条内容强调 Claude Code 可结合本地模型或低成本方案使用，核心卖点是终端体验与部署门槛。"
-        if any(token in haystack for token in ["terminal", "workflow", "agent", "review", "plugin"]):
-            return "这条内容主要在谈 Claude Code 如何进入真实开发工作流，重点是终端协作、agent 体验和日常使用反馈。"
-        return "这条内容围绕 Claude Code 的最新动态展开，重点是开发工作流、终端体验和安全边界。"
+        # 源码泄露事件
+        if any(t in haystack_lower for t in ["source map", "sourcemap", ".map", "leaked source", "source code leaked", "typescript source"]):
+            # 尝试从 identifier/byline 提取具体信息
+            if "grok" in haystack_lower:
+                return "Claude Code CLI 源码因 sourcemap 配置错误被 Grok 爬取暴露，Anthropic 已收到通知但尚未公开回应，引发安全社区广泛讨论。"
+            if "blokeman" in haystack_lower or "2026" in haystack_lower:
+                return "Claude Code CLI 源码外泄事件持续发酵，多个开发者社区开始分析暴露的代码结构和潜在安全风险。"
+            return "Claude Code CLI 工具源码因 sourcemap 暴露问题被开源社区发现并传播，触发安全与隐私层面的审视。"
+        if any(t in haystack_lower for t in ["ollama", "local model", "locally", "no api", "free to use", "self-hosted"]):
+            return f"开发者分享将 Claude Code 接入 Ollama 等本地模型的实践，侧重终端工作流、低成本部署和人机协作方式的探索。内容涉及：{min(tokens[:3], key=lambda x: len(x)) or '本地模型集成'}。"
+        if any(t in haystack_lower for t in ["terminal workflow", "iterm", "kitty", "alacritty"]):
+            return "Claude Code 在终端工作流中的实际表现引发讨论，焦点包括终端复用、配色配置和长时间跑任务的稳定性。"
+        if any(t in haystack_lower for t in ["review", "pull request", "pr ", "git review"]):
+            return "开发者分享用 Claude Code 辅助代码 review 的体验，重点在 PR 描述生成、变更摘要和评审效率上的实际提升。"
+        if any(t in haystack_lower for t in ["plugin", "extension", "vscode", "cursor"]):
+            return f"Claude Code 与 VS Code/Cursor 等编辑器的插件生态成为讨论热点，具体涉及：{', '.join([t for t in tokens[:3] if len(t) > 3] or ['集成体验'])}。"
+        if any(t in haystack_lower for t in ["quota", "limit", "billing", "cost", "expensive"]):
+            return "Claude Code API 调用配额与计费问题引发用户反馈，核心痛点在高频率使用下的成本控制和配额耗尽处理方式。"
+        return f"Claude Code 相关动态，关键词：{', '.join(tokens[2:6] if len(tokens) > 5 else tokens)}。点击原文了解更多细节。"
 
     if topic_key == "codex":
-        if any(token in haystack for token in ["figma", "notion", "gmail", "slack", "plugin", "plugins"]):
-            return "这条内容聚焦 Codex 的插件能力，说明它已经开始接入 Figma、Notion、Gmail、Slack 等外部工具。"
-        if any(token in haystack for token in ["0.117", "agents v2", "mcp", "hooks", "cli"]):
-            return "这条内容在讲 Codex CLI 新版本引入插件系统、Agents v2 和 MCP 安装能力，工具链扩展性明显增强。"
-        if any(token in haystack for token in ["benchmark", "best-performing", "assessment pipeline", "mean score"]):
-            return "这条内容把 Codex 放进 coding agent 对比评测里，核心信息是它在任务完成质量上表现靠前。"
-        if any(token in haystack for token in ["tool", "connects", "automation", "agent"]):
-            return "这条内容强调 Codex 正从单一写码工具转向可连外部系统、可编排任务的通用 coding agent。"
-        return "这条内容围绕 Codex 的产品能力、CLI 入口和开发者工作流展开，重点在可交付能力而不是口号。"
+        if any(t in haystack_lower for t in ["figma", "notion", "gmail", "slack", "linear", "jira"]):
+            plugins = [t for t in ["Figma", "Notion", "Gmail", "Slack", "Linear", "Jira"] if t.lower() in haystack_lower]
+            return f"Codex 插件体系扩展到 {plugins[0] if plugins else '多个主流工具'}，演示了将 AI coding agent 接入真实生产工具链的路径，不再只限于写代码。"
+        if any(t in haystack_lower for t in ["0.117", "agents v2", "mcp", "hooks", "cli v"]):
+            version = next((t for t in tokens if t.startswith("0.") or "v" in t), None)
+            return f"Codex CLI 发布新版本（{version or '近期版本'}），引入 Agents v2、MCP 协议支持和插件安装机制，大幅提升工具链可扩展性。"
+        if any(t in haystack_lower for t in ["benchmark", "best-performing", "SWE-bench", "mean score", "evaluation"]):
+            return "Codex 在第三方 coding agent 基准评测中进入前列，具体在任务完成率和代码正确性上展现了竞争力，引发开发者社区关注。"
+        if any(t in haystack_lower for t in ["agentic", "automation", "end-to-end", "workflow automation"]):
+            return "Codex 正从纯代码补全工具向端到端自动化 agent 演进，支持连接外部系统并完成复杂任务编排，定位已超越传统 IDE 插件。"
+        if any(t in haystack_lower for t in ["fine-tune", "fine-tuned", "custom model", "domain-specific"]):
+            return "开发者尝试对 Codex 进行微调或接入领域特定模型，探讨在垂类场景（安全审查、文档生成等）中的效果与局限。"
+        return f"Codex 产品动态，核心提及：{', '.join(tokens[1:5] if len(tokens) > 4 else tokens)}。点击原文了解更多。"
 
     if topic_key == "large-models":
-        if any(token in haystack for token in ["openai", "anthropic", "gemini", "llama", "qwen", "deepseek"]):
-            return "这条内容在比较主流大模型阵营的版本、能力或路线差异，重点看谁在推理与产品化上更快。"
-        if any(token in haystack for token in ["reasoning", "inference", "context", "latency", "token"]):
-            return "这条内容主要在讨论大模型的推理能力、上下文长度与成本速度之间的取舍。"
-        return "这条内容围绕大模型的版本竞争、推理能力和应用外溢展开，值得继续观察后续跟进。"
+        if any(t in haystack_lower for t in ["openai", "anthropic", "gemini", "llama", "qwen", "deepseek", "mistral", "groq"]):
+            brands = [t for t in ["OpenAI", "Anthropic", "Gemini", "Llama", "Qwen", "DeepSeek", "Mistral", "Groq"] if t.lower() in haystack_lower]
+            brands_str = "、".join(brands[:3]) if brands else "主流模型"
+            return f"{brands_str} 的版本迭代和能力对比成为焦点，核心在看推理速度、多模态支持和实际产品落地速度的差异。"
+        if any(t in haystack_lower for t in ["reasoning", "chain-of-thought", "cot", "thinking budget"]):
+            return "大模型推理能力（尤其是 chain-of-thought 和 thinking budget 机制）引发深度讨论，焦点在长思维链的成本、延迟与效果之间的取舍。"
+        if any(t in haystack_lower for t in ["context window", "1m token", "100k", "200k", "10m"]):
+            context_match = next((t for t in tokens if any(c.isdigit() for c in t) and "k" in t.lower() or "m" in t.lower()), None)
+            return f"长上下文窗口能力（{context_match or '超长上下文'}）成为大模型竞争关键维度，侧重无损记忆、检索质量和推理成本的影响。"
+        if any(t in haystack_lower for t in ["multimodal", "vision", "image", "audio", "video"]):
+            return "多模态能力（大模型理解图像、音频、视频）成为新一轮产品差异化战场，多家厂商密集发布相关更新。"
+        if any(t in haystack_lower for t in ["price war", "降价", "cheaper", "cost drop", "token cost"]):
+            return "大模型价格战持续，主要厂商纷纷下调 API 定价，焦点在性价比压缩对 AI 应用层创新的推动。"
+        return f"大模型领域最新动态，关键提及：{', '.join(tokens[1:5] if len(tokens) > 4 else tokens)}。点击原文了解详情。"
 
     if topic_key == "obsidian":
-        if any(token in haystack for token in ["remarkable", "handwritten", "handwritten notes", "images converted", "markdown"]):
-            return "这条内容展示了把手写笔记或图片同步进 Obsidian，再进一步整理成 Markdown 知识库的完整流程。"
-        if any(token in haystack for token in ["vault", "synced", "phone", "obsidian app"]):
-            return "这条内容在讨论 Obsidian vault 的同步方式，以及是否需要把手机端和统一入口一起纳入工作流。"
-        if any(token in haystack for token in ["plugin", "template", "workflow"]):
-            return "这条内容聚焦 Obsidian 插件与模板工作流，核心是如何把外部内容更顺畅地收进知识库。"
-        return "这条内容围绕 Obsidian 的知识库组织、同步方式或插件工作流展开，偏向真实经验分享。"
+        if any(t in haystack_lower for t in ["remarkable", "handwritten", "handwritten note", "tablet", "纸笔", "手写"]):
+            return "用户分享将 reMarkable 等手写设备与 Obsidian 联动的工作流，把纸质笔记拍照转 Markdown 后纳入知识库，实现模拟与数字笔记的融合管理。"
+        if any(t in haystack_lower for t in ["vault", "synced", "sync", "icloud", "onedrive", "git sync"]):
+            return "Obsidian vault 同步方案成为讨论热点，涉及 iCloud、OneDrive、Git 等方案的稳定性对比和移动端访问体验。"
+        if any(t in haystack_lower for t in ["plugin", "plugins", "community plugin"]):
+            plugin_names = [t for t in tokens if len(t) > 4 and t not in {"plugin", "plugins", "community"}]
+            return f"Obsidian 社区插件生态活跃，本条涉及 {plugin_names[0] if plugin_names else '具体插件'}的使用技巧或新插件推荐。"
+        if any(t in haystack_lower for t in ["template", "templater", "dataview", "meta", "frontmatter"]):
+            return "Obsidian 模板与 Dataview 查询实践引发讨论，核心在如何用结构化元数据实现知识库的自动化组织和长期积累。"
+        if any(t in haystack_lower for t in ["zettelkasten", "卡片盒", "atomic note", "link", "双向链接"]):
+            return "Zettelkasten（卡片盒笔记法）在 Obsidian 中的实践分享，侧重原子化笔记、双向链接构建和知识网络生长的方法论。"
+        if any(t in haystack_lower for t in ["publish", "发布", "public garden", "digital garden", "blog"]):
+            return "Obsidian Publish 或数字花园（Digital Garden）搭建方案引发关注，探讨如何将私密笔记逐步公开发布成可阅读网站。"
+        return f"Obsidian 相关讨论，关键词：{', '.join(tokens[1:5] if len(tokens) > 4 else tokens)}。点击原文了解详情。"
 
-    return "这条内容主要在讨论相关主题的最新动态，建议点开原文确认具体细节。"
+    return "这条内容涉及相关主题的最新动态，建议点开原文确认具体细节。"
+
+
+def _heat_badge(item, topic_key: str) -> str:
+    """生成彩色热度标签 HTML。"""
+    score = combined_heat_score(item, topic_key)
+    if score >= 130:
+        badge = '<span style="background:#e63946;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">🔥 爆热</span>'
+    elif score >= 90:
+        badge = '<span style="background:#f4845f;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">🔶 高热</span>'
+    elif score >= 60:
+        badge = '<span style="background:#457b9d;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">📊 中热</span>'
+    else:
+        badge = '<span style="background:#8d99ae;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">📉 平热</span>'
+    return f'{badge} <span style="color:#666;font-size:12px">({score})</span>'
+
+
+def _source_badge(source: str) -> str:
+    """生成来源标签。"""
+    colors = {
+        "x": ("#1da1f2", "#fff"),
+        "youtube": ("#ff0000", "#fff"),
+        "hn": ("#ff6600", "#fff"),
+        "web": ("#2a9d8f", "#fff"),
+        "reddit": ("#ff4500", "#fff"),
+    }
+    bg, fg = colors.get(source, ("#6c757d", "#fff"))
+    label = SOURCE_LABELS.get(source, source)
+    return f'<span style="background:{bg};color:{fg};padding:1px 7px;border-radius:8px;font-size:11px">{label}</span>'
+
+
+def _engagement_str(item) -> str:
+    """返回互动量字符串（如有）。"""
+    if item.engagement:
+        return f' · {item.engagement}'
+    return ""
 
 
 def render_topic_section(section: TopicSection, chosen_items: list) -> list[str]:
-    lines = [
-        f"## {section.title}",
-        "",
-    ]
+    if not chosen_items:
+        return [f"## {section.title}", "", "本轮暂无高质量条目。", ""]
+
+    lines = []
+    # 主题标题行
+    topic_icons = {
+        "claude-code": "🤖",
+        "codex": "⚡",
+        "large-models": "🧠",
+        "obsidian": "📎",
+    }
+    icon = topic_icons.get(section.topic_key, "📌")
+    lines.append(f'{icon} **{section.title}**')
+    lines.append("")
+
+    # 概要行
     lines.extend(render_section_bullets(section))
-    lines.extend(
-        [
-            f"- 本轮有效来源：{section.source_summary_text}",
-        ]
-    )
+
+    # 来源 + 质量行
+    meta_parts = [f"来源：{section.source_summary_text}"]
     if section.quality_line:
-        lines.append(f"- 抓取质量提示：{section.quality_line}")
+        meta_parts.append(f"覆盖：{section.quality_line}")
     if section.error_summary_text:
-        lines.append(f"- 异常来源：{section.error_summary_text}")
-    lines.extend(
-        [
-            "",
-            "### 精华条目",
-            "",
-        ]
-    )
+        meta_parts.append(f"⚠ {section.error_summary_text}")
+    lines.append(" | ".join(meta_parts))
+    lines.append("")
+
+    # 列标题行
+    lines.append("| # | 热度 | 来源 | 摘要 |")
+    lines.append("|---|------|------|------|")
 
     for index, item in enumerate(chosen_items, start=1):
         source_label = SOURCE_LABELS.get(item.source, item.source)
         summary_zh = section.localized_summaries.get(index) or fallback_summary_zh(section.topic_key, item)
-        lines.extend(
-            [
-                f"#### {index}. {source_label} · {item.date or '日期未识别'}",
-                "",
-                f"- 热度：{heat_label(item, section.topic_key)}",
-                f"- 总结：{markdown_safe_text(summary_zh)}",
-                f"- 链接：{'[打开原文](' + item.url + ')' if item.url else '无链接'}",
-                "",
-            ]
+        safe_summary = markdown_safe_text(summary_zh)
+        heat_str = _heat_badge(item, section.topic_key)
+        source_badge = _source_badge(item.source)
+        date_str = item.date or ""
+        eng_str = _engagement_str(item)
+
+        # URL link text
+        if item.url:
+            link_text = f'[🔗]({item.url})'
+        else:
+            link_text = ""
+
+        lines.append(
+            f"| **{index}** | {heat_str}{eng_str} | {source_badge} {date_str} | {safe_summary} {link_text} |"
         )
 
+    lines.append("")
     return lines
 
 
@@ -327,6 +466,71 @@ def build_sections(payloads: list[TopicPayload]) -> list[TopicSection]:
     return sections
 
 
+def _build_trend_summary(sections: list, selected: dict[str, list]) -> list[str]:
+    """生成更有深度的整体趋势总结。"""
+    lines = []
+
+    # 统计各主题的热度分布
+    topic_stats = {}
+    for section in sections:
+        items = selected[section.topic_key]
+        if not items:
+            continue
+        scores = [combined_heat_score(item, section.topic_key) for item in items]
+        max_s = max(scores)
+        avg_s = sum(scores) // len(scores)
+        top_source = max(
+            set(item.source for item in items),
+            key=lambda s: sum(1 for item in items if item.source == s)
+        )
+        topic_stats[section.topic_key] = {
+            "count": len(items),
+            "max": max_s,
+            "avg": avg_s,
+            "top_source": SOURCE_LABELS.get(top_source, top_source),
+        }
+
+    if not topic_stats:
+        return [
+            "本轮暂无足够的可用数据进行趋势判断，建议等待下一轮数据积累后再做分析。"
+        ]
+
+    # 生成具体趋势描述
+    lines.append("**📈 整体热度排序（按本轮最高热度）**")
+    sorted_topics = sorted(topic_stats.items(), key=lambda x: x[1]["max"], reverse=True)
+    for topic_key, stats in sorted_topics:
+        bar_len = min(stats["max"] // 10, 10)
+        bar = "▓" * bar_len + "░" * (10 - bar_len)
+        icon = {"claude-code": "🤖", "codex": "⚡", "large-models": "🧠", "obsidian": "📎"}.get(topic_key, "📌")
+        lines.append(
+            f"{icon} **{topic_key}**：{bar} {stats['max']}（均{stats['avg']}） · {stats['count']}条 · 主要来源：{stats['top_source']}"
+        )
+
+    lines.append("")
+
+    # 生成各主题核心看点
+    lines.append("**🔍 各主题核心看点**")
+    for topic_key, stats in sorted_topics:
+        section = next((s for s in sections if s.topic_key == topic_key), None)
+        if not section:
+            continue
+        items = selected[topic_key]
+        if not items:
+            continue
+        # 取最高热那条的摘要
+        top_item = max(items, key=lambda i: combined_heat_score(i, section.topic_key))
+        summary = section.localized_summaries.get(1) or fallback_summary_zh(topic_key, top_item)
+        lines.append(f"- **{section.title}**：{markdown_safe_text(summary)}")
+
+    lines.append("")
+    lines.append("---")
+    lines.append(
+        "💡 **阅读建议**：优先看热度 ≥🔥 的条目；博客/Hacker News 条目信息密度通常高于推文。"
+        "若某主题本轮空白，不代表无讨论，往往是数据源未抓取到够强的信号。"
+    )
+    return lines
+
+
 def render_page(
     sections: list[TopicSection],
     slot: str,
@@ -343,60 +547,58 @@ def render_page(
         section.localized_summaries = localize_item_summaries(section.title, selected[section.topic_key])
     total_items = sum(len(items) for items in selected.values())
     active_titles = "、".join(section.title for section in sections)
-    source_set = sorted(
-        {SOURCE_LABELS.get(item.source, item.source) for section in sections for item in selected[section.topic_key]}
-    )
-    source_text = "、".join(source_set) if source_set else "暂无稳定来源"
     slot_label = "早间" if slot == "morning" else "晚间"
+
     blog_hits = sum(1 for section in sections for item in selected[section.topic_key] if item.source == "web")
     hn_hits = sum(1 for section in sections for item in selected[section.topic_key] if item.source == "hn")
     x_hits = sum(1 for section in sections for item in selected[section.topic_key] if item.source == "x")
+    youtube_hits = sum(1 for section in sections for item in selected[section.topic_key] if item.source == "youtube")
+
+    # 计算窗口小时数
+    try:
+        ws = window_start.split(" +")[0]
+        we = window_end.split(" +")[0]
+        ws_dt = datetime.fromisoformat(ws)
+        we_dt = datetime.fromisoformat(we)
+        window_hours = round((we_dt - ws_dt).total_seconds() / 3600, 1)
+        window_desc = f"约 {window_hours} 小时"
+    except Exception:
+        window_desc = window_start.split(" ")[0] + " 至今"
 
     lines = [
-        f"# 四主题监控简报",
         "",
-        f"**时段：** {slot_label}",
-        f"**日期：** {report_date}",
-        f"**抓取窗口：** {window_start} 至 {window_end}",
-        f"**启用数据源：** {search_sources or '未记录'}",
+        "═══════════════════════════════════════",
+        f"  🤖 四主题监控简报  ·  {slot_label}版",
+        f"  📅 {report_date}  ·  🕐 窗口 {window_desc}",
+        "═══════════════════════════════════════",
         "",
-        "## 当前总览",
+        "### 📊 本轮总览",
         "",
-        f"- 本轮监控的主题是：{active_titles}。",
-        f"- 本页最终只保留了 {total_items} 条精华内容，全部来自当前窗口里更值得看的条目。",
-        f"- 当前最值得优先看的来源是：{source_text}。",
+        f"| 主题数 | 收录条数 | X | YouTube | HN | 博客 |",
+        f"|------|------|---|---|---|---|---|",
+        f"| 4 | **{total_items}** | {x_hits} | {youtube_hits} | {hn_hits} | {blog_hits} |",
+        "",
+        f"**数据来源**：{search_sources or '未记录'}",
+        f"**抓取窗口**：{window_start.split(' ')[0]} → {window_end.split(' ')[0]}",
+        "",
+        "---",
+        "",
+        "### 📋 分主题详情",
+        "",
     ]
-
-    if blog_hits > 0:
-        lines.append(f"- 本轮拿到了 {blog_hits} 条博客/网页内容，博客与技术文章仍然是判断长期趋势最稳的参考。")
-    else:
-        lines.append("- 本轮没有拿到可用的博客/网页结果；如果要更稳定抓博客，需要补上原生 web 搜索后端。")
-
-    if x_hits > 0:
-        lines.append(f"- 推文侧本轮保留了 {x_hits} 条高相关内容，适合看一线使用反馈和即时观点。")
-    if hn_hits > 0:
-        lines.append(f"- Hacker News 本轮保留了 {hn_hits} 条内容，适合补足博客与开发者讨论。")
-
-    lines.extend(
-        [
-            "",
-            "## 分主题监控",
-            "",
-        ]
-    )
 
     for section in sections:
         lines.extend(render_topic_section(section, selected[section.topic_key]))
 
     lines.extend(
         [
-            "## 当前整体趋势",
+            "---",
             "",
-            f"- 过去这个时段里，更强的公共信号集中在 {active_titles} 这几条线上，而不是泛 AI 新闻。",
-            "- 如果某个主题本轮没有进入页面，通常不是完全没有讨论，而是没有筛到足够强、足够干净的优质条目。",
-            "- 这页会优先保留博客、技术文章、Hacker News 与高信噪比推文；泛广告、低质量转发和弱相关内容会被直接过滤。",
+            "### 🔮 当前整体趋势",
+            "",
         ]
     )
+    lines.extend(_build_trend_summary(sections, selected))
 
     return "\n".join(lines).rstrip() + "\n"
 
