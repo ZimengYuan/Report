@@ -51,21 +51,19 @@ SOURCE_PRIORITY = {
 }
 
 TOPIC_RULES = {
-    "claude-code-codex": {
-        "title": "Claude Code && Codex",
+    "claude-code": {
+        "title": "Claude Code",
         "must": [
             "claude code",
-            "codex",
-            "openclaw",
-            "copilot",
-            "cursor",
+            "anthropic",
+            "claude",
             "agent",
-            "code review",
             "terminal",
             "workflow",
             "编程",
             "代码",
             "插件",
+            "cli",
         ],
         "bonus": [
             "developer",
@@ -97,12 +95,12 @@ TOPIC_RULES = {
         "themes": [
             (
                 "工具整合与生态",
-                ["plugin", "插件", "review", "delegate", "openclaw", "copilot", "cursor", "cloudcli", "astro", "proofshot"],
-                "讨论重点落在把多种 coding agent 串起来使用，更多是在比拼集成能力，而不是单点模型参数。",
+                ["plugin", "插件", "review", "delegate", "extension", "ide", "cli", "terminal"],
+                "讨论重点落在 Claude Code 如何接入真实开发链路，包括插件、命令行、IDE 和 review 流程。",
             ),
             (
                 "工作流与一线体验",
-                ["workflow", "terminal", "tmux", "容量", "quota", "weekly", "pair", "coding", "use", "使用"],
+                ["workflow", "terminal", "tmux", "容量", "quota", "weekly", "pair", "coding", "use", "使用", "agent"],
                 "可用样本主要反映真实开发体验，包括终端工作流、配额消耗和人与 agent 的协作方式。",
             ),
             (
@@ -111,38 +109,30 @@ TOPIC_RULES = {
                 "除了效率讨论，也能看到一部分样本在担心安全边界、供应链攻击和 agent 失误成本。",
             ),
         ],
-        "editor_note": "这个主题更适合看成“AI 编程 agent 工具链动态”，不适合把每条社交媒体吐槽都当成趋势结论。",
+        "editor_note": "Claude Code 更适合观察真实开发工作流、插件生态和终端体验，零散营销口径价值不高。",
     },
-    "ai-overview": {
-        "title": "AI 发展总览",
+    "codex": {
+        "title": "Codex",
         "must": [
-            "ai",
-            "人工智能",
             "openai",
-            "anthropic",
-            "claude",
             "codex",
-            "gemini",
-            "llm",
+            "chatgpt codex",
+            "codex cli",
             "agent",
-            "model",
-            "模型",
-            "robot",
-            "stitch",
-            "figma",
+            "coding",
+            "代码",
+            "terminal",
         ],
         "bonus": [
-            "design",
             "developer",
-            "coding",
-            "browser",
-            "product",
+            "code review",
+            "workflow",
+            "cli",
+            "benchmark",
+            "latency",
             "tool",
-            "多模态",
-            "平台",
-            "os",
-            "系统",
             "automation",
+            "open source",
         ],
         "noise": [
             "tron",
@@ -162,22 +152,133 @@ TOPIC_RULES = {
         ],
         "themes": [
             (
-                "产品与发布动态",
-                ["openai", "anthropic", "claude", "codex", "gemini", "stitch", "figma", "tool", "产品", "发布"],
-                "更可靠的样本集中在新工具、平台入口和产品级更新，而不是宏观行业判断。",
+                "产品能力与入口",
+                ["openai", "codex", "chatgpt", "tool", "cli", "agent", "terminal", "产品", "发布"],
+                "可靠信号通常集中在 Codex 的产品入口、命令行能力和可交付的 agent 体验，而不是泛泛提及。",
             ),
             (
-                "Agent 与开发流程",
-                ["agent", "coding", "developer", "workflow", "编程", "代码", "design", "ui"],
-                "本轮有效信号主要落在 AI 如何改变设计和开发流程，尤其是 agent 化工作方式。",
+                "开发者工作流",
+                ["agent", "coding", "developer", "workflow", "编程", "代码", "review", "task"],
+                "本轮更有价值的样本通常直接描述 Codex 如何进入开发者的任务拆解、写码和 review 过程。",
             ),
             (
-                "宏观趋势判断",
-                ["robot", "browser", "os", "系统", "平台", "多模态", "model", "模型"],
-                "能提炼的宏观信息不多，更多只能作为局部产品动态的拼图，而不是全行业总览。",
+                "稳定性与对比讨论",
+                ["latency", "quota", "benchmark", "compare", "cursor", "claude", "copilot"],
+                "可用信息常常出现在与其他 coding agent 的对比里，重点是稳定性、速度和任务完成质量。",
             ),
         ],
-        "editor_note": "“AI 发展总览”这个主题天然过宽，抓取时很容易混入加密、会务宣传和泛科技噪声，因此正式报告必须二次筛选。",
+        "editor_note": "Codex 这个词历史包袱很重，抓取时要优先保留明确指向 OpenAI 最新产品形态的内容。",
+    },
+    "large-models": {
+        "title": "大模型",
+        "must": [
+            "llm",
+            "large language model",
+            "foundation model",
+            "模型",
+            "大模型",
+            "openai",
+            "anthropic",
+            "gemini",
+            "llama",
+            "qwen",
+            "deepseek",
+            "推理",
+        ],
+        "bonus": [
+            "agent",
+            "benchmark",
+            "inference",
+            "context",
+            "multimodal",
+            "多模态",
+            "reasoning",
+            "训练",
+            "蒸馏",
+            "开源",
+        ],
+        "noise": [
+            "tron",
+            "defi",
+            "stablecoin",
+            "token",
+            "chain",
+            "nft",
+            "dao",
+            "social-fi",
+            "bnb",
+            "$trx",
+        ],
+        "themes": [
+            (
+                "模型发布与版本竞争",
+                ["openai", "anthropic", "gemini", "llama", "qwen", "deepseek", "release", "版本", "模型"],
+                "更可靠的信号往往来自模型版本更新、能力对比和官方技术说明，而不是泛行业口号。",
+            ),
+            (
+                "推理与成本取舍",
+                ["reasoning", "inference", "latency", "token", "context", "成本", "速度", "推理"],
+                "本轮更值得看的通常是推理能力、上下文长度和推理成本之间的取舍讨论。",
+            ),
+            (
+                "开源与应用外溢",
+                ["open source", "开源", "agent", "multimodal", "多模态", "browser", "robot"],
+                "有效样本里经常能看到大模型从底层能力外溢到 agent、浏览器和多模态产品形态。",
+            ),
+        ],
+        "editor_note": "大模型主题最容易混入宏观空话，优先看技术博客、发布文档和高质量讨论串。",
+    },
+    "obsidian": {
+        "title": "Obsidian",
+        "must": [
+            "obsidian",
+            "vault",
+            "markdown",
+            "knowledge management",
+            "知识库",
+            "笔记",
+            "双链",
+            "plugin",
+            "插件",
+        ],
+        "bonus": [
+            "canvas",
+            "community plugin",
+            "sync",
+            "publish",
+            "template",
+            "zettelkasten",
+            "second brain",
+            "graph",
+            "mcp",
+            "ai",
+        ],
+        "noise": [
+            "minecraft",
+            "valorant",
+            "destiny",
+            "entertainment",
+            "obsidian energy",
+            "obsidian theater",
+        ],
+        "themes": [
+            (
+                "插件与工作流",
+                ["plugin", "插件", "community plugin", "template", "workflow", "mcp"],
+                "值得保留的信号通常来自插件发布、模板实践和知识管理工作流分享。",
+            ),
+            (
+                "知识库组织方式",
+                ["vault", "markdown", "zettelkasten", "second brain", "graph", "双链", "知识库"],
+                "本轮更有价值的样本通常在讨论 Obsidian 如何组织知识、卡片和长期积累。",
+            ),
+            (
+                "与 AI 结合",
+                ["ai", "llm", "agent", "copilot", "embedding", "搜索"],
+                "如果有高质量内容，往往体现在 Obsidian 与 AI 检索、写作和自动化能力的结合方式。",
+            ),
+        ],
+        "editor_note": "Obsidian 主题适合重点看博客、官方论坛和高质量经验贴，低质量截图式分享意义不大。",
     },
 }
 
@@ -574,10 +675,9 @@ def render_overall_summary(
     if stats["filtered_noise"] > 0 or stats["filtered_weak"] > 0:
         lines.append(f"- 本轮过滤了 {stats['filtered_weak']} 条弱相关样本和 {stats['filtered_noise']} 条明显噪声，列表只保留更能代表趋势的条目。")
 
-    if topic_key == "claude-code-codex":
-        lines.append("- 整体上，这个主题的真实热度还在“agent 工作流、工具整合、开发体验”上，不在单个模型宣传口径上。")
-    else:
-        lines.append("- 整体上，这个主题的有效信号仍偏产品发布、博客文章和 agent 工作流，宏观行业判断的可信度明显低于具体产品动态。")
+    theme_labels = [assign_theme(item, topic_key) for item in curated_items]
+    dominant_theme = max(set(theme_labels), key=theme_labels.count) if theme_labels else "持续观察"
+    lines.append(f"- 整体上，这个主题当前最强的公共信号集中在“{dominant_theme}”，比零散营销和单条刷屏内容更值得看。")
 
     return lines
 

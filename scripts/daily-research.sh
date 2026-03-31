@@ -1,8 +1,8 @@
 #!/bin/bash
 # Daily Research Script
 # Schedule:
-#   - 10:00 Beijing time -> run both public topics
-#   - 20:00 Beijing time -> run both public topics
+#   - 10:00 Beijing time -> run one unified monitoring page
+#   - 20:00 Beijing time -> run one unified monitoring page
 
 set -euo pipefail
 
@@ -112,6 +112,27 @@ write_index() {
     } > "$index_file"
 }
 
+filter_monitor_sources() {
+    local raw_sources="$1"
+    local preferred=()
+    local source
+
+    IFS=',' read -ra source <<< "$raw_sources"
+    for source in "${source[@]}"; do
+        case "$source" in
+            web|hn|x|youtube)
+                preferred+=("$source")
+                ;;
+        esac
+    done
+
+    if [ "${#preferred[@]}" -gt 0 ]; then
+        (IFS=','; printf '%s' "${preferred[*]}")
+    else
+        printf '%s' "$raw_sources"
+    fi
+}
+
 if ! SKILL_ROOT="$(find_skill_root)"; then
     echo "[$TIMESTAMP] ERROR: Could not find last30days.py" >> "$LOG_FILE"
     exit 1
@@ -131,14 +152,16 @@ PUBLIC_DIR="$PUBLIC_ROOT/$RESEARCH_TYPE"
 ARTIFACT_DIR="$ARTIFACT_ROOT/$RESEARCH_TYPE/$DATE"
 
 TOPIC_SPECS=(
-    "01|Claude Code && Codex|Claude Code Codex AI coding agent|01-claude-code-codex|claude-code-codex|claude-code-codex-raw|claude-code-codex"
-    "02|AI 发展总览|OpenAI Anthropic Gemini Claude AI agents|02-ai-overview|ai-overview|ai-raw|ai-overview"
+    "Claude Code|Claude Code|claude code anthropic coding agent terminal workflow|claude-code-raw|claude-code"
+    "Codex|Codex|OpenAI Codex coding agent codex cli chatgpt codex|codex-raw|codex"
+    "大模型|大模型|OpenAI Anthropic Gemini Llama Qwen DeepSeek LLM model reasoning|large-models-raw|large-models"
+    "Obsidian|Obsidian|Obsidian markdown notes plugin vault knowledge management|obsidian-raw|obsidian"
 )
 
 mkdir -p "$PUBLIC_DIR" "$ARTIFACT_DIR"
 compute_recent_window
 
-echo "[$TIMESTAMP] Starting $RESEARCH_TYPE research for both topics" >> "$LOG_FILE"
+echo "[$TIMESTAMP] Starting $RESEARCH_TYPE unified monitoring run" >> "$LOG_FILE"
 echo "[$TIMESTAMP] Raw artifacts -> $ARTIFACT_DIR" >> "$LOG_FILE"
 echo "[$TIMESTAMP] Node runtime: $(command -v node 2>/dev/null || echo unavailable) ($(node -v 2>/dev/null || echo unavailable))" >> "$LOG_FILE"
 echo "[$TIMESTAMP] Rolling window -> $WINDOW_START to $WINDOW_END" >> "$LOG_FILE"
@@ -158,23 +181,25 @@ else
     fi
 fi
 
+ALL_SEARCH_SOURCES="$(filter_monitor_sources "$ALL_SEARCH_SOURCES")"
+
 echo "[$TIMESTAMP] Using search sources: $ALL_SEARCH_SOURCES" >> "$LOG_FILE"
 echo "[$TIMESTAMP] Research depth: $RESEARCH_DEPTH" >> "$LOG_FILE"
 echo "[$TIMESTAMP] Global timeout: $RESEARCH_TIMEOUT" >> "$LOG_FILE"
 
 overall_status=0
-completed_reports=0
+completed_topics=0
+topic_args=()
+monitor_body="$(mktemp)"
+monitor_report="$(mktemp)"
+public_report="$PUBLIC_DIR/01-monitor.md"
 
 for spec in "${TOPIC_SPECS[@]}"; do
-    IFS='|' read -r order report_title search_topic report_slug permalink_slug raw_slug topic_key <<< "$spec"
-    public_report="$PUBLIC_DIR/$report_slug.md"
+    IFS='|' read -r display_title report_title search_topic raw_slug topic_key <<< "$spec"
     raw_capture="$ARTIFACT_DIR/$raw_slug.md"
-    temp_body="$(mktemp)"
     temp_capture="$(mktemp)"
-    temp_report="$(mktemp)"
 
     echo "[$TIMESTAMP] Running research for: $search_topic" >> "$LOG_FILE"
-    echo "[$TIMESTAMP] Public report -> $public_report" >> "$LOG_FILE"
     echo "[$TIMESTAMP] Raw capture -> $raw_capture" >> "$LOG_FILE"
 
     LAST30DAYS_CMD=(
@@ -190,28 +215,31 @@ for spec in "${TOPIC_SPECS[@]}"; do
 
     if "${LAST30DAYS_CMD[@]}" > "$temp_capture" 2>>"$LOG_FILE"; then
         mv "$temp_capture" "$raw_capture"
+        topic_args+=("--topic" "${topic_key}|${report_title}|${raw_capture}")
+        completed_topics=$((completed_topics + 1))
     else
         status=$?
-        rm -f "$temp_capture" "$temp_body" "$temp_report"
+        rm -f "$temp_capture"
         overall_status=1
         echo "[$TIMESTAMP] Research failed: $search_topic (exit $status)" >> "$LOG_FILE"
         continue
     fi
+    echo "[$TIMESTAMP] Research completed: $display_title" >> "$LOG_FILE"
+done
 
-    if python3 "$REPO_DIR/scripts/synthesize_public_report.py" \
-        --input "$raw_capture" \
-        --topic-key "$topic_key" \
-        --report-title "$report_title" \
+if [ "${#topic_args[@]}" -gt 0 ]; then
+    if python3 "$REPO_DIR/scripts/synthesize_monitor_page.py" \
+        "${topic_args[@]}" \
         --slot "$RESEARCH_TYPE" \
         --date "$DATE" \
         --window-start "$WINDOW_START" \
         --window-end "$WINDOW_END" \
-        --search-sources "$ALL_SEARCH_SOURCES" > "$temp_body" 2>>"$LOG_FILE"; then
+        --search-sources "$ALL_SEARCH_SOURCES" > "$monitor_body" 2>>"$LOG_FILE"; then
         {
             cat <<EOF
 ---
 layout: research
-title: "$report_title"
+title: "四主题监控简报"
 type: "$RESEARCH_TYPE"
 public_report: true
 date: $DATE
@@ -221,24 +249,31 @@ trigger_schedule: "0 10,20 * * * Asia/Shanghai"
 window_start: "$WINDOW_START"
 window_end: "$WINDOW_END"
 search_sources: "$ALL_SEARCH_SOURCES"
-permalink: /research/$RESEARCH_TYPE/$permalink_slug/
+permalink: /research/$RESEARCH_TYPE/monitor/
 ---
 
 EOF
-            cat "$temp_body"
-        } > "$temp_report"
-        mv "$temp_report" "$public_report"
-        completed_reports=$((completed_reports + 1))
-        echo "[$TIMESTAMP] Research completed: $search_topic" >> "$LOG_FILE"
+            cat "$monitor_body"
+        } > "$monitor_report"
+
+        find "$PUBLIC_DIR" -mindepth 1 -maxdepth 1 -type f -name '*.md' ! -name 'README.md' ! -name 'index.md' -delete
+        mv "$monitor_report" "$public_report"
+        echo "[$TIMESTAMP] Unified monitoring page generated: $public_report" >> "$LOG_FILE"
     else
         status=$?
-        rm -f "$temp_body" "$temp_report"
-        overall_status=1
-        echo "[$TIMESTAMP] Report synthesis failed: $report_title (exit $status)" >> "$LOG_FILE"
+        rm -f "$monitor_report"
+        if [ "$status" -eq 2 ]; then
+            echo "[$TIMESTAMP] No publishable high-quality topics found; keeping previous public page unchanged" >> "$LOG_FILE"
+        else
+            overall_status=1
+            echo "[$TIMESTAMP] Unified page synthesis failed (exit $status)" >> "$LOG_FILE"
+        fi
     fi
+else
+    echo "[$TIMESTAMP] No topic runs succeeded; skipping unified page generation" >> "$LOG_FILE"
+fi
 
-    rm -f "$temp_body"
-done
+rm -f "$monitor_body" "$monitor_report"
 
 write_index "morning" "Morning Research" "10:00 Beijing time"
 write_index "evening" "Evening Research" "20:00 Beijing time"
@@ -256,6 +291,6 @@ if git rev-parse --git-dir > /dev/null 2>&1; then
 fi
 
 TIMESTAMP="$(date +"%Y-%m-%d %H:%M:%S")"
-echo "[$TIMESTAMP] Daily research completed for $RESEARCH_TYPE ($completed_reports/${#TOPIC_SPECS[@]} reports succeeded)" >> "$LOG_FILE"
+echo "[$TIMESTAMP] Daily research completed for $RESEARCH_TYPE ($completed_topics/${#TOPIC_SPECS[@]} topic captures succeeded)" >> "$LOG_FILE"
 
 exit "$overall_status"

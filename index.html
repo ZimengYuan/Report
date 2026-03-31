@@ -7,17 +7,17 @@ title: 首页
     <h1>每日研究简报</h1>
 
     <p class="lead">
-        基于 last30days 的自动化 AI 研究报告，每日更新。
-        页面只展示整理后的精华条目与趋势总结，原始抓取和调试输出不再直接列出。
+        基于 last30days 的自动化主题监控页，每日更新。
+        当前只监控四个主题：Claude Code、Codex、大模型、Obsidian。
     </p>
 
     <div class="research-schedule">
         <h2>研究时间表</h2>
         <ul>
-            <li><strong>早间研究（10:00 北京时间）</strong> - Claude Code && Codex / AI 发展总览</li>
-            <li><strong>晚间研究（20:00 北京时间）</strong> - Claude Code && Codex / AI 发展总览</li>
+            <li><strong>早间监控（10:00 北京时间）</strong> - 四主题统一监控页</li>
+            <li><strong>晚间监控（20:00 北京时间）</strong> - 四主题统一监控页</li>
         </ul>
-        <p>默认自动化会尝试所有已配置数据源；每篇页面展示最多 15 条精华条目，并给出整体趋势总结。</p>
+        <p>页面优先保留博客、Hacker News 和高信噪比推文；只有筛到优质内容时才会更新页面。</p>
     </div>
 
     <div class="latest-research">
@@ -32,7 +32,7 @@ title: 首页
                         <article class="report-card">
                             <div class="card-kicker">Morning Brief</div>
                             <h4>{{ doc.title }}</h4>
-                            <p class="card-summary">最多 15 条精华条目，附带热度、链接与趋势总结。</p>
+                            <p class="card-summary">四个主题合并在一页展示，只保留当前时段里最值得看的内容。</p>
                             <div class="card-chip-row">
                                 <span class="card-chip">趋势简报</span>
                                 <span class="card-chip">秒级更新</span>
@@ -59,7 +59,7 @@ title: 首页
                         <article class="report-card">
                             <div class="card-kicker">Evening Brief</div>
                             <h4>{{ doc.title }}</h4>
-                            <p class="card-summary">最多 15 条精华条目，附带热度、链接与趋势总结。</p>
+                            <p class="card-summary">四个主题合并在一页展示，只保留当前时段里最值得看的内容。</p>
                             <div class="card-chip-row">
                                 <span class="card-chip">趋势简报</span>
                                 <span class="card-chip">秒级更新</span>
