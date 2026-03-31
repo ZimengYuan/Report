@@ -8,6 +8,4 @@ This index lists public reports only. Raw captures are written to `artifacts/raw
 
 | Topic | File |
 |-------|------|
-| Claude Code && Codex | [01-claude-code-codex.md](./01-claude-code-codex.md) |
-| AI 发展总览 | [02-ai-overview.md](./02-ai-overview.md) |
 | index.md | [index.md](./index.md) |
