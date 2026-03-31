@@ -22,6 +22,6 @@ exclude:
   - artifacts/
 
 # Collections configuration
-collections_dir: _collections
 collections:
   research:
+    output: true
