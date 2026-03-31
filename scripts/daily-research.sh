@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd)"
 LOG_DIR="$REPO_DIR/logs"
 LOG_FILE="$LOG_DIR/research.log"
-PUBLIC_ROOT="$REPO_DIR/_collections/research"
+PUBLIC_ROOT="$REPO_DIR/_research"
 ARTIFACT_ROOT="$REPO_DIR/artifacts/raw-research"
 DATE="$(date +%Y-%m-%d)"
 TIME="$(date +%H%M)"
@@ -156,7 +156,7 @@ write_index "evening" "Evening Research" "20:00 Beijing time"
 
 if git rev-parse --git-dir > /dev/null 2>&1; then
     echo "[$TIMESTAMP] Committing public research updates..." >> "$LOG_FILE"
-    git add _collections/research
+    git add _research
 
     if git diff --cached --quiet; then
         echo "[$TIMESTAMP] No public report changes to commit" >> "$LOG_FILE"
