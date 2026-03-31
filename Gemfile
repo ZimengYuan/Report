@@ -1,4 +1,4 @@
 source 'https://rubygems.org'
 
-gem 'github-pages', '~> 228'
-gem 'kramdown-parser-gfm', '~> 1.1'
+gem 'jekyll', '~> 4.3'
+gem 'minima'
