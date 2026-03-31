@@ -70,7 +70,11 @@ compute_recent_window() {
 
     WINDOW_START="$(date -d "@$last_slot_epoch" +"%Y-%m-%d %H:%M:%S %z")"
     WINDOW_END="$(date +"%Y-%m-%d %H:%M:%S %z")"
-    WINDOW_DAYS=1
+    if [ "$(date -d "@$last_slot_epoch" +"%Y-%m-%d")" = "$(date +"%Y-%m-%d")" ]; then
+        WINDOW_DAYS=0
+    else
+        WINDOW_DAYS=1
+    fi
 }
 
 write_index() {
