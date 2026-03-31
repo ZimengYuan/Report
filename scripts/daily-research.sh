@@ -94,7 +94,9 @@ fi
 
 PUBLIC_DIR="$PUBLIC_ROOT/$RESEARCH_TYPE"
 ARTIFACT_DIR="$ARTIFACT_ROOT/$RESEARCH_TYPE/$DATE"
-ALL_SEARCH_SOURCES="reddit,x,hn,bluesky,truthsocial,youtube,tiktok,instagram,polymarket,web,xiaohongshu"
+# TODO: 修复数据源后恢复完整列表
+# 当前问题：Reddit/TikTok/Instagram 需要 ScrapeCreators 付费，YouTube 超时，Xiaohongshu DNS 错，Polymarket SSL 错
+ALL_SEARCH_SOURCES="x"
 
 TOPIC_SPECS=(
     "01|Claude Code && Codex|Claude Code Codex AI coding agent|01-claude-code-codex|claude-code-codex|claude-code-codex-raw|claude-code-codex"
