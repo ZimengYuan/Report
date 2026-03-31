@@ -16,6 +16,7 @@ DATE="$(date +%Y-%m-%d)"
 TIME="$(date +%H%M)"
 HOUR="$(date +%H)"
 TIMESTAMP="$(date +"%Y-%m-%d %H:%M:%S")"
+RESEARCH_DEPTH="${LAST30DAYS_RESEARCH_DEPTH:-quick}"
 
 mkdir -p "$LOG_DIR"
 cd "$REPO_DIR"
@@ -94,8 +95,6 @@ fi
 
 PUBLIC_DIR="$PUBLIC_ROOT/$RESEARCH_TYPE"
 ARTIFACT_DIR="$ARTIFACT_ROOT/$RESEARCH_TYPE/$DATE"
-# TODO: 修复 Reddit/TikTok/Instagram (需要 ScrapeCreators 付费)，YouTube API Key
-ALL_SEARCH_SOURCES="x,hn"
 
 TOPIC_SPECS=(
     "01|Claude Code && Codex|Claude Code Codex AI coding agent|01-claude-code-codex|claude-code-codex|claude-code-codex-raw|claude-code-codex"
@@ -106,6 +105,24 @@ mkdir -p "$PUBLIC_DIR" "$ARTIFACT_DIR"
 
 echo "[$TIMESTAMP] Starting $RESEARCH_TYPE research for both topics" >> "$LOG_FILE"
 echo "[$TIMESTAMP] Raw artifacts -> $ARTIFACT_DIR" >> "$LOG_FILE"
+
+if [ -n "${LAST30DAYS_FORCE_SEARCH_SOURCES:-}" ]; then
+    ALL_SEARCH_SOURCES="$LAST30DAYS_FORCE_SEARCH_SOURCES"
+    echo "[$TIMESTAMP] Source selection forced by LAST30DAYS_FORCE_SEARCH_SOURCES=$ALL_SEARCH_SOURCES" >> "$LOG_FILE"
+else
+    if ALL_SEARCH_SOURCES="$(python3 "$REPO_DIR/scripts/select_last30days_sources.py" --skill-root "$SKILL_ROOT" --format csv 2>>"$LOG_FILE")"; then
+        if [ -z "$ALL_SEARCH_SOURCES" ]; then
+            ALL_SEARCH_SOURCES="hn"
+            echo "[$TIMESTAMP] Source selector returned empty set, falling back to HN only" >> "$LOG_FILE"
+        fi
+    else
+        ALL_SEARCH_SOURCES="x,hn"
+        echo "[$TIMESTAMP] Source selector failed, falling back to $ALL_SEARCH_SOURCES" >> "$LOG_FILE"
+    fi
+fi
+
+echo "[$TIMESTAMP] Using search sources: $ALL_SEARCH_SOURCES" >> "$LOG_FILE"
+echo "[$TIMESTAMP] Research depth: $RESEARCH_DEPTH" >> "$LOG_FILE"
 
 overall_status=0
 completed_reports=0
@@ -128,6 +145,7 @@ for spec in "${TOPIC_SPECS[@]}"; do
         "$search_topic"
         --emit=compact
         --search="$ALL_SEARCH_SOURCES"
+        "--$RESEARCH_DEPTH"
     )
 
     if "${LAST30DAYS_CMD[@]}" > "$temp_capture" 2>>"$LOG_FILE"; then

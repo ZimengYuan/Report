@@ -21,21 +21,12 @@ Raw compact outputs are saved under `artifacts/raw-research/` for local debuggin
 
 ## Source Policy
 
-The default public automation attempts every configured source made available by `last30days`, including:
+The public automation now auto-selects the healthiest currently available `last30days` sources before each run.
 
-- `Reddit`
-- `X`
-- `Hacker News`
-- `YouTube`
-- `TikTok`
-- `Instagram`
-- `Polymarket`
-- `Bluesky`
-- `Truth Social`
-- `Xiaohongshu`
-- native web search when a backend is configured
-
-Availability still depends on local credentials and upstream service health, but the script no longer trims the source set by policy.
+- always prefers healthy configured sources such as `X`, `YouTube`, `Hacker News`, and native web search when available
+- probes `ScrapeCreators` before enabling `Reddit`, `TikTok`, and `Instagram`
+- skips sources that are configured but currently unhealthy, such as `402` credit exhaustion or unreachable public APIs
+- can still be overridden manually with `LAST30DAYS_FORCE_SEARCH_SOURCES=x,youtube,hn`
 
 ## Running Locally
 
@@ -46,11 +37,17 @@ bash scripts/daily-research.sh
 The script:
 
 1. infers the active slot from the current hour
-2. runs `last30days --emit=compact` for both standard topics using focused search queries
-3. stores raw captures under `artifacts/raw-research/<slot>/<date>/`
-4. synthesizes curated public reports into `_research/<slot>/01-claude-code-codex.md` and `_research/<slot>/02-ai-overview.md`
-5. refreshes the slot-level index files under `_research/morning/` and `_research/evening/`
-6. commits only `_research/` when there are public changes
+2. runs `scripts/select_last30days_sources.py` to pick healthy sources for the current machine
+3. runs `last30days --emit=compact --quick` for both standard topics using focused search queries
+4. stores raw captures under `artifacts/raw-research/<slot>/<date>/`
+5. synthesizes curated public reports into `_research/<slot>/01-claude-code-codex.md` and `_research/<slot>/02-ai-overview.md`
+6. refreshes the slot-level index files under `_research/morning/` and `_research/evening/`
+7. commits only `_research/` when there are public changes
+
+Useful overrides:
+
+- `LAST30DAYS_FORCE_SEARCH_SOURCES=reddit,x,youtube,hn`
+- `LAST30DAYS_RESEARCH_DEPTH=default`
 
 ## Safety Notes
 
