@@ -53,6 +53,7 @@ find_skill_root() {
 }
 
 compute_recent_window() {
+    local research_type="$1"
     local now_epoch today_10 today_20 yesterday_20 last_slot_epoch
 
     now_epoch="$(date +%s)"
@@ -60,16 +61,12 @@ compute_recent_window() {
     today_20="$(date -d "$(date +%F) 20:00:00" +%s)"
     yesterday_20="$(date -d "yesterday 20:00:00" +%s)"
 
-    if [ "$now_epoch" -le "$today_10" ]; then
-        # 早间 -> 抓昨晚20点到今早10点
+    if [ "$research_type" = "morning" ]; then
+        # 早间 cron（10:00）：抓昨晚20:00到今早10:00
         last_slot_epoch="$yesterday_20"
         WINDOW_DAYS=1
-    elif [ "$now_epoch" -le "$today_20" ]; then
-        # 晚间 -> 抓今早10点到当前（而非只抓20:00后的2小时）
-        last_slot_epoch="$today_10"
-        WINDOW_DAYS=0
     else
-        # 夜间（>20:00）-> 抓今早10点到当前，与晚间同窗口
+        # 晚间 cron（20:00）或手动：抓今早10:00到当前
         last_slot_epoch="$today_10"
         WINDOW_DAYS=0
     fi
@@ -160,7 +157,7 @@ TOPIC_SPECS=(
 )
 
 mkdir -p "$PUBLIC_DIR" "$ARTIFACT_DIR"
-compute_recent_window
+compute_recent_window "$RESEARCH_TYPE"
 
 echo "[$TIMESTAMP] Starting $RESEARCH_TYPE unified monitoring run" >> "$LOG_FILE"
 echo "[$TIMESTAMP] Raw artifacts -> $ARTIFACT_DIR" >> "$LOG_FILE"
