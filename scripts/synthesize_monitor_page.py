@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import html
 import json
 import os
 from dataclasses import dataclass
@@ -403,29 +404,21 @@ def fallback_summary_zh(topic_key: str, item) -> str:
 
 
 def _topic_colors() -> dict[str, dict]:
-    """各主题的配色方案：左侧边、标题背景、图标。"""
+    """各主题的基础标识：图标与标签。"""
     return {
         "claude-code": {
-            "border": "#6366f1",
-            "header_bg": "linear-gradient(135deg,#6366f1,#818cf8)",
             "icon": "🤖",
             "label": "Claude Code",
         },
         "codex": {
-            "border": "#f59e0b",
-            "header_bg": "linear-gradient(135deg,#f59e0b,#fbbf24)",
             "icon": "⚡",
             "label": "Codex",
         },
         "large-models": {
-            "border": "#10b981",
-            "header_bg": "linear-gradient(135deg,#10b981,#34d399)",
             "icon": "🧠",
             "label": "大模型",
         },
         "obsidian": {
-            "border": "#8b5cf6",
-            "header_bg": "linear-gradient(135deg,#8b5cf6,#a78bfa)",
             "icon": "📎",
             "label": "Obsidian",
         },
@@ -434,79 +427,76 @@ def _topic_colors() -> dict[str, dict]:
 
 def _heat_html(score: int) -> str:
     if score >= 130:
-        return '<span style="background:#ef4444;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">🔥 爆热</span>'
+        return '<span class="monitor-heat monitor-heat--blast">🔥 爆热</span>'
     elif score >= 90:
-        return '<span style="background:#f97316;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">🔶 高热</span>'
+        return '<span class="monitor-heat monitor-heat--high">🔶 高热</span>'
     elif score >= 60:
-        return '<span style="background:#3b82f6;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">📊 中热</span>'
+        return '<span class="monitor-heat monitor-heat--mid">📊 中热</span>'
     else:
-        return '<span style="background:#6b7280;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">📉 平热</span>'
+        return '<span class="monitor-heat monitor-heat--low">📉 平热</span>'
 
 
 def _source_html(source: str) -> str:
-    colors = {
-        "x": ("#1d9bf0", "#fff"),
-        "youtube": ("#ff0000", "#fff"),
-        "hn": ("#ff6600", "#fff"),
-        "web": ("#0d9488", "#fff"),
-        "reddit": ("#ff4500", "#fff"),
-    }
-    bg, fg = colors.get(source, ("#6b7280", "#fff"))
-    label = SOURCE_LABELS.get(source, source)
-    return f'<span style="background:{bg};color:{fg};padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600">{label}</span>'
+    label = html.escape(SOURCE_LABELS.get(source, source))
+    safe_source = source if source in {"x", "youtube", "hn", "web", "reddit"} else "web"
+    return f'<span class="monitor-source-badge monitor-source-badge--{safe_source}">{label}</span>'
 
 
 def _engagement_html(item) -> str:
     if item.engagement:
-        return f'<span style="color:#9ca3af;font-size:12px;margin-left:6px">{item.engagement}</span>'
+        return f'<span>{html.escape(item.engagement)}</span>'
     return ""
 
 
 def _merged_item_card(index: int, m: MergedItem, section: TopicSection) -> str:
-    """渲染一条 MergedItem（多条目合并），含多条链接。"""
+    """渲染一条结构化卡片。"""
     topic_key = m.topic_key
     score = m.score
     heat = _heat_html(score)
     primary = m.primary_item
-
-    # 来源 + 日期（用 primary 的）
     source = _source_html(primary.source)
-    date_str = f'<span style="color:#9ca3af;font-size:12px">{primary.date or "未知日期"}</span>'
+    best_eng = max(
+        (item.engagement for item in m.linked_items),
+        key=lambda e: int(e.split()[0]) if e and e.split()[0].isdigit() else 0,
+        default="",
+    )
+    meta_parts = [
+        f"<span>热度 {score}</span>",
+        _engagement_html(type("Eng", (), {"engagement": best_eng})()) if best_eng else "",
+        f"<span>{html.escape(primary.date or '未知日期')}</span>",
+        f"<span>{len(m.linked_items)} 条相关</span>",
+    ]
+    meta_html = "".join(part for part in meta_parts if part)
 
-    # 互动量（取 engagement 最多的那条）
-    best_eng = max((item.engagement for item in m.linked_items), key=lambda e: int(e.split()[0]) if e and e.split()[0].isdigit() else 0, default="")
-    eng_html = f'<span style="color:#9ca3af;font-size:12px;margin-left:6px">{best_eng}</span>' if best_eng else ""
-
-    # 链接按钮：多条时垂直堆叠
-    if len(m.linked_items) == 1:
-        link_btns = f'<a href="{primary.url}" target="_blank" style="display:inline-block;margin-top:8px;padding:5px 14px;background:#1d9bf0;color:#fff;border-radius:8px;font-size:12px;text-decoration:none;font-weight:600">🔗 打开原文</a>'
+    link_items = []
+    if len(m.linked_items) == 1 and primary.url:
+        link_items.append(
+            f'<a class="monitor-link" href="{html.escape(primary.url)}" target="_blank" rel="noopener noreferrer">打开原文</a>'
+        )
     else:
-        link_btns = "<div style=\"margin-top:8px;display:flex;flex-wrap:wrap;gap:6px\">"
         for li, item in enumerate(m.linked_items, 1):
-            if item.url:
-                label = f"🔗 链接{len(m.linked_items)>2 and chr(0x2460+li-1) or ''} · {item.source.capitalize()}"
-                link_btns += f'<a href="{item.url}" target="_blank" style="display:inline-block;padding:4px 10px;background:#1d9bf0;color:#fff;border-radius:8px;font-size:11px;text-decoration:none;font-weight:600">{label}</a>'
-        link_btns += "</div>"
+            if not item.url:
+                continue
+            label = f"相关链接 {li}"
+            link_items.append(
+                f'<a class="monitor-link monitor-link--alt" href="{html.escape(item.url)}" target="_blank" rel="noopener noreferrer">{html.escape(label)}</a>'
+            )
 
-    row_bg = "#f8fafc" if index % 2 == 0 else "#ffffff"
-    border_colors = ["#6366f1", "#f59e0b", "#10b981", "#8b5cf6"]
-    border_color = border_colors[index % len(border_colors)]
-    summary_escaped = markdown_safe_text(m.summary_zh) if m.summary_zh else markdown_safe_text(fallback_summary_zh(topic_key, primary))
+    summary_escaped = html.escape(m.summary_zh or fallback_summary_zh(topic_key, primary))
 
     return f"""
-<div style="background:{row_bg};border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:4px solid {border_color};box-shadow:0 1px 3px rgba(0,0,0,0.06)">
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
-    <span style="background:#1e293b;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0">{index}</span>
-    {heat}
-    <span style="color:#6b7280;font-size:12px">热度: {score}</span>
-    {eng_html}
-    {source}
-    {date_str}
-    <span style="margin-left:auto;font-size:12px;color:#94a3b8">{len(m.linked_items)} 条相关</span>
+<article class="monitor-item-card">
+  <div class="monitor-item-card__top">
+    <div class="monitor-item-card__badges">
+      <span class="monitor-rank">{index}</span>
+      {heat}
+      {source}
+    </div>
+    <div class="monitor-item-card__meta">{meta_html}</div>
   </div>
-  <div style="font-size:15px;color:#1e293b;line-height:1.65;margin-bottom:10px">{summary_escaped}</div>
-  {link_btns}
-</div>"""
+  <p class="monitor-item-card__summary">{summary_escaped}</p>
+  <div class="monitor-item-card__links">{''.join(link_items)}</div>
+</article>"""
 
 
 def render_topic_section(section: TopicSection, merged_items: list[MergedItem]) -> list[str]:
@@ -515,37 +505,45 @@ def render_topic_section(section: TopicSection, merged_items: list[MergedItem]) 
 
     if not merged_items:
         return [
-            f'<div style="background:#f1f5f9;border-radius:12px;padding:20px;text-align:center;color:#64748b">'
-            f'{c["icon"]} {c["label"]} · 本轮暂无高质量条目</div>'
+            (
+                f'<section class="monitor-topic topic--{section.topic_key}">'
+                f'<div class="monitor-topic__header"><div class="monitor-topic__identity">'
+                f'<span class="monitor-topic__icon">{c["icon"]}</span>'
+                f'<div><h2 class="monitor-topic__title">{html.escape(c["label"])}</h2>'
+                f'<p class="monitor-topic__subtitle">本轮暂无高质量条目</p></div></div></div>'
+                f'<div class="monitor-topic__body"><p class="monitor-topic__note">当前没有筛到足够稳的内容，建议等待下一轮。</p></div></section>'
+            )
         ]
 
     bullets = render_section_bullets(section)
-    bullet_html = ""
-    for b in bullets:
-        clean_b = markdown_safe_text(b.lstrip("- ").rstrip("。").strip())
-        bullet_html += f'<li style="margin-bottom:4px">{clean_b}</li>'
+    bullet_html = "".join(
+        f'<li class="monitor-topic__note">{html.escape(b.lstrip("- ").rstrip("。").strip())}</li>'
+        for b in bullets
+    )
 
     total_raw = sum(len(m.linked_items) for m in merged_items)
     header = f"""
-<div style="background:{c['header_bg']};border-radius:12px 12px 0 0;padding:14px 20px;display:flex;align-items:center;gap:10px">
-  <span style="font-size:22px">{c['icon']}</span>
-  <div>
-    <div style="color:#fff;font-size:17px;font-weight:bold">{c['label']}</div>
-    <div style="color:rgba(255,255,255,0.8);font-size:12px">{section.source_summary_text}</div>
+<section class="monitor-topic topic--{section.topic_key}">
+  <div class="monitor-topic__header">
+    <div class="monitor-topic__identity">
+      <span class="monitor-topic__icon">{c['icon']}</span>
+      <div>
+        <h2 class="monitor-topic__title">{html.escape(c['label'])}</h2>
+        <p class="monitor-topic__subtitle">{html.escape(section.source_summary_text)}</p>
+      </div>
+    </div>
+    <div class="monitor-topic__count">{len(merged_items)} 条精品 · {total_raw} 条原始</div>
   </div>
-  <div style="margin-left:auto;text-align:right">
-    <div style="background:rgba(255,255,255,0.25);border-radius:8px;padding:4px 10px;color:#fff;font-size:13px;font-weight:bold">{len(merged_items)} 条精品 · {total_raw} 条原始</div>
+  <div class="monitor-topic__body">
+    <ul class="monitor-topic__notes">{bullet_html}</ul>
+    <div class="monitor-topic__grid">
+"""
+    items_html = "\n".join(_merged_item_card(idx, m, section) for idx, m in enumerate(merged_items, start=1))
+    footer = """
+    </div>
   </div>
-</div>
-<div style="background:#f8fafc;border-radius:0 0 12px 12px;padding:14px 16px;margin-bottom:20px;border:1px solid #e2e8f0;border-top:none">
-  <ul style="margin:0;padding-left:18px;color:#475569;font-size:13px;line-height:1.7">{bullet_html}</ul>
-</div>"""
-
-    items_html = ""
-    for idx, m in enumerate(merged_items, start=1):
-        items_html += _merged_item_card(idx, m, section)
-
-    return [f'<div style="max-width:820px;margin-bottom:30px">{header}{items_html}</div>\n']
+ </section>"""
+    return [header + items_html + footer + "\n"]
 
 
 def build_sections(payloads: list[TopicPayload]) -> list[TopicSection]:
@@ -572,7 +570,7 @@ def build_sections(payloads: list[TopicPayload]) -> list[TopicSection]:
 
 
 def _build_trend_summary(sections: list, merged: dict[str, list[MergedItem]]) -> list[str]:
-    """生成视觉美观、各主题并排的趋势总结（基于 merged items）。"""
+    """生成趋势卡片和阅读提示。"""
     topic_stats = {}
     for section in sections:
         items = merged.get(section.topic_key, [])
@@ -599,8 +597,13 @@ def _build_trend_summary(sections: list, merged: dict[str, list[MergedItem]]) ->
 
     if not topic_stats:
         return [
-            '<div style="text-align:center;color:#9ca3af;padding:30px;font-size:15px">'
-            '本轮暂无足够的可用数据进行趋势判断，建议等待下一轮数据积累后再做分析。</div>'
+            (
+                '<section class="monitor-trend">'
+                '<div class="monitor-section-heading"><span>🔮</span><h2>当前整体趋势</h2></div>'
+                '<div class="monitor-tips">本轮暂无足够的可用数据进行趋势判断，'
+                '建议等待下一轮数据积累后再观察。</div>'
+                "</section>"
+            )
         ]
 
     colors = _topic_colors()
@@ -611,29 +614,42 @@ def _build_trend_summary(sections: list, merged: dict[str, list[MergedItem]]) ->
         c = colors.get(topic_key, colors["claude-code"])
         bar_len = min(stats["max"] // 13, 10)
         bar = "▓" * bar_len + "░" * (10 - bar_len)
+        topic_label = html.escape(c["label"])
+        top_source = html.escape(stats["top_source"])
+        top_summary = stats["top_summary"]
         cards.append(f"""
-<div style="flex:1;min-width:200px;background:#f8fafc;border-radius:12px;padding:16px;border-top:4px solid {c['border']};box-shadow:0 1px 4px rgba(0,0,0,0.06)">
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-    <span style="font-size:20px">{c['icon']}</span>
-    <span style="font-size:15px;font-weight:bold;color:#1e293b">{c['label']}</span>
+<article class="monitor-trend-card topic--{topic_key}">
+  <div class="monitor-trend-card__top">
+    <span class="monitor-topic__icon">{c['icon']}</span>
+    <span class="monitor-trend-card__label">{topic_label}</span>
   </div>
-  <div style="font-size:28px;font-weight:bold;color:{c['border']};margin-bottom:4px">{stats['max']}</div>
-  <div style="font-size:13px;color:#64748b;margin-bottom:10px">{bar} 均值 {stats['avg']} · {stats['count']} 条精品（{stats['raw_count']} 条原始）</div>
-  <div style="font-size:12px;color:#94a3b8;margin-bottom:8px">主要来源：{stats['top_source']}</div>
-  <div style="font-size:13px;color:#475569;line-height:1.6">{stats['top_summary']}</div>
-</div>""")
+  <div class="monitor-trend-card__score">{stats['max']}</div>
+  <div class="monitor-trend-card__meta">
+    <span class="monitor-trend-bar">{bar}</span>
+    <span>均值 {stats['avg']} · {stats['count']} 条精品（{stats['raw_count']} 条原始）</span>
+  </div>
+  <div class="monitor-trend-card__meta">主要来源：{top_source}</div>
+  <div class="monitor-trend-card__summary">{top_summary}</div>
+</article>""")
 
-    cards_html = f'<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:24px">{"".join(cards)}</div>'
+    cards_html = f'<div class="monitor-trend__grid">{"".join(cards)}</div>'
 
     tip = """
-<div style="background:linear-gradient(135deg,#1e293b,#334155);border-radius:12px;padding:16px 20px;color:#e2e8f0;font-size:13px;line-height:1.8">
-  <div style="font-weight:bold;margin-bottom:6px;font-size:14px">💡 阅读建议</div>
-  优先查看 🔥 <b>爆热</b> 条目，信息密度最高；博客 / 黑客新闻内容通常比推文更深入；
-  若某主题本轮空白，并不代表无讨论，往往是数据源未抓取到够强的信号。
-  <b>多条相似内容已合并展示</b>，每条精品条目底部列出了所有相关链接。
+<div class="monitor-tips">
+  <p class="monitor-tips__title">阅读建议</p>
+  优先查看爆热条目，信息密度通常最高；博客和 Hacker News 往往比短帖更能解释背景与落地做法。
+  页面里已经把多条相似信息合并成单卡片，卡片底部会列出所有相关原文链接，方便继续深挖。
 </div>"""
 
-    return [cards_html + "\n" + tip]
+    return [
+        (
+            '<section class="monitor-trend">'
+            '<div class="monitor-section-heading"><span>🔮</span><h2>当前整体趋势</h2></div>'
+            f"{cards_html}"
+            f"{tip}"
+            "</section>"
+        )
+    ]
 
 
 def render_page(
@@ -702,64 +718,43 @@ def render_page(
         window_hours = "未知"
 
     overview_card = f"""
-<div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:16px;padding:24px 28px;margin-bottom:28px;box-shadow:0 4px 20px rgba(0,0,0,0.15)">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+<section class="monitor-hero">
+  <div class="monitor-hero__top">
     <div>
-      <div style="color:#e2e8f0;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">四主题监控简报</div>
-      <div style="color:#fff;font-size:22px;font-weight:bold">{slot_icon} {slot_label}版 · {report_date}</div>
-      <div style="color:#94a3b8;font-size:13px;margin-top:4px">🕐 {window_date_str} · 约 {window_hours}h</div>
+      <p class="monitor-eyebrow">四主题监控简报</p>
+      <h1 class="monitor-hero__title"><span>{slot_icon}</span><span>{slot_label}版 · {html.escape(report_date)}</span></h1>
+      <p class="monitor-hero__window">最近时段窗口：{html.escape(window_date_str)} · 约 {window_hours} 小时</p>
     </div>
-    <div style="display:flex;gap:16px;flex-wrap:wrap">
-      <div style="text-align:center">
-        <div style="font-size:32px;font-weight:bold;color:#38bdf8">{total_merged}</div>
-        <div style="font-size:12px;color:#94a3b8">精品条数</div>
-      </div>
-      <div style="width:1px;background:#334155;margin:4px 0"></div>
-      <div style="text-align:center">
-        <div style="font-size:32px;font-weight:bold;color:#1d9bf0">{x_hits}</div>
-        <div style="font-size:12px;color:#94a3b8">X</div>
-      </div>
-      <div style="text-align:center">
-        <div style="font-size:32px;font-weight:bold;color:#ff0000">{youtube_hits}</div>
-        <div style="font-size:12px;color:#94a3b8">YouTube</div>
-      </div>
-      <div style="text-align:center">
-        <div style="font-size:32px;font-weight:bold;color:#f97316">{hn_hits}</div>
-        <div style="font-size:12px;color:#94a3b8">HN</div>
-      </div>
-      <div style="text-align:center">
-        <div style="font-size:32px;font-weight:bold;color:#0d9488">{blog_hits}</div>
-        <div style="font-size:12px;color:#94a3b8">博客</div>
-      </div>
+    <div class="monitor-hero__stats">
+      <div class="monitor-stat"><span class="monitor-stat__value">{total_merged}</span><span class="monitor-stat__label">精品条数</span></div>
+      <div class="monitor-stat"><span class="monitor-stat__value">{x_hits}</span><span class="monitor-stat__label">X / 推文</span></div>
+      <div class="monitor-stat"><span class="monitor-stat__value">{youtube_hits}</span><span class="monitor-stat__label">YouTube</span></div>
+      <div class="monitor-stat"><span class="monitor-stat__value">{hn_hits}</span><span class="monitor-stat__label">Hacker News</span></div>
+      <div class="monitor-stat"><span class="monitor-stat__value">{blog_hits}</span><span class="monitor-stat__label">博客 / 网页</span></div>
     </div>
   </div>
-  <div style="margin-top:14px;padding-top:14px;border-top:1px solid #334155;display:flex;gap:20px;flex-wrap:wrap">
-    <div style="font-size:12px;color:#94a3b8">📡 数据来源：<span style="color:#e2e8f0">{search_sources or '未记录'}</span></div>
-    <div style="font-size:12px;color:#94a3b8">🔍 原始候选：{total_raw} 条 → 合并去重后 {total_merged} 条精品</div>
+  <div class="monitor-hero__meta">
+    <span class="monitor-meta-pill">📡 启用数据源：{html.escape(search_sources or '未记录')}</span>
+    <span class="monitor-meta-pill">🔍 原始候选：{total_raw} 条</span>
+    <span class="monitor-meta-pill">🧹 去重精简后：{total_merged} 条</span>
+    <span class="monitor-meta-pill">🗂 监控主题：Claude Code · Codex · 大模型 · Obsidian</span>
   </div>
-</div>"""
+</section>"""
 
-    topic_cards = ""
-    for section in sections:
-        topic_cards += "\n".join(render_topic_section(section, merged[section.topic_key]))
+    topic_cards = "\n".join(
+        "\n".join(render_topic_section(section, merged[section.topic_key]))
+        for section in sections
+    )
 
-    trend_section = """
-<div style="max-width:820px;margin-top:10px;margin-bottom:10px">
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-    <span style="font-size:20px">🔮</span>
-    <span style="font-size:17px;font-weight:bold;color:#1e293b">当前整体趋势</span>
-  </div>
-"""
-    trend_content = "\n".join(_build_trend_summary(sections, merged))
-    trend_section += trend_content + "\n</div>"
+    trend_section = "\n".join(_build_trend_summary(sections, merged))
 
     lines = [
         "",
+        '<div class="monitor-page">',
         overview_card,
-        "",
         topic_cards,
-        "",
         trend_section,
+        "</div>",
         "",
     ]
 
