@@ -86,7 +86,67 @@ def _is_similar(a, b, threshold: float = 0.75) -> bool:
     return fa == fb
 
 
+def _item_fingerprint(item) -> str:
+    """更严格的内容指纹：合并 summary + identifier 前 200 字符，去重更精准。"""
+    raw = clean_text(item.summary or item.why_relevant or item.byline or item.identifier or "")
+    return raw.lower().strip()[:200]
+
+
+@dataclass
+class MergedItem:
+    """一条渲染条目，可能对应多条原始 item（相似内容合并）。"""
+    topic_key: str
+    primary_item: object          # 热度最高的原始 item
+    summary_zh: str               # 统一中文摘要
+    linked_items: list[object]   # 所有相似条目（含 primary）
+    score: int                    # 最高热度
+
+
+def _merge_similar_items(selected: dict[str, list]) -> dict[str, list[MergedItem]]:
+    """
+    将相似内容合并为一条 MergedItem，多个链接叠在一起展示。
+    合并逻辑：同 topic 内，指纹相同或正文前 200 字符相同的条目视为同事件。
+    """
+    from collections import defaultdict
+
+    merged: dict[str, list[MergedItem]] = {tk: [] for tk in selected}
+
+    for topic_key, items in selected.items():
+        # 按指纹分组
+        groups: dict[str, list] = defaultdict(list)
+        for item in items:
+            fp = _item_fingerprint(item)
+            if fp:
+                groups[fp].append(item)
+
+        for fp, group in groups.items():
+            if not group:
+                continue
+            # 该组内按热度排序，取最高为 primary
+            group.sort(key=lambda i: combined_heat_score(i, topic_key), reverse=True)
+            primary = group[0]
+            score = combined_heat_score(primary, topic_key)
+            merged_item = MergedItem(
+                topic_key=topic_key,
+                primary_item=primary,
+                summary_zh="",
+                linked_items=group,
+                score=score,
+            )
+            merged[topic_key].append(merged_item)
+
+    # 每组内再按热度排序
+    for topic_key in merged:
+        merged[topic_key].sort(key=lambda m: m.score, reverse=True)
+
+    return merged
+
+
 def select_global_items(sections: list[TopicSection], max_items: int = 40) -> dict[str, list]:
+    """
+    收集所有候选按热度排序选入，去重留到 _merge_similar_items 统一处理。
+    每 topic 最多 15 条，总上限 40 条。
+    """
     ranked = {
         section.topic_key: sorted(
             section.curated_items,
@@ -97,15 +157,8 @@ def select_global_items(sections: list[TopicSection], max_items: int = 40) -> di
     }
 
     selected: dict[str, list] = {section.topic_key: [] for section in sections}
+    max_per_topic = 15
 
-    # ---- 第一轮：每个主题各选 1 条最高的，且与已选不重复 ----
-    for section in sections:
-        for item in ranked[section.topic_key]:
-            if len(selected[section.topic_key]) >= 1:
-                break
-            selected[section.topic_key].append(item)
-
-    # ---- 第二轮：按热度排序选满到 max_items，去重发生在选之前 ----
     all_candidates: list[tuple[int, str, object]] = []
     for section in sections:
         for item in ranked[section.topic_key]:
@@ -113,15 +166,11 @@ def select_global_items(sections: list[TopicSection], max_items: int = 40) -> di
 
     all_candidates.sort(key=lambda entry: entry[0], reverse=True)
 
-    chosen_count = sum(len(v) for v in selected.values())
-
+    chosen_count = 0
     for _heat, topic_key, item in all_candidates:
         if chosen_count >= max_items:
             break
-        if len(selected[topic_key]) >= 10:
-            continue
-        # 内容去重：检查是否与当前 topic 已选条目高度相似
-        if any(_is_similar(item, sel) for sel in selected[topic_key]):
+        if len(selected[topic_key]) >= max_per_topic:
             continue
         selected[topic_key].append(item)
         chosen_count += 1
@@ -413,42 +462,58 @@ def _engagement_html(item) -> str:
     return ""
 
 
-def _item_card(index: int, item, summary_zh: str, topic_key: str) -> str:
-    score = combined_heat_score(item, topic_key)
+def _merged_item_card(index: int, m: MergedItem, section: TopicSection) -> str:
+    """渲染一条 MergedItem（多条目合并），含多条链接。"""
+    topic_key = m.topic_key
+    score = m.score
     heat = _heat_html(score)
-    source = _source_html(item.source)
-    eng = _engagement_html(item)
-    date_str = f'<span style="color:#9ca3af;font-size:12px">{item.date or "未知日期"}</span>'
-    summary_escaped = markdown_safe_text(summary_zh)
+    primary = m.primary_item
 
-    link_btn = ""
-    if item.url:
-        short_url = item.url[:60] + "..." if len(item.url) > 60 else item.url
-        link_btn = f'<a href="{item.url}" target="_blank" style="display:inline-block;margin-top:8px;padding:4px 14px;background:#1d9bf0;color:#fff;border-radius:8px;font-size:12px;text-decoration:none;font-weight:600">🔗 打开原文</a>'
+    # 来源 + 日期（用 primary 的）
+    source = _source_html(primary.source)
+    date_str = f'<span style="color:#9ca3af;font-size:12px">{primary.date or "未知日期"}</span>'
 
-    # Row background alternating
+    # 互动量（取 engagement 最多的那条）
+    best_eng = max((item.engagement for item in m.linked_items), key=lambda e: int(e.split()[0]) if e and e.split()[0].isdigit() else 0, default="")
+    eng_html = f'<span style="color:#9ca3af;font-size:12px;margin-left:6px">{best_eng}</span>' if best_eng else ""
+
+    # 链接按钮：多条时垂直堆叠
+    if len(m.linked_items) == 1:
+        link_btns = f'<a href="{primary.url}" target="_blank" style="display:inline-block;margin-top:8px;padding:5px 14px;background:#1d9bf0;color:#fff;border-radius:8px;font-size:12px;text-decoration:none;font-weight:600">🔗 打开原文</a>'
+    else:
+        link_btns = "<div style=\"margin-top:8px;display:flex;flex-wrap:wrap;gap:6px\">"
+        for li, item in enumerate(m.linked_items, 1):
+            if item.url:
+                label = f"🔗 链接{len(m.linked_items)>2 and chr(0x2460+li-1) or ''} · {item.source.capitalize()}"
+                link_btns += f'<a href="{item.url}" target="_blank" style="display:inline-block;padding:4px 10px;background:#1d9bf0;color:#fff;border-radius:8px;font-size:11px;text-decoration:none;font-weight:600">{label}</a>'
+        link_btns += "</div>"
+
     row_bg = "#f8fafc" if index % 2 == 0 else "#ffffff"
+    border_colors = ["#6366f1", "#f59e0b", "#10b981", "#8b5cf6"]
+    border_color = border_colors[index % len(border_colors)]
+    summary_escaped = markdown_safe_text(m.summary_zh) if m.summary_zh else markdown_safe_text(fallback_summary_zh(topic_key, primary))
 
     return f"""
-<div style="background:{row_bg};border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:4px solid #{score//4:02x}{score//6:02x}{min(score//3,99):02x};box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+<div style="background:{row_bg};border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:4px solid {border_color};box-shadow:0 1px 3px rgba(0,0,0,0.06)">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
     <span style="background:#1e293b;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0">{index}</span>
     {heat}
     <span style="color:#6b7280;font-size:12px">热度: {score}</span>
-    {eng}
+    {eng_html}
     {source}
     {date_str}
+    <span style="margin-left:auto;font-size:12px;color:#94a3b8">{len(m.linked_items)} 条相关</span>
   </div>
-  <div style="font-size:15px;color:#1e293b;line-height:1.65;margin-bottom:8px">{summary_escaped}</div>
-  {link_btn}
+  <div style="font-size:15px;color:#1e293b;line-height:1.65;margin-bottom:10px">{summary_escaped}</div>
+  {link_btns}
 </div>"""
 
 
-def render_topic_section(section: TopicSection, chosen_items: list) -> list[str]:
+def render_topic_section(section: TopicSection, merged_items: list[MergedItem]) -> list[str]:
     colors = _topic_colors()
     c = colors.get(section.topic_key, colors["claude-code"])
 
-    if not chosen_items:
+    if not merged_items:
         return [
             f'<div style="background:#f1f5f9;border-radius:12px;padding:20px;text-align:center;color:#64748b">'
             f'{c["icon"]} {c["label"]} · 本轮暂无高质量条目</div>'
@@ -460,6 +525,7 @@ def render_topic_section(section: TopicSection, chosen_items: list) -> list[str]
         clean_b = markdown_safe_text(b.lstrip("- ").rstrip("。").strip())
         bullet_html += f'<li style="margin-bottom:4px">{clean_b}</li>'
 
+    total_raw = sum(len(m.linked_items) for m in merged_items)
     header = f"""
 <div style="background:{c['header_bg']};border-radius:12px 12px 0 0;padding:14px 20px;display:flex;align-items:center;gap:10px">
   <span style="font-size:22px">{c['icon']}</span>
@@ -468,7 +534,7 @@ def render_topic_section(section: TopicSection, chosen_items: list) -> list[str]
     <div style="color:rgba(255,255,255,0.8);font-size:12px">{section.source_summary_text}</div>
   </div>
   <div style="margin-left:auto;text-align:right">
-    <div style="background:rgba(255,255,255,0.25);border-radius:8px;padding:4px 10px;color:#fff;font-size:13px;font-weight:bold">{len(chosen_items)} 条</div>
+    <div style="background:rgba(255,255,255,0.25);border-radius:8px;padding:4px 10px;color:#fff;font-size:13px;font-weight:bold">{len(merged_items)} 条精品 · {total_raw} 条原始</div>
   </div>
 </div>
 <div style="background:#f8fafc;border-radius:0 0 12px 12px;padding:14px 16px;margin-bottom:20px;border:1px solid #e2e8f0;border-top:none">
@@ -476,9 +542,8 @@ def render_topic_section(section: TopicSection, chosen_items: list) -> list[str]
 </div>"""
 
     items_html = ""
-    for idx, item in enumerate(chosen_items, start=1):
-        s = section.localized_summaries.get(idx) or fallback_summary_zh(section.topic_key, item)
-        items_html += _item_card(idx, item, s, section.topic_key)
+    for idx, m in enumerate(merged_items, start=1):
+        items_html += _merged_item_card(idx, m, section)
 
     return [f'<div style="max-width:820px;margin-bottom:30px">{header}{items_html}</div>\n']
 
@@ -506,25 +571,25 @@ def build_sections(payloads: list[TopicPayload]) -> list[TopicSection]:
     return sections
 
 
-def _build_trend_summary(sections: list, selected: dict[str, list]) -> list[str]:
-    """生成视觉美观、各主题并排的趋势总结。"""
+def _build_trend_summary(sections: list, merged: dict[str, list[MergedItem]]) -> list[str]:
+    """生成视觉美观、各主题并排的趋势总结（基于 merged items）。"""
     topic_stats = {}
     for section in sections:
-        items = selected[section.topic_key]
+        items = merged.get(section.topic_key, [])
         if not items:
             continue
-        scores = [combined_heat_score(item, section.topic_key) for item in items]
+        scores = [m.score for m in items]
         max_s = max(scores)
         avg_s = sum(scores) // len(scores)
         top_source = max(
-            set(item.source for item in items),
-            key=lambda s: sum(1 for item in items if item.source == s)
+            set(item.source for m in items for item in m.linked_items),
+            key=lambda s: sum(1 for m in items for item in m.linked_items if item.source == s)
         )
-        # top summary
-        top_item = max(items, key=lambda i: combined_heat_score(i, section.topic_key))
-        summary = fallback_summary_zh(section.topic_key, top_item)
+        top_m = items[0]  # 已按热度排序
+        summary = top_m.summary_zh or fallback_summary_zh(section.topic_key, top_m.primary_item)
         topic_stats[section.topic_key] = {
             "count": len(items),
+            "raw_count": sum(len(m.linked_items) for m in items),
             "max": max_s,
             "avg": avg_s,
             "top_source": SOURCE_LABELS.get(top_source, top_source),
@@ -553,7 +618,7 @@ def _build_trend_summary(sections: list, selected: dict[str, list]) -> list[str]
     <span style="font-size:15px;font-weight:bold;color:#1e293b">{c['label']}</span>
   </div>
   <div style="font-size:28px;font-weight:bold;color:{c['border']};margin-bottom:4px">{stats['max']}</div>
-  <div style="font-size:13px;color:#64748b;margin-bottom:10px">{bar} 均值 {stats['avg']} · {stats['count']} 条</div>
+  <div style="font-size:13px;color:#64748b;margin-bottom:10px">{bar} 均值 {stats['avg']} · {stats['count']} 条精品（{stats['raw_count']} 条原始）</div>
   <div style="font-size:12px;color:#94a3b8;margin-bottom:8px">主要来源：{stats['top_source']}</div>
   <div style="font-size:13px;color:#475569;line-height:1.6">{stats['top_summary']}</div>
 </div>""")
@@ -565,6 +630,7 @@ def _build_trend_summary(sections: list, selected: dict[str, list]) -> list[str]
   <div style="font-weight:bold;margin-bottom:6px;font-size:14px">💡 阅读建议</div>
   优先查看 🔥 <b>爆热</b> 条目，信息密度最高；博客 / 黑客新闻内容通常比推文更深入；
   若某主题本轮空白，并不代表无讨论，往往是数据源未抓取到够强的信号。
+  <b>多条相似内容已合并展示</b>，每条精品条目底部列出了所有相关链接。
 </div>"""
 
     return [cards_html + "\n" + tip]
@@ -584,17 +650,43 @@ def render_page(
     selected = select_global_items(sections)
     for section in sections:
         section.localized_summaries = localize_item_summaries(section.title, selected[section.topic_key])
-    total_items = sum(len(items) for items in selected.values())
+
+    # ---- 合并相似条目 ----
+    merged = _merge_similar_items(selected)
+    # 用 AI 摘要填充 merged.summary_zh
+    for topic_key, items_list in selected.items():
+        section = next((s for s in sections if s.topic_key == topic_key), None)
+        if not section:
+            continue
+        for mi in merged[topic_key]:
+            # 找 primary_item 在 selected 列表中的位置（用于取 localized_summaries）
+            try:
+                idx = items_list.index(mi.primary_item) + 1
+            except ValueError:
+                idx = 1
+            ai_summary = section.localized_summaries.get(idx)
+            if ai_summary:
+                mi.summary_zh = ai_summary
+
+    total_merged = sum(len(v) for v in merged.values())
+    total_raw = sum(len(items) for items in selected.values())
     slot_label = "早间" if slot == "morning" else "晚间"
     slot_icon = "🌅" if slot == "morning" else "🌙"
 
-    blog_hits = sum(1 for section in sections for item in selected[section.topic_key] if item.source == "web")
-    hn_hits = sum(1 for section in sections for item in selected[section.topic_key] if item.source == "hn")
-    x_hits = sum(1 for section in sections for item in selected[section.topic_key] if item.source == "x")
-    youtube_hits = sum(1 for section in sections for item in selected[section.topic_key] if item.source == "youtube")
+    blog_hits = sum(
+        1 for topic_items in selected.values() for item in topic_items if item.source == "web"
+    )
+    hn_hits = sum(
+        1 for topic_items in selected.values() for item in topic_items if item.source == "hn"
+    )
+    x_hits = sum(
+        1 for topic_items in selected.values() for item in topic_items if item.source == "x"
+    )
+    youtube_hits = sum(
+        1 for topic_items in selected.values() for item in topic_items if item.source == "youtube"
+    )
 
     try:
-        # 格式: "2026-04-01 10:00:00 +0800" -> 手动解析
         import re
         m_start = re.match(r"(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})", window_start)
         m_end = re.match(r"(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})", window_end)
@@ -608,9 +700,7 @@ def render_page(
     except Exception:
         window_date_str = window_start.split(" ")[0]
         window_hours = "未知"
-        window_hours = "未知"
 
-    # ---- Hero 总览卡 ----
     overview_card = f"""
 <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:16px;padding:24px 28px;margin-bottom:28px;box-shadow:0 4px 20px rgba(0,0,0,0.15)">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
@@ -621,8 +711,8 @@ def render_page(
     </div>
     <div style="display:flex;gap:16px;flex-wrap:wrap">
       <div style="text-align:center">
-        <div style="font-size:32px;font-weight:bold;color:#38bdf8">{total_items}</div>
-        <div style="font-size:12px;color:#94a3b8">收录条数</div>
+        <div style="font-size:32px;font-weight:bold;color:#38bdf8">{total_merged}</div>
+        <div style="font-size:12px;color:#94a3b8">精品条数</div>
       </div>
       <div style="width:1px;background:#334155;margin:4px 0"></div>
       <div style="text-align:center">
@@ -645,15 +735,14 @@ def render_page(
   </div>
   <div style="margin-top:14px;padding-top:14px;border-top:1px solid #334155;display:flex;gap:20px;flex-wrap:wrap">
     <div style="font-size:12px;color:#94a3b8">📡 数据来源：<span style="color:#e2e8f0">{search_sources or '未记录'}</span></div>
+    <div style="font-size:12px;color:#94a3b8">🔍 原始候选：{total_raw} 条 → 合并去重后 {total_merged} 条精品</div>
   </div>
 </div>"""
 
-    # ---- 各主题卡片 ----
     topic_cards = ""
     for section in sections:
-        topic_cards += "\n".join(render_topic_section(section, selected[section.topic_key]))
+        topic_cards += "\n".join(render_topic_section(section, merged[section.topic_key]))
 
-    # ---- 趋势区 ----
     trend_section = """
 <div style="max-width:820px;margin-top:10px;margin-bottom:10px">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
@@ -661,7 +750,7 @@ def render_page(
     <span style="font-size:17px;font-weight:bold;color:#1e293b">当前整体趋势</span>
   </div>
 """
-    trend_content = "\n".join(_build_trend_summary(sections, selected))
+    trend_content = "\n".join(_build_trend_summary(sections, merged))
     trend_section += trend_content + "\n</div>"
 
     lines = [

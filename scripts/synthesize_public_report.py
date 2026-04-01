@@ -489,9 +489,7 @@ def pick_curated_items(report: ParsedCompactReport, topic_key: str) -> tuple[lis
 
     for source, items in report.items_by_source.items():
         for item in items:
-            if not item_within_window(item, report):
-                stats["filtered_weak"] += 1
-                continue
+            # 时间窗口过滤已移除：保留所有时间范围内的条目以扩大候选池
             topic_score, positive_hits, noise_hits = score_item_for_topic(item, topic_key)
             overall = item.score + topic_score * 8 + SOURCE_PRIORITY.get(source, 0)
             if noise_hits:
@@ -508,11 +506,11 @@ def pick_curated_items(report: ParsedCompactReport, topic_key: str) -> tuple[lis
     per_source_kept: dict[str, int] = {}
 
     for _overall, item in candidates:
-        if per_source_kept.get(item.source, 0) >= 6:
+        if per_source_kept.get(item.source, 0) >= 20:
             continue
         selected.append(item)
         per_source_kept[item.source] = per_source_kept.get(item.source, 0) + 1
-        if len(selected) >= 15:
+        if len(selected) >= 40:
             break
 
     stats["kept"] = len(selected)
