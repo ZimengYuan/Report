@@ -378,6 +378,7 @@ def enrich_merged_items(section: TopicSection, merged_items: list[MergedItem], p
         if not summary:
             fallback_summary, is_irrelevant = fallback_summary_from_page(
                 section.title,
+                section.topic_key,
                 candidate["item"],
                 candidate.get("page_context"),
                 candidate.get("page_relevance", 0),

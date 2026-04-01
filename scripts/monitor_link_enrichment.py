@@ -17,6 +17,12 @@ from synthesize_public_report import TOPIC_RULES, clean_text, extract_domain
 FETCHABLE_SOURCES = {"web", "hn"}
 OPENAI_CHAT_MODELS = ["gpt-5-mini", "gpt-4.1-mini"]
 SUMMARY_SENTINEL_IRRELEVANT = "__IRRELEVANT__"
+TOPIC_LABELS = {
+    "claude-code": "Claude Code",
+    "codex": "Codex",
+    "large-models": "大模型",
+    "obsidian": "Obsidian",
+}
 
 
 @dataclass
@@ -218,23 +224,126 @@ def page_relevance_score(topic_key: str, context: PageContext) -> int:
     return score
 
 
-def fallback_summary_from_page(topic_title: str, item, context: PageContext | None, fetched_relevance: int) -> tuple[str, bool]:
+def fallback_summary_from_page(topic_title: str, topic_key: str, item, context: PageContext | None, fetched_relevance: int) -> tuple[str, bool]:
+    summary, is_irrelevant = heuristic_candidate_summary(
+        topic_title,
+        topic_key,
+        item,
+        context,
+        fetched_relevance,
+    )
+    return summary, is_irrelevant
+
+
+def _joined_candidate_text(item, context: PageContext | None) -> str:
+    parts = [
+        context.title if context else "",
+        context.description if context else "",
+        context.excerpt if context else "",
+        clean_text(getattr(item, "summary", "") or ""),
+        clean_text(getattr(item, "why_relevant", "") or ""),
+        clean_text(getattr(item, "byline", "") or ""),
+        clean_text(getattr(item, "identifier", "") or ""),
+    ]
+    return clean_text(" ".join(part for part in parts if part))
+
+
+def _extract_first_sentence(text: str, limit: int = 48) -> str:
+    text = clean_text(text)
+    if not text:
+        return ""
+    sentence = re.split(r"(?<=[。！？.!?])\s+", text)[0]
+    sentence = sentence.strip(" -|:;,.，。；：")
+    if len(sentence) > limit:
+        sentence = sentence[: limit - 1].rstrip(" ,;:") + "…"
+    return sentence
+
+
+def _quoted_title(title: str, limit: int = 32) -> str:
+    title = clean_text(title)
+    if not title:
+        return ""
+    if len(title) > limit:
+        title = title[: limit - 1].rstrip(" ,;:") + "…"
+    return f"《{title}》"
+
+
+def heuristic_candidate_summary(
+    topic_title: str,
+    topic_key: str,
+    item,
+    context: PageContext | None,
+    fetched_relevance: int,
+) -> tuple[str, bool]:
     if context and context.ok and item.source in FETCHABLE_SOURCES and fetched_relevance <= 0:
-        return "这是一条与当前主题关联度较低的网页结果，建议移除。", True
+        return "", True
+
+    haystack = _joined_candidate_text(item, context)
+    lowered = haystack.lower()
+    page_title = clean_text(context.title if context else "")
+    page_desc = clean_text(context.description if context else "")
+    best_sentence = _extract_first_sentence(page_desc or (context.excerpt if context else "") or clean_text(getattr(item, "summary", "") or ""))
+    topic_label = TOPIC_LABELS.get(topic_key, topic_title)
+
+    def has(*tokens: str) -> bool:
+        return any(token in lowered for token in tokens)
+
+    if topic_key == "claude-code":
+        if has("sourcemap", "source map", "source code leaked", "leaked source", "typescript source"):
+            return "文章围绕 Claude Code 源码暴露事件展开，重点在 sourcemap 导致源码被抓取后的安全风险。", False
+        if has("cursor", "copilot", "compare", "comparison", "vs "):
+            return "内容比较了 Claude Code 与其他 AI 编码工具的定位差异，重点在复杂任务、自主性和团队协作场景。", False
+        if has("plugin", "extension", "integration", "review", "terminal", "tmux", "workflow"):
+            return "文章聚焦 Claude Code 的终端工作流与插件整合，强调它如何进入真实开发、review 与协作链路。", False
+        if has("ollama", "local model", "self-hosted", "quota", "billing", "cost"):
+            return "讨论集中在 Claude Code 的本地接入、配额与成本控制，反映出一线使用中的工程现实问题。", False
+
+    if topic_key == "codex":
+        if has("figma", "notion", "gmail", "slack", "jira", "linear"):
+            return "文章讨论 Codex 与外部工具的连接能力，重点是把编码 agent 扩展到设计、协作和项目管理流程。", False
+        if has("mcp", "agents v2", "hooks", "codex cli", "cli", "plugin"):
+            return "内容聚焦 Codex CLI 与插件能力演进，说明它正从写码工具转向更完整的 agent 工作流平台。", False
+        if has("benchmark", "swe-bench", "evaluation", "compare", "cursor", "copilot", "claude"):
+            return "文章比较了 Codex 与其他 coding agent 的能力差异，重点在任务完成质量、稳定性和开发体验。", False
+        if has("automation", "agentic", "workflow", "end-to-end"):
+            return "讨论焦点是 Codex 如何承担端到端自动化任务，而不再局限于单点代码生成。", False
+
+    if topic_key == "large-models":
+        if has("reasoning", "chain-of-thought", "thinking budget", "cot"):
+            return "内容围绕大模型推理能力展开，重点讨论长思维链、thinking budget 与成本延迟之间的权衡。", False
+        if has("whisper", "transcribe", "speech", "voice", "audio"):
+            return "文章聚焦语音方向的大模型更新，核心看点是转写准确率、语音理解能力和开源替代方案。", False
+        if has("openai", "anthropic", "gemini", "llama", "qwen", "deepseek", "mistral"):
+            return "内容关注主流大模型厂商的新版本与能力比较，重点在推理、多模态和产品化速度的差异。", False
+        if has("multimodal", "vision", "video", "image"):
+            return "文章讨论大模型的多模态进展，重点在图像、视频或音频理解能力的增强及其应用场景。", False
+        if has("pricing", "price", "cost", "cheaper", "降价"):
+            return "内容聚焦大模型价格与成本变化，反映出 API 性价比竞争正在影响应用层的选型。", False
+
+    if topic_key == "obsidian":
+        if has("sync", "vault", "icloud", "onedrive", "git sync"):
+            return "文章围绕 Obsidian 的 vault 同步与跨端管理展开，重点比较不同同步方案的稳定性和维护成本。", False
+        if has("plugin", "community plugin", "dataview", "templater", "publish"):
+            return "内容聚焦 Obsidian 插件生态或发布工作流，重点在如何把知识库进一步自动化和结构化。", False
+        if has("zettelkasten", "atomic note", "digital garden", "public garden", "双向链接"):
+            return "文章讨论 Obsidian 的知识组织方法，重点在卡片盒、双向链接与数字花园式的内容沉淀。", False
+        if has("ai", "rag", "retrieval", "assistant", "second brain"):
+            return "内容关注 Obsidian 与 AI 检索或写作能力的结合，重点在知识库如何成为更可调用的工作台。", False
 
     if context and context.ok:
-        detail = clean_text(context.description or context.excerpt or context.title)
-        detail = re.split(r"(?<=[。！？.!?])\s+", detail)[0]
-        detail = detail[:58].rstrip(" ,;:")
-        if detail:
-            if re.search(r"[\u4e00-\u9fff]", detail):
-                return detail, False
-            title = clean_text(context.title)[:40]
-            if title:
-                return f"网页主要讨论：{title}", False
-            return f"网页主要内容：{detail[:38]}", False
+        if re.search(r"[\u4e00-\u9fff]", best_sentence):
+            return best_sentence, False
+        if page_title:
+            return f"{topic_label} 相关网页 { _quoted_title(page_title) }，主要围绕实践经验、产品更新或使用方法展开。", False
 
-    return "", False
+    raw_hint = clean_text(" ".join(filter(None, [getattr(item, "summary", ""), getattr(item, "why_relevant", ""), getattr(item, "byline", ""), getattr(item, "identifier", "")])))
+    raw_sentence = _extract_first_sentence(raw_hint)
+    if raw_sentence:
+        if re.search(r"[\u4e00-\u9fff]", raw_sentence):
+            return raw_sentence, False
+        return f"这条内容与 {topic_label} 相关，主要围绕一线实践、工具对比或产品动态展开。", False
+
+    return f"这条内容与 {topic_label} 相关，建议点开原文查看具体细节。", False
 
 
 def summarize_candidates(topic_title: str, topic_key: str, candidates: list[dict]) -> dict[int, dict]:
@@ -244,7 +353,21 @@ def summarize_candidates(topic_title: str, topic_key: str, candidates: list[dict
     env = load_runtime_env()
     api_key = env.get("OPENAI_API_KEY")
     if not api_key:
-        return {}
+        localized: dict[int, dict] = {}
+        for candidate in candidates:
+            summary, is_irrelevant = heuristic_candidate_summary(
+                topic_title,
+                topic_key,
+                candidate["item"],
+                candidate.get("page_context"),
+                candidate.get("page_relevance", 0),
+            )
+            if summary or is_irrelevant:
+                localized[candidate["index"]] = {
+                    "summary_zh": SUMMARY_SENTINEL_IRRELEVANT if is_irrelevant else summary,
+                    "is_irrelevant": is_irrelevant,
+                }
+        return localized
 
     payload_items = []
     for candidate in candidates:
@@ -322,4 +445,18 @@ def summarize_candidates(topic_title: str, topic_key: str, candidates: list[dict
         if localized:
             return localized
 
-    return {}
+    localized: dict[int, dict] = {}
+    for candidate in candidates:
+        summary, is_irrelevant = heuristic_candidate_summary(
+            topic_title,
+            topic_key,
+            candidate["item"],
+            candidate.get("page_context"),
+            candidate.get("page_relevance", 0),
+        )
+        if summary or is_irrelevant:
+            localized[candidate["index"]] = {
+                "summary_zh": SUMMARY_SENTINEL_IRRELEVANT if is_irrelevant else summary,
+                "is_irrelevant": is_irrelevant,
+            }
+    return localized
