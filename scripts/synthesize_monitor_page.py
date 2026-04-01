@@ -353,94 +353,134 @@ def fallback_summary_zh(topic_key: str, item) -> str:
     return "这条内容涉及相关主题的最新动态，建议点开原文确认具体细节。"
 
 
-def _heat_badge(item, topic_key: str) -> str:
-    """生成彩色热度标签 HTML。"""
-    score = combined_heat_score(item, topic_key)
+def _topic_colors() -> dict[str, dict]:
+    """各主题的配色方案：左侧边、标题背景、图标。"""
+    return {
+        "claude-code": {
+            "border": "#6366f1",
+            "header_bg": "linear-gradient(135deg,#6366f1,#818cf8)",
+            "icon": "🤖",
+            "label": "Claude Code",
+        },
+        "codex": {
+            "border": "#f59e0b",
+            "header_bg": "linear-gradient(135deg,#f59e0b,#fbbf24)",
+            "icon": "⚡",
+            "label": "Codex",
+        },
+        "large-models": {
+            "border": "#10b981",
+            "header_bg": "linear-gradient(135deg,#10b981,#34d399)",
+            "icon": "🧠",
+            "label": "大模型",
+        },
+        "obsidian": {
+            "border": "#8b5cf6",
+            "header_bg": "linear-gradient(135deg,#8b5cf6,#a78bfa)",
+            "icon": "📎",
+            "label": "Obsidian",
+        },
+    }
+
+
+def _heat_html(score: int) -> str:
     if score >= 130:
-        badge = '<span style="background:#e63946;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">🔥 爆热</span>'
+        return '<span style="background:#ef4444;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">🔥 爆热</span>'
     elif score >= 90:
-        badge = '<span style="background:#f4845f;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">🔶 高热</span>'
+        return '<span style="background:#f97316;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">🔶 高热</span>'
     elif score >= 60:
-        badge = '<span style="background:#457b9d;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">📊 中热</span>'
+        return '<span style="background:#3b82f6;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">📊 中热</span>'
     else:
-        badge = '<span style="background:#8d99ae;color:#fff;padding:1px 8px;border-radius:10px;font-size:12px">📉 平热</span>'
-    return f'{badge} <span style="color:#666;font-size:12px">({score})</span>'
+        return '<span style="background:#6b7280;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">📉 平热</span>'
 
 
-def _source_badge(source: str) -> str:
-    """生成来源标签。"""
+def _source_html(source: str) -> str:
     colors = {
-        "x": ("#1da1f2", "#fff"),
+        "x": ("#1d9bf0", "#fff"),
         "youtube": ("#ff0000", "#fff"),
         "hn": ("#ff6600", "#fff"),
-        "web": ("#2a9d8f", "#fff"),
+        "web": ("#0d9488", "#fff"),
         "reddit": ("#ff4500", "#fff"),
     }
-    bg, fg = colors.get(source, ("#6c757d", "#fff"))
+    bg, fg = colors.get(source, ("#6b7280", "#fff"))
     label = SOURCE_LABELS.get(source, source)
-    return f'<span style="background:{bg};color:{fg};padding:1px 7px;border-radius:8px;font-size:11px">{label}</span>'
+    return f'<span style="background:{bg};color:{fg};padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600">{label}</span>'
 
 
-def _engagement_str(item) -> str:
-    """返回互动量字符串（如有）。"""
+def _engagement_html(item) -> str:
     if item.engagement:
-        return f' · {item.engagement}'
+        return f'<span style="color:#9ca3af;font-size:12px;margin-left:6px">{item.engagement}</span>'
     return ""
 
 
+def _item_card(index: int, item, summary_zh: str, topic_key: str) -> str:
+    score = combined_heat_score(item, topic_key)
+    heat = _heat_html(score)
+    source = _source_html(item.source)
+    eng = _engagement_html(item)
+    date_str = f'<span style="color:#9ca3af;font-size:12px">{item.date or "未知日期"}</span>'
+    summary_escaped = markdown_safe_text(summary_zh)
+
+    link_btn = ""
+    if item.url:
+        short_url = item.url[:60] + "..." if len(item.url) > 60 else item.url
+        link_btn = f'<a href="{item.url}" target="_blank" style="display:inline-block;margin-top:8px;padding:4px 14px;background:#1d9bf0;color:#fff;border-radius:8px;font-size:12px;text-decoration:none;font-weight:600">🔗 打开原文</a>'
+
+    # Row background alternating
+    row_bg = "#f8fafc" if index % 2 == 0 else "#ffffff"
+
+    return f"""
+<div style="background:{row_bg};border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:4px solid #{score//4:02x}{score//6:02x}{min(score//3,99):02x};box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+    <span style="background:#1e293b;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0">{index}</span>
+    {heat}
+    <span style="color:#6b7280;font-size:12px">热度: {score}</span>
+    {eng}
+    {source}
+    {date_str}
+  </div>
+  <div style="font-size:15px;color:#1e293b;line-height:1.65;margin-bottom:8px">{summary_escaped}</div>
+  {link_btn}
+</div>"""
+
+
 def render_topic_section(section: TopicSection, chosen_items: list) -> list[str]:
+    colors = _topic_colors()
+    c = colors.get(section.topic_key, colors["claude-code"])
+
     if not chosen_items:
-        return [f"## {section.title}", "", "本轮暂无高质量条目。", ""]
+        return [
+            f'<div style="background:#f1f5f9;border-radius:12px;padding:20px;text-align:center;color:#64748b">'
+            f'{c["icon"]} {c["label"]} · 本轮暂无高质量条目</div>'
+        ]
 
-    lines = []
-    # 主题标题行
-    topic_icons = {
-        "claude-code": "🤖",
-        "codex": "⚡",
-        "large-models": "🧠",
-        "obsidian": "📎",
-    }
-    icon = topic_icons.get(section.topic_key, "📌")
-    lines.append(f'{icon} **{section.title}**')
-    lines.append("")
+    bullets = render_section_bullets(section)
+    bullet_html = ""
+    for b in bullets:
+        clean_b = markdown_safe_text(b.lstrip("- ").rstrip("。").strip())
+        bullet_html += f'<li style="margin-bottom:4px">{clean_b}</li>'
 
-    # 概要行
-    lines.extend(render_section_bullets(section))
+    header = f"""
+<div style="background:{c['header_bg']};border-radius:12px 12px 0 0;padding:14px 20px;display:flex;align-items:center;gap:10px">
+  <span style="font-size:22px">{c['icon']}</span>
+  <div>
+    <div style="color:#fff;font-size:17px;font-weight:bold">{c['label']}</div>
+    <div style="color:rgba(255,255,255,0.8);font-size:12px">{section.source_summary_text}</div>
+  </div>
+  <div style="margin-left:auto;text-align:right">
+    <div style="background:rgba(255,255,255,0.25);border-radius:8px;padding:4px 10px;color:#fff;font-size:13px;font-weight:bold">{len(chosen_items)} 条</div>
+  </div>
+</div>
+<div style="background:#f8fafc;border-radius:0 0 12px 12px;padding:14px 16px;margin-bottom:20px;border:1px solid #e2e8f0;border-top:none">
+  <ul style="margin:0;padding-left:18px;color:#475569;font-size:13px;line-height:1.7">{bullet_html}</ul>
+</div>"""
 
-    # 来源 + 质量行
-    meta_parts = [f"来源：{section.source_summary_text}"]
-    if section.quality_line:
-        meta_parts.append(f"覆盖：{section.quality_line}")
-    if section.error_summary_text:
-        meta_parts.append(f"⚠ {section.error_summary_text}")
-    lines.append(" | ".join(meta_parts))
-    lines.append("")
+    items_html = ""
+    for idx, item in enumerate(chosen_items, start=1):
+        s = section.localized_summaries.get(idx) or fallback_summary_zh(section.topic_key, item)
+        items_html += _item_card(idx, item, s, section.topic_key)
 
-    # 列标题行
-    lines.append("| # | 热度 | 来源 | 摘要 |")
-    lines.append("|---|------|------|------|")
-
-    for index, item in enumerate(chosen_items, start=1):
-        source_label = SOURCE_LABELS.get(item.source, item.source)
-        summary_zh = section.localized_summaries.get(index) or fallback_summary_zh(section.topic_key, item)
-        safe_summary = markdown_safe_text(summary_zh)
-        heat_str = _heat_badge(item, section.topic_key)
-        source_badge = _source_badge(item.source)
-        date_str = item.date or ""
-        eng_str = _engagement_str(item)
-
-        # URL link text
-        if item.url:
-            link_text = f'[🔗]({item.url})'
-        else:
-            link_text = ""
-
-        lines.append(
-            f"| **{index}** | {heat_str}{eng_str} | {source_badge} {date_str} | {safe_summary} {link_text} |"
-        )
-
-    lines.append("")
-    return lines
+    return [f'<div style="max-width:820px;margin-bottom:30px">{header}{items_html}</div>\n']
 
 
 def build_sections(payloads: list[TopicPayload]) -> list[TopicSection]:
@@ -467,10 +507,7 @@ def build_sections(payloads: list[TopicPayload]) -> list[TopicSection]:
 
 
 def _build_trend_summary(sections: list, selected: dict[str, list]) -> list[str]:
-    """生成更有深度的整体趋势总结。"""
-    lines = []
-
-    # 统计各主题的热度分布
+    """生成视觉美观、各主题并排的趋势总结。"""
     topic_stats = {}
     for section in sections:
         items = selected[section.topic_key]
@@ -483,52 +520,54 @@ def _build_trend_summary(sections: list, selected: dict[str, list]) -> list[str]
             set(item.source for item in items),
             key=lambda s: sum(1 for item in items if item.source == s)
         )
+        # top summary
+        top_item = max(items, key=lambda i: combined_heat_score(i, section.topic_key))
+        summary = fallback_summary_zh(section.topic_key, top_item)
         topic_stats[section.topic_key] = {
             "count": len(items),
             "max": max_s,
             "avg": avg_s,
             "top_source": SOURCE_LABELS.get(top_source, top_source),
+            "section": section,
+            "top_summary": markdown_safe_text(summary),
         }
 
     if not topic_stats:
         return [
-            "本轮暂无足够的可用数据进行趋势判断，建议等待下一轮数据积累后再做分析。"
+            '<div style="text-align:center;color:#9ca3af;padding:30px;font-size:15px">'
+            '本轮暂无足够的可用数据进行趋势判断，建议等待下一轮数据积累后再做分析。</div>'
         ]
 
-    # 生成具体趋势描述
-    lines.append("**📈 整体热度排序（按本轮最高热度）**")
+    colors = _topic_colors()
+    cards = []
     sorted_topics = sorted(topic_stats.items(), key=lambda x: x[1]["max"], reverse=True)
+
     for topic_key, stats in sorted_topics:
-        bar_len = min(stats["max"] // 10, 10)
+        c = colors.get(topic_key, colors["claude-code"])
+        bar_len = min(stats["max"] // 13, 10)
         bar = "▓" * bar_len + "░" * (10 - bar_len)
-        icon = {"claude-code": "🤖", "codex": "⚡", "large-models": "🧠", "obsidian": "📎"}.get(topic_key, "📌")
-        lines.append(
-            f"{icon} **{topic_key}**：{bar} {stats['max']}（均{stats['avg']}） · {stats['count']}条 · 主要来源：{stats['top_source']}"
-        )
+        cards.append(f"""
+<div style="flex:1;min-width:200px;background:#f8fafc;border-radius:12px;padding:16px;border-top:4px solid {c['border']};box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+    <span style="font-size:20px">{c['icon']}</span>
+    <span style="font-size:15px;font-weight:bold;color:#1e293b">{c['label']}</span>
+  </div>
+  <div style="font-size:28px;font-weight:bold;color:{c['border']};margin-bottom:4px">{stats['max']}</div>
+  <div style="font-size:13px;color:#64748b;margin-bottom:10px">{bar} 均值 {stats['avg']} · {stats['count']} 条</div>
+  <div style="font-size:12px;color:#94a3b8;margin-bottom:8px">主要来源：{stats['top_source']}</div>
+  <div style="font-size:13px;color:#475569;line-height:1.6">{stats['top_summary']}</div>
+</div>""")
 
-    lines.append("")
+    cards_html = f'<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:24px">{"".join(cards)}</div>'
 
-    # 生成各主题核心看点
-    lines.append("**🔍 各主题核心看点**")
-    for topic_key, stats in sorted_topics:
-        section = next((s for s in sections if s.topic_key == topic_key), None)
-        if not section:
-            continue
-        items = selected[topic_key]
-        if not items:
-            continue
-        # 取最高热那条的摘要
-        top_item = max(items, key=lambda i: combined_heat_score(i, section.topic_key))
-        summary = section.localized_summaries.get(1) or fallback_summary_zh(topic_key, top_item)
-        lines.append(f"- **{section.title}**：{markdown_safe_text(summary)}")
+    tip = """
+<div style="background:linear-gradient(135deg,#1e293b,#334155);border-radius:12px;padding:16px 20px;color:#e2e8f0;font-size:13px;line-height:1.8">
+  <div style="font-weight:bold;margin-bottom:6px;font-size:14px">💡 阅读建议</div>
+  优先查看 🔥 <b>爆热</b> 条目，信息密度最高；博客 / 黑客新闻内容通常比推文更深入；
+  若某主题本轮空白，并不代表无讨论，往往是数据源未抓取到够强的信号。
+</div>"""
 
-    lines.append("")
-    lines.append("---")
-    lines.append(
-        "💡 **阅读建议**：优先看热度 ≥🔥 的条目；博客/Hacker News 条目信息密度通常高于推文。"
-        "若某主题本轮空白，不代表无讨论，往往是数据源未抓取到够强的信号。"
-    )
-    return lines
+    return [cards_html + "\n" + tip]
 
 
 def render_page(
@@ -546,59 +585,94 @@ def render_page(
     for section in sections:
         section.localized_summaries = localize_item_summaries(section.title, selected[section.topic_key])
     total_items = sum(len(items) for items in selected.values())
-    active_titles = "、".join(section.title for section in sections)
     slot_label = "早间" if slot == "morning" else "晚间"
+    slot_icon = "🌅" if slot == "morning" else "🌙"
 
     blog_hits = sum(1 for section in sections for item in selected[section.topic_key] if item.source == "web")
     hn_hits = sum(1 for section in sections for item in selected[section.topic_key] if item.source == "hn")
     x_hits = sum(1 for section in sections for item in selected[section.topic_key] if item.source == "x")
     youtube_hits = sum(1 for section in sections for item in selected[section.topic_key] if item.source == "youtube")
 
-    # 计算窗口小时数
     try:
-        ws = window_start.split(" +")[0]
-        we = window_end.split(" +")[0]
-        ws_dt = datetime.fromisoformat(ws)
-        we_dt = datetime.fromisoformat(we)
-        window_hours = round((we_dt - ws_dt).total_seconds() / 3600, 1)
-        window_desc = f"约 {window_hours} 小时"
+        # 格式: "2026-04-01 10:00:00 +0800" -> 手动解析
+        import re
+        m_start = re.match(r"(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})", window_start)
+        m_end = re.match(r"(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})", window_end)
+        if m_start and m_end:
+            ws_dt = datetime.datetime.strptime(m_start.group(1) + " " + m_start.group(2), "%Y-%m-%d %H:%M:%S")
+            we_dt = datetime.datetime.strptime(m_end.group(1) + " " + m_end.group(2), "%Y-%m-%d %H:%M:%S")
+            window_hours = round((we_dt - ws_dt).total_seconds() / 3600, 1)
+            window_date_str = ws_dt.strftime("%m/%d %H:%M") + " – " + we_dt.strftime("%H:%M")
+        else:
+            raise ValueError("format mismatch")
     except Exception:
-        window_desc = window_start.split(" ")[0] + " 至今"
+        window_date_str = window_start.split(" ")[0]
+        window_hours = "未知"
+        window_hours = "未知"
+
+    # ---- Hero 总览卡 ----
+    overview_card = f"""
+<div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:16px;padding:24px 28px;margin-bottom:28px;box-shadow:0 4px 20px rgba(0,0,0,0.15)">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <div>
+      <div style="color:#e2e8f0;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">四主题监控简报</div>
+      <div style="color:#fff;font-size:22px;font-weight:bold">{slot_icon} {slot_label}版 · {report_date}</div>
+      <div style="color:#94a3b8;font-size:13px;margin-top:4px">🕐 {window_date_str} · 约 {window_hours}h</div>
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      <div style="text-align:center">
+        <div style="font-size:32px;font-weight:bold;color:#38bdf8">{total_items}</div>
+        <div style="font-size:12px;color:#94a3b8">收录条数</div>
+      </div>
+      <div style="width:1px;background:#334155;margin:4px 0"></div>
+      <div style="text-align:center">
+        <div style="font-size:32px;font-weight:bold;color:#1d9bf0">{x_hits}</div>
+        <div style="font-size:12px;color:#94a3b8">X</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:32px;font-weight:bold;color:#ff0000">{youtube_hits}</div>
+        <div style="font-size:12px;color:#94a3b8">YouTube</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:32px;font-weight:bold;color:#f97316">{hn_hits}</div>
+        <div style="font-size:12px;color:#94a3b8">HN</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:32px;font-weight:bold;color:#0d9488">{blog_hits}</div>
+        <div style="font-size:12px;color:#94a3b8">博客</div>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:14px;padding-top:14px;border-top:1px solid #334155;display:flex;gap:20px;flex-wrap:wrap">
+    <div style="font-size:12px;color:#94a3b8">📡 数据来源：<span style="color:#e2e8f0">{search_sources or '未记录'}</span></div>
+  </div>
+</div>"""
+
+    # ---- 各主题卡片 ----
+    topic_cards = ""
+    for section in sections:
+        topic_cards += "\n".join(render_topic_section(section, selected[section.topic_key]))
+
+    # ---- 趋势区 ----
+    trend_section = """
+<div style="max-width:820px;margin-top:10px;margin-bottom:10px">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <span style="font-size:20px">🔮</span>
+    <span style="font-size:17px;font-weight:bold;color:#1e293b">当前整体趋势</span>
+  </div>
+"""
+    trend_content = "\n".join(_build_trend_summary(sections, selected))
+    trend_section += trend_content + "\n</div>"
 
     lines = [
         "",
-        "═══════════════════════════════════════",
-        f"  🤖 四主题监控简报  ·  {slot_label}版",
-        f"  📅 {report_date}  ·  🕐 窗口 {window_desc}",
-        "═══════════════════════════════════════",
+        overview_card,
         "",
-        "### 📊 本轮总览",
+        topic_cards,
         "",
-        f"| 主题数 | 收录条数 | X | YouTube | HN | 博客 |",
-        f"|------|------|---|---|---|---|---|",
-        f"| 4 | **{total_items}** | {x_hits} | {youtube_hits} | {hn_hits} | {blog_hits} |",
-        "",
-        f"**数据来源**：{search_sources or '未记录'}",
-        f"**抓取窗口**：{window_start.split(' ')[0]} → {window_end.split(' ')[0]}",
-        "",
-        "---",
-        "",
-        "### 📋 分主题详情",
+        trend_section,
         "",
     ]
-
-    for section in sections:
-        lines.extend(render_topic_section(section, selected[section.topic_key]))
-
-    lines.extend(
-        [
-            "---",
-            "",
-            "### 🔮 当前整体趋势",
-            "",
-        ]
-    )
-    lines.extend(_build_trend_summary(sections, selected))
 
     return "\n".join(lines).rstrip() + "\n"
 
