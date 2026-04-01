@@ -12,6 +12,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from urllib import error, request
 
+from monitor_link_enrichment import (
+    fallback_summary_from_page,
+    fetch_page_context,
+    page_relevance_score,
+    should_fetch_url,
+    summarize_candidates,
+)
 from synthesize_public_report import (
     TOPIC_RULES,
     SOURCE_LABELS,
@@ -30,9 +37,9 @@ from synthesize_public_report import (
 
 TOPIC_ORDER = ["claude-code", "codex", "large-models", "obsidian"]
 OPENAI_CHAT_MODELS = ["gpt-5-mini", "gpt-4.1-mini"]
-TARGET_PAGE_ITEMS = 24
+TARGET_PAGE_ITEMS = 40
 BASE_ITEMS_PER_TOPIC = 3
-MAX_ITEMS_PER_TOPIC = 8
+MAX_ITEMS_PER_TOPIC = 10
 
 
 @dataclass
@@ -320,6 +327,70 @@ def localize_item_summaries(topic_title: str, items: list) -> dict[int, str]:
             continue
 
     return {}
+
+
+def enrich_merged_items(section: TopicSection, merged_items: list[MergedItem], page_cache: dict[str, object]) -> list[MergedItem]:
+    """对最终候选做正文抓取、相关性复核和中文摘要增强。"""
+    if not merged_items:
+        return []
+
+    candidates: list[dict] = []
+    prelim_items: list[MergedItem] = []
+
+    for merged_item in merged_items:
+        primary = merged_item.primary_item
+        page_context = None
+        page_relevance = 0
+
+        if primary.url and should_fetch_url(primary.source, primary.url):
+            page_context = page_cache.get(primary.url)
+            if page_context is None:
+                page_context = fetch_page_context(primary.url)
+                page_cache[primary.url] = page_context
+            if page_context and page_context.ok:
+                page_relevance = page_relevance_score(section.topic_key, page_context)
+
+        if primary.source in {"web", "hn"} and page_context and page_context.ok and page_relevance <= 0:
+            continue
+
+        prelim_items.append(merged_item)
+        candidates.append(
+            {
+                "index": len(prelim_items),
+                "item": primary,
+                "page_context": page_context,
+                "page_relevance": page_relevance,
+            }
+        )
+
+    if not prelim_items:
+        return []
+
+    localized = summarize_candidates(section.title, section.topic_key, candidates)
+    final_items: list[MergedItem] = []
+
+    for merged_item, candidate in zip(prelim_items, candidates):
+        result = localized.get(candidate["index"], {})
+        if result.get("is_irrelevant"):
+            continue
+
+        summary = result.get("summary_zh", "")
+        if not summary:
+            fallback_summary, is_irrelevant = fallback_summary_from_page(
+                section.title,
+                candidate["item"],
+                candidate.get("page_context"),
+                candidate.get("page_relevance", 0),
+            )
+            if is_irrelevant:
+                continue
+            summary = fallback_summary
+
+        if summary:
+            merged_item.summary_zh = summary
+        final_items.append(merged_item)
+
+    return final_items
 
 
 def render_section_bullets(section: TopicSection) -> list[str]:
@@ -734,25 +805,12 @@ def render_page(
         raise ValueError("No publishable sections available")
 
     selected = select_global_items(sections)
-    for section in sections:
-        section.localized_summaries = localize_item_summaries(section.title, selected[section.topic_key])
 
     # ---- 合并相似条目 ----
     merged = _merge_similar_items(selected)
-    # 用 AI 摘要填充 merged.summary_zh
-    for topic_key, items_list in selected.items():
-        section = next((s for s in sections if s.topic_key == topic_key), None)
-        if not section:
-            continue
-        for mi in merged[topic_key]:
-            # 找 primary_item 在 selected 列表中的位置（用于取 localized_summaries）
-            try:
-                idx = items_list.index(mi.primary_item) + 1
-            except ValueError:
-                idx = 1
-            ai_summary = section.localized_summaries.get(idx)
-            if ai_summary:
-                mi.summary_zh = ai_summary
+    page_cache: dict[str, object] = {}
+    for section in sections:
+        merged[section.topic_key] = enrich_merged_items(section, merged[section.topic_key], page_cache)
 
     total_merged = sum(len(v) for v in merged.values())
     total_raw = sum(len(items) for items in selected.values())

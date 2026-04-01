@@ -348,7 +348,7 @@ def markdown_safe_text(text: str) -> str:
 
 
 def parse_item_block(source: str, header_line: str, block_lines: list[str]) -> Item:
-    header_match = re.match(r"^\*\*(?P<identifier>[^*]+)\*\* \(score:(?P<score>\d+)\) (?P<rest>.+)$", header_line.strip())
+    header_match = re.match(r"^\*\*(?P<identifier>[^*]+)\*\* (?:\[WEB\]\s*)?\(score:(?P<score>\d+)\) (?P<rest>.+)$", header_line.strip())
     if not header_match:
         raise ValueError(f"Unrecognized item header: {header_line}")
 
@@ -360,6 +360,8 @@ def parse_item_block(source: str, header_line: str, block_lines: list[str]) -> I
     if engagement_match:
         engagement = engagement_match.group("eng").strip()
         rest = rest[: engagement_match.start()].strip()
+        if engagement.startswith("date:"):
+            engagement = ""
 
     date_match = re.search(r"\((?P<date>\d{4}-\d{2}-\d{2}|Unknown|date unknown)\)$", rest)
     if date_match:
