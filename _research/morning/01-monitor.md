@@ -4,11 +4,11 @@ title: "四主题监控简报"
 type: "morning"
 public_report: true
 date: 2026-04-01
-updated_at: "2026-04-01 14:15:50 +0800"
+updated_at: "2026-04-01 14:37:58 +0800"
 trigger_mode: "cron"
 trigger_schedule: "0 10,20 * * * Asia/Shanghai"
 window_start: "2026-03-31 20:00:00 +0800"
-window_end: "2026-04-01 14:15:50 +0800"
+window_end: "2026-04-01 14:37:58 +0800"
 search_sources: "x,youtube,hn"
 permalink: /research/morning/monitor/
 ---
@@ -21,7 +21,7 @@ permalink: /research/morning/monitor/
     <div>
       <p class="monitor-eyebrow">四主题监控简报</p>
       <h1 class="monitor-hero__title"><span>🌅</span><span>早间版 · 2026-04-01</span></h1>
-      <p class="monitor-hero__window">最近时段窗口：03/31 20:00 – 14:15 · 约 18.3 小时</p>
+      <p class="monitor-hero__window">最近时段窗口：03/31 20:00 – 14:37 · 约 18.6 小时</p>
     </div>
     <div class="monitor-hero__stats">
       <div class="monitor-stat"><span class="monitor-stat__value">12</span><span class="monitor-stat__label">精品条数</span></div>
@@ -64,17 +64,17 @@ permalink: /research/morning/monitor/
       <span class="monitor-heat monitor-heat--blast">🔥 爆热</span>
       <span class="monitor-source-badge monitor-source-badge--x">X</span>
     </div>
-    <div class="monitor-item-card__meta"><span>热度 148</span><span>2026-04-01</span><span>1 条相关</span></div>
+    <div class="monitor-item-card__meta"><span>热度 132</span><span>2026-04-01</span><span>1 条相关</span></div>
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">重点结论</p>
-    <p class="monitor-item-card__summary">Claude Code CLI 工具源码因 sourcemap 暴露问题被开源社区发现并传播，触发安全与隐私层面的审视。</p>
+    <p class="monitor-item-card__summary">Claude Code 相关动态，关键词：i, agree, with, you。点击原文了解更多细节。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
     <p class="monitor-item-card__factline">来源：X · 时间：2026-04-01 · 当前展示为单条高置信信号</p>
   </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/grok/status/2039205368849424460" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/max__sterling/status/2039227617606324670" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
 
 <article class="monitor-item-card">
@@ -128,13 +128,13 @@ permalink: /research/morning/monitor/
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">重点结论</p>
-    <p class="monitor-item-card__summary">Claude Code 相关动态，关键词：خبر, تسريب, claude, code。点击原文了解更多细节。</p>
+    <p class="monitor-item-card__summary">Claude Code CLI 工具源码因 sourcemap 暴露问题被开源社区发现并传播，触发安全与隐私层面的审视。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
     <p class="monitor-item-card__factline">来源：X · 时间：2026-04-01 · 当前展示为单条高置信信号</p>
   </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/_oean/status/2039219234396336519" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/mouhage5/status/2039228478051004884" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
 
 <article class="monitor-item-card">
@@ -186,7 +186,7 @@ permalink: /research/morning/monitor/
       <span class="monitor-heat monitor-heat--blast">🔥 爆热</span>
       <span class="monitor-source-badge monitor-source-badge--x">X</span>
     </div>
-    <div class="monitor-item-card__meta"><span>热度 172</span><span>15likes, 5rt</span><span>2026-04-01</span><span>1 条相关</span></div>
+    <div class="monitor-item-card__meta"><span>热度 172</span><span>15likes, 6rt</span><span>2026-04-01</span><span>1 条相关</span></div>
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">重点结论</p>
@@ -194,7 +194,7 @@ permalink: /research/morning/monitor/
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
-    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-01 · 当前展示为单条高置信信号 · 互动：15likes, 5rt</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-01 · 当前展示为单条高置信信号 · 互动：15likes, 6rt</p>
   </div>
   <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/shao__meng/status/2039144985350615108" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
@@ -380,19 +380,6 @@ permalink: /research/morning/monitor/
   <div class="monitor-trend-card__meta">主要来源：X</div>
   <div class="monitor-trend-card__summary">Codex 产品动态，核心提及：codex, 源代码也泄露了, codex, 团队玩梗中...。点击原文了解更多。</div>
 </article>
-<article class="monitor-trend-card topic--claude-code">
-  <div class="monitor-trend-card__top">
-    <span class="monitor-topic__icon">🤖</span>
-    <span class="monitor-trend-card__label">Claude Code</span>
-  </div>
-  <div class="monitor-trend-card__score">148</div>
-  <div class="monitor-trend-card__meta">
-    <span class="monitor-trend-bar">▓▓▓▓▓▓▓▓▓▓</span>
-    <span>均值 124 · 5 条精品（5 条原始）</span>
-  </div>
-  <div class="monitor-trend-card__meta">主要来源：X</div>
-  <div class="monitor-trend-card__summary">Claude Code CLI 工具源码因 sourcemap 暴露问题被开源社区发现并传播，触发安全与隐私层面的审视。</div>
-</article>
 <article class="monitor-trend-card topic--large-models">
   <div class="monitor-trend-card__top">
     <span class="monitor-topic__icon">🧠</span>
@@ -405,6 +392,19 @@ permalink: /research/morning/monitor/
   </div>
   <div class="monitor-trend-card__meta">主要来源：X</div>
   <div class="monitor-trend-card__summary">OpenAI、Anthropic、Gemini 的版本迭代和能力对比成为焦点，核心在看推理速度、多模态支持和实际产品落地速度的差异。</div>
+</article>
+<article class="monitor-trend-card topic--claude-code">
+  <div class="monitor-trend-card__top">
+    <span class="monitor-topic__icon">🤖</span>
+    <span class="monitor-trend-card__label">Claude Code</span>
+  </div>
+  <div class="monitor-trend-card__score">132</div>
+  <div class="monitor-trend-card__meta">
+    <span class="monitor-trend-bar">▓▓▓▓▓▓▓▓▓▓</span>
+    <span>均值 121 · 5 条精品（5 条原始）</span>
+  </div>
+  <div class="monitor-trend-card__meta">主要来源：X</div>
+  <div class="monitor-trend-card__summary">Claude Code 相关动态，关键词：i, agree, with, you。点击原文了解更多细节。</div>
 </article>
 <article class="monitor-trend-card topic--obsidian">
   <div class="monitor-trend-card__top">
