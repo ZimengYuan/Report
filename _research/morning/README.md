@@ -8,4 +8,5 @@ This index lists public reports only. Raw captures are written to `artifacts/raw
 
 | Topic | File |
 |-------|------|
+| 四主题监控简报 | [01-monitor.md](./01-monitor.md) |
 | index.md | [index.md](./index.md) |
