@@ -1,21 +1,17 @@
 #!/usr/bin/env python3
-"""Fetch linked pages and derive concise Chinese summaries for monitor cards."""
+"""Fetch linked pages and derive concise local Chinese summaries for monitor cards."""
 
 from __future__ import annotations
 
-import json
-import os
 import re
 from dataclasses import dataclass
 from html import unescape
-from pathlib import Path
 from urllib import error, request
 
 from synthesize_public_report import TOPIC_RULES, clean_text, extract_domain
 
 
 FETCHABLE_SOURCES = {"web", "hn"}
-OPENAI_CHAT_MODELS = ["gpt-5-mini", "gpt-4.1-mini"]
 SUMMARY_SENTINEL_IRRELEVANT = "__IRRELEVANT__"
 TOPIC_LABELS = {
     "claude-code": "Claude Code",
@@ -35,34 +31,6 @@ class PageContext:
     content_type: str = ""
     ok: bool = False
     error: str = ""
-
-
-def load_runtime_env() -> dict[str, str]:
-    env = dict(os.environ)
-    env_path = Path.home() / ".config" / "last30days" / ".env"
-    if env_path.exists():
-        for raw_line in env_path.read_text(encoding="utf-8").splitlines():
-            line = raw_line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, value = line.split("=", 1)
-            env.setdefault(key.strip(), value.strip().strip('"').strip("'"))
-    return env
-
-
-def parse_json_object(text: str) -> dict:
-    text = text.strip()
-    if text.startswith("```"):
-        text = text.strip("`")
-        if text.startswith("json"):
-            text = text[4:].strip()
-    start = text.find("{")
-    end = text.rfind("}")
-    if start != -1 and end != -1 and end > start:
-        text = text[start : end + 1]
-    return json.loads(text)
-
-
 def should_fetch_url(source: str, url: str) -> bool:
     if source not in FETCHABLE_SOURCES or not url:
         return False
@@ -349,101 +317,6 @@ def heuristic_candidate_summary(
 def summarize_candidates(topic_title: str, topic_key: str, candidates: list[dict]) -> dict[int, dict]:
     if not candidates:
         return {}
-
-    env = load_runtime_env()
-    api_key = env.get("OPENAI_API_KEY")
-    if not api_key:
-        localized: dict[int, dict] = {}
-        for candidate in candidates:
-            summary, is_irrelevant = heuristic_candidate_summary(
-                topic_title,
-                topic_key,
-                candidate["item"],
-                candidate.get("page_context"),
-                candidate.get("page_relevance", 0),
-            )
-            if summary or is_irrelevant:
-                localized[candidate["index"]] = {
-                    "summary_zh": SUMMARY_SENTINEL_IRRELEVANT if is_irrelevant else summary,
-                    "is_irrelevant": is_irrelevant,
-                }
-        return localized
-
-    payload_items = []
-    for candidate in candidates:
-        item = candidate["item"]
-        context: PageContext | None = candidate.get("page_context")
-        payload_items.append(
-            {
-                "index": candidate["index"],
-                "source": item.source,
-                "date": item.date or "未知日期",
-                "url": item.url or "",
-                "raw_hint": clean_text(" | ".join(filter(None, [item.summary, item.why_relevant, item.byline, item.identifier])))[:260],
-                "page_title": context.title if context else "",
-                "page_description": context.description if context else "",
-                "page_excerpt": context.excerpt[:900] if context else "",
-                "page_relevance": candidate.get("page_relevance", 0),
-            }
-        )
-
-    system_prompt = (
-        "你是中文技术编辑，负责把抓取候选写成真正可读的监控卡片摘要。\n"
-        "请优先依据 page_title / page_description / page_excerpt，也就是实际网页正文信息来写摘要，不要只复述 raw_hint。\n"
-        "输出要求：\n"
-        "1. 每条只写一句中文摘要，18 到 50 个汉字左右。\n"
-        "2. 先说发生了什么，再点出最值得看的信息，不要写空话。\n"
-        "3. 如果网页内容与主题明显无关，summary_zh 必须输出 __IRRELEVANT__。\n"
-        "4. 不要输出 Markdown，不要编号，不要附加解释。\n"
-        "只返回 JSON：{\"items\":[{\"index\":1,\"summary_zh\":\"...\"}]}"
-    )
-    body = {
-        "topic": topic_title,
-        "topic_key": topic_key,
-        "items": payload_items,
-    }
-
-    for model in OPENAI_CHAT_MODELS:
-        req = request.Request(
-            "https://api.openai.com/v1/chat/completions",
-            data=json.dumps(
-                {
-                    "model": model,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": json.dumps(body, ensure_ascii=False)},
-                    ],
-                    "response_format": {"type": "json_object"},
-                }
-            ).encode("utf-8"),
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            },
-            method="POST",
-        )
-        try:
-            with request.urlopen(req, timeout=45) as resp:
-                raw = json.loads(resp.read().decode("utf-8"))
-            content = raw["choices"][0]["message"]["content"]
-            parsed = parse_json_object(content)
-        except Exception:
-            continue
-
-        localized: dict[int, dict] = {}
-        for entry in parsed.get("items", []):
-            try:
-                index = int(entry["index"])
-            except Exception:
-                continue
-            summary = clean_text(str(entry.get("summary_zh", "")))
-            if summary:
-                localized[index] = {
-                    "summary_zh": summary,
-                    "is_irrelevant": summary == SUMMARY_SENTINEL_IRRELEVANT,
-                }
-        if localized:
-            return localized
 
     localized: dict[int, dict] = {}
     for candidate in candidates:
