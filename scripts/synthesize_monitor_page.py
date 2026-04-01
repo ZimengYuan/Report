@@ -404,23 +404,35 @@ def fallback_summary_zh(topic_key: str, item) -> str:
 
 
 def _topic_colors() -> dict[str, dict]:
-    """各主题的基础标识：图标与标签。"""
+    """各主题的基础标识与展示文案。"""
     return {
         "claude-code": {
             "icon": "🤖",
             "label": "Claude Code",
+            "eyebrow": "编码工作流",
+            "tagline": "追踪终端 Agent、插件生态与真实开发链路里的新信号。",
+            "chips": ["终端", "插件", "Review"],
         },
         "codex": {
             "icon": "⚡",
             "label": "Codex",
+            "eyebrow": "产品能力",
+            "tagline": "关注 Codex CLI、工具扩展与端到端自动化能力的演进。",
+            "chips": ["CLI", "MCP", "自动化"],
         },
         "large-models": {
             "icon": "🧠",
             "label": "大模型",
+            "eyebrow": "模型战况",
+            "tagline": "观察模型发布、推理能力、多模态与价格竞争的趋势变化。",
+            "chips": ["推理", "多模态", "版本"],
         },
         "obsidian": {
             "icon": "📎",
             "label": "Obsidian",
+            "eyebrow": "知识管理",
+            "tagline": "筛选插件、同步、知识库组织和数字花园相关的高质量讨论。",
+            "chips": ["插件", "同步", "知识库"],
         },
     }
 
@@ -449,7 +461,7 @@ def _engagement_html(item) -> str:
 
 
 def _merged_item_card(index: int, m: MergedItem, section: TopicSection) -> str:
-    """渲染一条结构化卡片。"""
+    """渲染一条三区结构卡片。"""
     topic_key = m.topic_key
     score = m.score
     heat = _heat_html(score)
@@ -469,20 +481,31 @@ def _merged_item_card(index: int, m: MergedItem, section: TopicSection) -> str:
     meta_html = "".join(part for part in meta_parts if part)
 
     link_items = []
-    if len(m.linked_items) == 1 and primary.url:
+    if primary.url:
         link_items.append(
-            f'<a class="monitor-link" href="{html.escape(primary.url)}" target="_blank" rel="noopener noreferrer">打开原文</a>'
+            f'<a class="monitor-link" href="{html.escape(primary.url)}" target="_blank" rel="noopener noreferrer">查看主链接</a>'
         )
-    else:
-        for li, item in enumerate(m.linked_items, 1):
+    if len(m.linked_items) > 1:
+        for li, item in enumerate(m.linked_items[1:], 2):
             if not item.url:
                 continue
-            label = f"相关链接 {li}"
+            label = f"关联来源 {li - 1}"
             link_items.append(
                 f'<a class="monitor-link monitor-link--alt" href="{html.escape(item.url)}" target="_blank" rel="noopener noreferrer">{html.escape(label)}</a>'
             )
 
     summary_escaped = html.escape(m.summary_zh or fallback_summary_zh(topic_key, primary))
+    source_label = html.escape(SOURCE_LABELS.get(primary.source, primary.source))
+    date_label = html.escape(primary.date or "未知日期")
+    related_label = (
+        f"同事件已合并 {len(m.linked_items)} 条相关来源"
+        if len(m.linked_items) > 1
+        else "当前展示为单条高置信信号"
+    )
+    overview_bits = [f"来源：{source_label}", f"时间：{date_label}", related_label]
+    if best_eng:
+        overview_bits.append(f"互动：{html.escape(best_eng)}")
+    overview_text = html.escape(" · ".join(overview_bits))
 
     return f"""
 <article class="monitor-item-card">
@@ -494,7 +517,14 @@ def _merged_item_card(index: int, m: MergedItem, section: TopicSection) -> str:
     </div>
     <div class="monitor-item-card__meta">{meta_html}</div>
   </div>
-  <p class="monitor-item-card__summary">{summary_escaped}</p>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">重点结论</p>
+    <p class="monitor-item-card__summary">{summary_escaped}</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">{overview_text}</p>
+  </div>
   <div class="monitor-item-card__links">{''.join(link_items)}</div>
 </article>"""
 
@@ -504,14 +534,21 @@ def render_topic_section(section: TopicSection, merged_items: list[MergedItem]) 
     c = colors.get(section.topic_key, colors["claude-code"])
 
     if not merged_items:
+        chips_html = "".join(
+            f'<span class="monitor-topic__chip">{html.escape(chip)}</span>'
+            for chip in c.get("chips", [])
+        )
         return [
             (
                 f'<section class="monitor-topic topic--{section.topic_key}">'
                 f'<div class="monitor-topic__header"><div class="monitor-topic__identity">'
                 f'<span class="monitor-topic__icon">{c["icon"]}</span>'
-                f'<div><h2 class="monitor-topic__title">{html.escape(c["label"])}</h2>'
-                f'<p class="monitor-topic__subtitle">本轮暂无高质量条目</p></div></div></div>'
-                f'<div class="monitor-topic__body"><p class="monitor-topic__note">当前没有筛到足够稳的内容，建议等待下一轮。</p></div></section>'
+                f'<div class="monitor-topic__copy"><p class="monitor-topic__eyebrow">{html.escape(c.get("eyebrow", "主题监控"))}</p>'
+                f'<h2 class="monitor-topic__title">{html.escape(c["label"])}</h2>'
+                f'<p class="monitor-topic__subtitle">本轮暂无高质量条目</p>'
+                f'<p class="monitor-topic__tagline">{html.escape(c.get("tagline", ""))}</p></div></div></div>'
+                f'<div class="monitor-topic__body"><div class="monitor-topic__chips">{chips_html}</div>'
+                f'<p class="monitor-topic__note">当前没有筛到足够稳的内容，建议等待下一轮。</p></div></section>'
             )
         ]
 
@@ -522,19 +559,26 @@ def render_topic_section(section: TopicSection, merged_items: list[MergedItem]) 
     )
 
     total_raw = sum(len(m.linked_items) for m in merged_items)
+    chips_html = "".join(
+        f'<span class="monitor-topic__chip">{html.escape(chip)}</span>'
+        for chip in c.get("chips", [])
+    )
     header = f"""
 <section class="monitor-topic topic--{section.topic_key}">
   <div class="monitor-topic__header">
     <div class="monitor-topic__identity">
       <span class="monitor-topic__icon">{c['icon']}</span>
-      <div>
+      <div class="monitor-topic__copy">
+        <p class="monitor-topic__eyebrow">{html.escape(c.get('eyebrow', '主题监控'))}</p>
         <h2 class="monitor-topic__title">{html.escape(c['label'])}</h2>
         <p class="monitor-topic__subtitle">{html.escape(section.source_summary_text)}</p>
+        <p class="monitor-topic__tagline">{html.escape(c.get('tagline', ''))}</p>
       </div>
     </div>
     <div class="monitor-topic__count">{len(merged_items)} 条精品 · {total_raw} 条原始</div>
   </div>
   <div class="monitor-topic__body">
+    <div class="monitor-topic__chips">{chips_html}</div>
     <ul class="monitor-topic__notes">{bullet_html}</ul>
     <div class="monitor-topic__grid">
 """

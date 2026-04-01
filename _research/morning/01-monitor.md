@@ -43,14 +43,17 @@ permalink: /research/morning/monitor/
   <div class="monitor-topic__header">
     <div class="monitor-topic__identity">
       <span class="monitor-topic__icon">🤖</span>
-      <div>
+      <div class="monitor-topic__copy">
+        <p class="monitor-topic__eyebrow">编码工作流</p>
         <h2 class="monitor-topic__title">Claude Code</h2>
         <p class="monitor-topic__subtitle">X 5 条、YouTube 3 条</p>
+        <p class="monitor-topic__tagline">追踪终端 Agent、插件生态与真实开发链路里的新信号。</p>
       </div>
     </div>
     <div class="monitor-topic__count">5 条精品 · 5 条原始</div>
   </div>
   <div class="monitor-topic__body">
+    <div class="monitor-topic__chips"><span class="monitor-topic__chip">终端</span><span class="monitor-topic__chip">插件</span><span class="monitor-topic__chip">Review</span></div>
     <ul class="monitor-topic__notes"><li class="monitor-topic__note">工具整合与生态：讨论重点落在 Claude Code 如何接入真实开发链路，包括插件、命令行、IDE 和 review 流程。 当前保留 2 条较强样本</li><li class="monitor-topic__note">工作流与一线体验：可用样本主要反映真实开发体验，包括终端工作流、配额消耗和人与 agent 的协作方式。 当前保留 2 条较强样本</li></ul>
     <div class="monitor-topic__grid">
 
@@ -63,8 +66,15 @@ permalink: /research/morning/monitor/
     </div>
     <div class="monitor-item-card__meta"><span>热度 148</span><span>2026-04-01</span><span>1 条相关</span></div>
   </div>
-  <p class="monitor-item-card__summary">Claude Code CLI 工具源码因 sourcemap 暴露问题被开源社区发现并传播，触发安全与隐私层面的审视。</p>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/grok/status/2039205368849424460" target="_blank" rel="noopener noreferrer">打开原文</a></div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">重点结论</p>
+    <p class="monitor-item-card__summary">Claude Code CLI 工具源码因 sourcemap 暴露问题被开源社区发现并传播，触发安全与隐私层面的审视。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-01 · 当前展示为单条高置信信号</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/grok/status/2039205368849424460" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
 
 <article class="monitor-item-card">
@@ -76,8 +86,15 @@ permalink: /research/morning/monitor/
     </div>
     <div class="monitor-item-card__meta"><span>热度 132</span><span>2026-04-01</span><span>1 条相关</span></div>
   </div>
-  <p class="monitor-item-card__summary">Claude Code CLI 工具源码因 sourcemap 暴露问题被开源社区发现并传播，触发安全与隐私层面的审视。</p>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/grok/status/2039210228097417451" target="_blank" rel="noopener noreferrer">打开原文</a></div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">重点结论</p>
+    <p class="monitor-item-card__summary">Claude Code CLI 工具源码因 sourcemap 暴露问题被开源社区发现并传播，触发安全与隐私层面的审视。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-01 · 当前展示为单条高置信信号</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/grok/status/2039210228097417451" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
 
 <article class="monitor-item-card">
@@ -89,8 +106,15 @@ permalink: /research/morning/monitor/
     </div>
     <div class="monitor-item-card__meta"><span>热度 116</span><span>2026-04-01</span><span>1 条相关</span></div>
   </div>
-  <p class="monitor-item-card__summary">Claude Code 相关动态，关键词：context, of, that, leaked。点击原文了解更多细节。</p>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/grok/status/2039213630395228385" target="_blank" rel="noopener noreferrer">打开原文</a></div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">重点结论</p>
+    <p class="monitor-item-card__summary">Claude Code 相关动态，关键词：context, of, that, leaked。点击原文了解更多细节。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-01 · 当前展示为单条高置信信号</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/grok/status/2039213630395228385" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
 
 <article class="monitor-item-card">
@@ -102,8 +126,15 @@ permalink: /research/morning/monitor/
     </div>
     <div class="monitor-item-card__meta"><span>热度 116</span><span>2026-04-01</span><span>1 条相关</span></div>
   </div>
-  <p class="monitor-item-card__summary">Claude Code 相关动态，关键词：خبر, تسريب, claude, code。点击原文了解更多细节。</p>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/_oean/status/2039219234396336519" target="_blank" rel="noopener noreferrer">打开原文</a></div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">重点结论</p>
+    <p class="monitor-item-card__summary">Claude Code 相关动态，关键词：خبر, تسريب, claude, code。点击原文了解更多细节。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-01 · 当前展示为单条高置信信号</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/_oean/status/2039219234396336519" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
 
 <article class="monitor-item-card">
@@ -115,8 +146,15 @@ permalink: /research/morning/monitor/
     </div>
     <div class="monitor-item-card__meta"><span>热度 109</span><span>2026-04-01</span><span>1 条相关</span></div>
   </div>
-  <p class="monitor-item-card__summary">Claude Code 相关动态，关键词：is, bullish, for, claude。点击原文了解更多细节。</p>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/LupacescuEuard/status/2039207390034194691" target="_blank" rel="noopener noreferrer">打开原文</a></div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">重点结论</p>
+    <p class="monitor-item-card__summary">Claude Code 相关动态，关键词：is, bullish, for, claude。点击原文了解更多细节。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-01 · 当前展示为单条高置信信号</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/LupacescuEuard/status/2039207390034194691" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
     </div>
   </div>
@@ -127,14 +165,17 @@ permalink: /research/morning/monitor/
   <div class="monitor-topic__header">
     <div class="monitor-topic__identity">
       <span class="monitor-topic__icon">⚡</span>
-      <div>
+      <div class="monitor-topic__copy">
+        <p class="monitor-topic__eyebrow">产品能力</p>
         <h2 class="monitor-topic__title">Codex</h2>
         <p class="monitor-topic__subtitle">X 5 条、YouTube 3 条</p>
+        <p class="monitor-topic__tagline">关注 Codex CLI、工具扩展与端到端自动化能力的演进。</p>
       </div>
     </div>
     <div class="monitor-topic__count">5 条精品 · 5 条原始</div>
   </div>
   <div class="monitor-topic__body">
+    <div class="monitor-topic__chips"><span class="monitor-topic__chip">CLI</span><span class="monitor-topic__chip">MCP</span><span class="monitor-topic__chip">自动化</span></div>
     <ul class="monitor-topic__notes"><li class="monitor-topic__note">产品能力与入口：可靠信号通常集中在 Codex 的产品入口、命令行能力和可交付的 agent 体验，而不是泛泛提及。 当前保留 5 条较强样本</li></ul>
     <div class="monitor-topic__grid">
 
@@ -147,8 +188,15 @@ permalink: /research/morning/monitor/
     </div>
     <div class="monitor-item-card__meta"><span>热度 172</span><span>15likes, 5rt</span><span>2026-04-01</span><span>1 条相关</span></div>
   </div>
-  <p class="monitor-item-card__summary">Codex 产品动态，核心提及：codex, 源代码也泄露了, codex, 团队玩梗中...。点击原文了解更多。</p>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/shao__meng/status/2039144985350615108" target="_blank" rel="noopener noreferrer">打开原文</a></div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">重点结论</p>
+    <p class="monitor-item-card__summary">Codex 产品动态，核心提及：codex, 源代码也泄露了, codex, 团队玩梗中...。点击原文了解更多。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-01 · 当前展示为单条高置信信号 · 互动：15likes, 5rt</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/shao__meng/status/2039144985350615108" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
 
 <article class="monitor-item-card">
@@ -160,8 +208,15 @@ permalink: /research/morning/monitor/
     </div>
     <div class="monitor-item-card__meta"><span>热度 165</span><span>2026-04-01</span><span>1 条相关</span></div>
   </div>
-  <p class="monitor-item-card__summary">Codex 产品动态，核心提及：repo, feels, like, a。点击原文了解更多。</p>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/chenzeling4/status/2039186054222070054" target="_blank" rel="noopener noreferrer">打开原文</a></div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">重点结论</p>
+    <p class="monitor-item-card__summary">Codex 产品动态，核心提及：repo, feels, like, a。点击原文了解更多。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-01 · 当前展示为单条高置信信号</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/chenzeling4/status/2039186054222070054" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
 
 <article class="monitor-item-card">
@@ -173,8 +228,15 @@ permalink: /research/morning/monitor/
     </div>
     <div class="monitor-item-card__meta"><span>热度 125</span><span>1likes</span><span>2026-03-31</span><span>1 条相关</span></div>
   </div>
-  <p class="monitor-item-card__summary">Codex 产品动态，核心提及：closes, 122b, funding, round.。点击原文了解更多。</p>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/techno_pahadi/status/2039083560418906163" target="_blank" rel="noopener noreferrer">打开原文</a></div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">重点结论</p>
+    <p class="monitor-item-card__summary">Codex 产品动态，核心提及：closes, 122b, funding, round.。点击原文了解更多。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-03-31 · 当前展示为单条高置信信号 · 互动：1likes</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/techno_pahadi/status/2039083560418906163" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
 
 <article class="monitor-item-card">
@@ -186,8 +248,15 @@ permalink: /research/morning/monitor/
     </div>
     <div class="monitor-item-card__meta"><span>热度 124</span><span>2026-03-31</span><span>1 条相关</span></div>
   </div>
-  <p class="monitor-item-card__summary">Codex 产品动态，核心提及：4, openai, s, new。点击原文了解更多。</p>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/AIpulse_is/status/2039091755375587461" target="_blank" rel="noopener noreferrer">打开原文</a></div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">重点结论</p>
+    <p class="monitor-item-card__summary">Codex 产品动态，核心提及：4, openai, s, new。点击原文了解更多。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-03-31 · 当前展示为单条高置信信号</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/AIpulse_is/status/2039091755375587461" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
 
 <article class="monitor-item-card">
@@ -199,8 +268,15 @@ permalink: /research/morning/monitor/
     </div>
     <div class="monitor-item-card__meta"><span>热度 109</span><span>2026-04-01</span><span>1 条相关</span></div>
   </div>
-  <p class="monitor-item-card__summary">Codex 正从纯代码补全工具向端到端自动化 agent 演进，支持连接外部系统并完成复杂任务编排，定位已超越传统 IDE 插件。</p>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/AiDadaji/status/2039172743191826754" target="_blank" rel="noopener noreferrer">打开原文</a></div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">重点结论</p>
+    <p class="monitor-item-card__summary">Codex 正从纯代码补全工具向端到端自动化 agent 演进，支持连接外部系统并完成复杂任务编排，定位已超越传统 IDE 插件。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-01 · 当前展示为单条高置信信号</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/AiDadaji/status/2039172743191826754" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
     </div>
   </div>
@@ -211,14 +287,17 @@ permalink: /research/morning/monitor/
   <div class="monitor-topic__header">
     <div class="monitor-topic__identity">
       <span class="monitor-topic__icon">🧠</span>
-      <div>
+      <div class="monitor-topic__copy">
+        <p class="monitor-topic__eyebrow">模型战况</p>
         <h2 class="monitor-topic__title">大模型</h2>
         <p class="monitor-topic__subtitle">X 1 条、YouTube 3 条</p>
+        <p class="monitor-topic__tagline">观察模型发布、推理能力、多模态与价格竞争的趋势变化。</p>
       </div>
     </div>
     <div class="monitor-topic__count">1 条精品 · 1 条原始</div>
   </div>
   <div class="monitor-topic__body">
+    <div class="monitor-topic__chips"><span class="monitor-topic__chip">推理</span><span class="monitor-topic__chip">多模态</span><span class="monitor-topic__chip">版本</span></div>
     <ul class="monitor-topic__notes"><li class="monitor-topic__note">模型发布与版本竞争：更可靠的信号往往来自模型版本更新、能力对比和官方技术说明，而不是泛行业口号。 当前保留 1 条较强样本</li></ul>
     <div class="monitor-topic__grid">
 
@@ -231,8 +310,15 @@ permalink: /research/morning/monitor/
     </div>
     <div class="monitor-item-card__meta"><span>热度 145</span><span>2026-03-31</span><span>1 条相关</span></div>
   </div>
-  <p class="monitor-item-card__summary">OpenAI、Anthropic、Gemini 的版本迭代和能力对比成为焦点，核心在看推理速度、多模态支持和实际产品落地速度的差异。</p>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/quelquesoit/status/2039097410056581430" target="_blank" rel="noopener noreferrer">打开原文</a></div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">重点结论</p>
+    <p class="monitor-item-card__summary">OpenAI、Anthropic、Gemini 的版本迭代和能力对比成为焦点，核心在看推理速度、多模态支持和实际产品落地速度的差异。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-03-31 · 当前展示为单条高置信信号</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/quelquesoit/status/2039097410056581430" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
     </div>
   </div>
@@ -243,14 +329,17 @@ permalink: /research/morning/monitor/
   <div class="monitor-topic__header">
     <div class="monitor-topic__identity">
       <span class="monitor-topic__icon">📎</span>
-      <div>
+      <div class="monitor-topic__copy">
+        <p class="monitor-topic__eyebrow">知识管理</p>
         <h2 class="monitor-topic__title">Obsidian</h2>
         <p class="monitor-topic__subtitle">X 1 条、YouTube 2 条</p>
+        <p class="monitor-topic__tagline">筛选插件、同步、知识库组织和数字花园相关的高质量讨论。</p>
       </div>
     </div>
     <div class="monitor-topic__count">1 条精品 · 1 条原始</div>
   </div>
   <div class="monitor-topic__body">
+    <div class="monitor-topic__chips"><span class="monitor-topic__chip">插件</span><span class="monitor-topic__chip">同步</span><span class="monitor-topic__chip">知识库</span></div>
     <ul class="monitor-topic__notes"><li class="monitor-topic__note">其他有效信号：本轮有一些可参考但仍需继续观察的信号。 当前保留 1 条较强样本</li></ul>
     <div class="monitor-topic__grid">
 
@@ -263,8 +352,15 @@ permalink: /research/morning/monitor/
     </div>
     <div class="monitor-item-card__meta"><span>热度 103</span><span>1likes, 1rt</span><span>2026-03-31</span><span>1 条相关</span></div>
   </div>
-  <p class="monitor-item-card__summary">Obsidian 相关讨论，关键词：being, closed, source, is。点击原文了解详情。</p>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/kensnyder/status/2039121545885372913" target="_blank" rel="noopener noreferrer">打开原文</a></div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">重点结论</p>
+    <p class="monitor-item-card__summary">Obsidian 相关讨论，关键词：being, closed, source, is。点击原文了解详情。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-03-31 · 当前展示为单条高置信信号 · 互动：1likes, 1rt</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/kensnyder/status/2039121545885372913" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
     </div>
   </div>
