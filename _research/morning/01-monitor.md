@@ -4,11 +4,11 @@ title: "四主题监控简报"
 type: "morning"
 public_report: true
 date: 2026-04-01
-updated_at: "2026-04-01 14:09:14 +0800"
+updated_at: "2026-04-01 14:15:50 +0800"
 trigger_mode: "cron"
 trigger_schedule: "0 10,20 * * * Asia/Shanghai"
-window_start: "2026-04-01 10:00:00 +0800"
-window_end: "2026-04-01 14:09:14 +0800"
+window_start: "2026-03-31 20:00:00 +0800"
+window_end: "2026-04-01 14:15:50 +0800"
 search_sources: "x,youtube,hn"
 permalink: /research/morning/monitor/
 ---
@@ -20,7 +20,7 @@ permalink: /research/morning/monitor/
     <div>
       <div style="color:#e2e8f0;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">四主题监控简报</div>
       <div style="color:#fff;font-size:22px;font-weight:bold">🌅 早间版 · 2026-04-01</div>
-      <div style="color:#94a3b8;font-size:13px;margin-top:4px">🕐 04/01 10:00 – 14:09 · 约 4.2h</div>
+      <div style="color:#94a3b8;font-size:13px;margin-top:4px">🕐 03/31 20:00 – 14:15 · 约 18.3h</div>
     </div>
     <div style="display:flex;gap:16px;flex-wrap:wrap">
       <div style="text-align:center">
@@ -136,20 +136,33 @@ permalink: /research/morning/monitor/
   <span style="font-size:22px">⚡</span>
   <div>
     <div style="color:#fff;font-size:17px;font-weight:bold">Codex</div>
-    <div style="color:rgba(255,255,255,0.8);font-size:12px">X 3 条、YouTube 3 条</div>
+    <div style="color:rgba(255,255,255,0.8);font-size:12px">X 5 条、YouTube 3 条</div>
   </div>
   <div style="margin-left:auto;text-align:right">
-    <div style="background:rgba(255,255,255,0.25);border-radius:8px;padding:4px 10px;color:#fff;font-size:13px;font-weight:bold">3 条精品 · 3 条原始</div>
+    <div style="background:rgba(255,255,255,0.25);border-radius:8px;padding:4px 10px;color:#fff;font-size:13px;font-weight:bold">5 条精品 · 5 条原始</div>
   </div>
 </div>
 <div style="background:#f8fafc;border-radius:0 0 12px 12px;padding:14px 16px;margin-bottom:20px;border:1px solid #e2e8f0;border-top:none">
-  <ul style="margin:0;padding-left:18px;color:#475569;font-size:13px;line-height:1.7"><li style="margin-bottom:4px">产品能力与入口：可靠信号通常集中在 Codex 的产品入口、命令行能力和可交付的 agent 体验，而不是泛泛提及。 当前保留 3 条较强样本</li></ul>
+  <ul style="margin:0;padding-left:18px;color:#475569;font-size:13px;line-height:1.7"><li style="margin-bottom:4px">产品能力与入口：可靠信号通常集中在 Codex 的产品入口、命令行能力和可交付的 agent 体验，而不是泛泛提及。 当前保留 5 条较强样本</li></ul>
 </div>
 <div style="background:#ffffff;border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:4px solid #f59e0b;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
     <span style="background:#1e293b;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0">1</span>
     <span style="background:#ef4444;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">🔥 爆热</span>
-    <span style="color:#6b7280;font-size:12px">热度: 170</span>
+    <span style="color:#6b7280;font-size:12px">热度: 172</span>
+    <span style="color:#9ca3af;font-size:12px;margin-left:6px">15likes, 5rt</span>
+    <span style="background:#1d9bf0;color:#fff;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600">X</span>
+    <span style="color:#9ca3af;font-size:12px">2026-04-01</span>
+    <span style="margin-left:auto;font-size:12px;color:#94a3b8">1 条相关</span>
+  </div>
+  <div style="font-size:15px;color:#1e293b;line-height:1.65;margin-bottom:10px">Codex 产品动态，核心提及：codex, 源代码也泄露了, codex, 团队玩梗中...。点击原文了解更多。</div>
+  <a href="https://x.com/shao__meng/status/2039144985350615108" target="_blank" style="display:inline-block;margin-top:8px;padding:5px 14px;background:#1d9bf0;color:#fff;border-radius:8px;font-size:12px;text-decoration:none;font-weight:600">🔗 打开原文</a>
+</div>
+<div style="background:#f8fafc;border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:4px solid #10b981;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+    <span style="background:#1e293b;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0">2</span>
+    <span style="background:#ef4444;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">🔥 爆热</span>
+    <span style="color:#6b7280;font-size:12px">热度: 165</span>
     
     <span style="background:#1d9bf0;color:#fff;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600">X</span>
     <span style="color:#9ca3af;font-size:12px">2026-04-01</span>
@@ -158,24 +171,37 @@ permalink: /research/morning/monitor/
   <div style="font-size:15px;color:#1e293b;line-height:1.65;margin-bottom:10px">Codex 产品动态，核心提及：repo, feels, like, a。点击原文了解更多。</div>
   <a href="https://x.com/chenzeling4/status/2039186054222070054" target="_blank" style="display:inline-block;margin-top:8px;padding:5px 14px;background:#1d9bf0;color:#fff;border-radius:8px;font-size:12px;text-decoration:none;font-weight:600">🔗 打开原文</a>
 </div>
-<div style="background:#f8fafc;border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:4px solid #10b981;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
-    <span style="background:#1e293b;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0">2</span>
-    <span style="background:#ef4444;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">🔥 爆热</span>
-    <span style="color:#6b7280;font-size:12px">热度: 157</span>
-    <span style="color:#9ca3af;font-size:12px;margin-left:6px">14likes, 4rt</span>
-    <span style="background:#1d9bf0;color:#fff;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600">X</span>
-    <span style="color:#9ca3af;font-size:12px">2026-04-01</span>
-    <span style="margin-left:auto;font-size:12px;color:#94a3b8">1 条相关</span>
-  </div>
-  <div style="font-size:15px;color:#1e293b;line-height:1.65;margin-bottom:10px">Codex 产品动态，核心提及：codex, 源代码也泄露了, codex, 团队玩梗中...。点击原文了解更多。</div>
-  <a href="https://x.com/shao__meng/status/2039144985350615108" target="_blank" style="display:inline-block;margin-top:8px;padding:5px 14px;background:#1d9bf0;color:#fff;border-radius:8px;font-size:12px;text-decoration:none;font-weight:600">🔗 打开原文</a>
-</div>
 <div style="background:#ffffff;border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:4px solid #8b5cf6;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
     <span style="background:#1e293b;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0">3</span>
     <span style="background:#f97316;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">🔶 高热</span>
-    <span style="color:#6b7280;font-size:12px">热度: 114</span>
+    <span style="color:#6b7280;font-size:12px">热度: 125</span>
+    <span style="color:#9ca3af;font-size:12px;margin-left:6px">1likes</span>
+    <span style="background:#1d9bf0;color:#fff;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600">X</span>
+    <span style="color:#9ca3af;font-size:12px">2026-03-31</span>
+    <span style="margin-left:auto;font-size:12px;color:#94a3b8">1 条相关</span>
+  </div>
+  <div style="font-size:15px;color:#1e293b;line-height:1.65;margin-bottom:10px">Codex 产品动态，核心提及：closes, 122b, funding, round.。点击原文了解更多。</div>
+  <a href="https://x.com/techno_pahadi/status/2039083560418906163" target="_blank" style="display:inline-block;margin-top:8px;padding:5px 14px;background:#1d9bf0;color:#fff;border-radius:8px;font-size:12px;text-decoration:none;font-weight:600">🔗 打开原文</a>
+</div>
+<div style="background:#f8fafc;border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:4px solid #6366f1;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+    <span style="background:#1e293b;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0">4</span>
+    <span style="background:#f97316;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">🔶 高热</span>
+    <span style="color:#6b7280;font-size:12px">热度: 124</span>
+    
+    <span style="background:#1d9bf0;color:#fff;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600">X</span>
+    <span style="color:#9ca3af;font-size:12px">2026-03-31</span>
+    <span style="margin-left:auto;font-size:12px;color:#94a3b8">1 条相关</span>
+  </div>
+  <div style="font-size:15px;color:#1e293b;line-height:1.65;margin-bottom:10px">Codex 产品动态，核心提及：4, openai, s, new。点击原文了解更多。</div>
+  <a href="https://x.com/AIpulse_is/status/2039091755375587461" target="_blank" style="display:inline-block;margin-top:8px;padding:5px 14px;background:#1d9bf0;color:#fff;border-radius:8px;font-size:12px;text-decoration:none;font-weight:600">🔗 打开原文</a>
+</div>
+<div style="background:#ffffff;border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:4px solid #f59e0b;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+    <span style="background:#1e293b;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0">5</span>
+    <span style="background:#f97316;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">🔶 高热</span>
+    <span style="color:#6b7280;font-size:12px">热度: 109</span>
     
     <span style="background:#1d9bf0;color:#fff;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600">X</span>
     <span style="color:#9ca3af;font-size:12px">2026-04-01</span>
@@ -189,53 +215,27 @@ permalink: /research/morning/monitor/
   <span style="font-size:22px">🧠</span>
   <div>
     <div style="color:#fff;font-size:17px;font-weight:bold">大模型</div>
-    <div style="color:rgba(255,255,255,0.8);font-size:12px">X 3 条、YouTube 3 条</div>
+    <div style="color:rgba(255,255,255,0.8);font-size:12px">X 1 条、YouTube 3 条</div>
   </div>
   <div style="margin-left:auto;text-align:right">
-    <div style="background:rgba(255,255,255,0.25);border-radius:8px;padding:4px 10px;color:#fff;font-size:13px;font-weight:bold">3 条精品 · 3 条原始</div>
+    <div style="background:rgba(255,255,255,0.25);border-radius:8px;padding:4px 10px;color:#fff;font-size:13px;font-weight:bold">1 条精品 · 1 条原始</div>
   </div>
 </div>
 <div style="background:#f8fafc;border-radius:0 0 12px 12px;padding:14px 16px;margin-bottom:20px;border:1px solid #e2e8f0;border-top:none">
-  <ul style="margin:0;padding-left:18px;color:#475569;font-size:13px;line-height:1.7"><li style="margin-bottom:4px">模型发布与版本竞争：更可靠的信号往往来自模型版本更新、能力对比和官方技术说明，而不是泛行业口号。 当前保留 3 条较强样本</li></ul>
+  <ul style="margin:0;padding-left:18px;color:#475569;font-size:13px;line-height:1.7"><li style="margin-bottom:4px">模型发布与版本竞争：更可靠的信号往往来自模型版本更新、能力对比和官方技术说明，而不是泛行业口号。 当前保留 1 条较强样本</li></ul>
 </div>
 <div style="background:#ffffff;border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:4px solid #f59e0b;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
     <span style="background:#1e293b;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0">1</span>
-    <span style="background:#f97316;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">🔶 高热</span>
-    <span style="color:#6b7280;font-size:12px">热度: 116</span>
+    <span style="background:#ef4444;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">🔥 爆热</span>
+    <span style="color:#6b7280;font-size:12px">热度: 145</span>
     
     <span style="background:#1d9bf0;color:#fff;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600">X</span>
-    <span style="color:#9ca3af;font-size:12px">2026-04-01</span>
+    <span style="color:#9ca3af;font-size:12px">2026-03-31</span>
     <span style="margin-left:auto;font-size:12px;color:#94a3b8">1 条相关</span>
   </div>
   <div style="font-size:15px;color:#1e293b;line-height:1.65;margin-bottom:10px">OpenAI、Anthropic、Gemini 的版本迭代和能力对比成为焦点，核心在看推理速度、多模态支持和实际产品落地速度的差异。</div>
-  <a href="https://x.com/yusuke_m_MU/status/2039223677624193498" target="_blank" style="display:inline-block;margin-top:8px;padding:5px 14px;background:#1d9bf0;color:#fff;border-radius:8px;font-size:12px;text-decoration:none;font-weight:600">🔗 打开原文</a>
-</div>
-<div style="background:#f8fafc;border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:4px solid #10b981;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
-    <span style="background:#1e293b;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0">2</span>
-    <span style="background:#f97316;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">🔶 高热</span>
-    <span style="color:#6b7280;font-size:12px">热度: 91</span>
-    <span style="color:#9ca3af;font-size:12px;margin-left:6px">2likes, 1rt</span>
-    <span style="background:#1d9bf0;color:#fff;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600">X</span>
-    <span style="color:#9ca3af;font-size:12px">2026-04-01</span>
-    <span style="margin-left:auto;font-size:12px;color:#94a3b8">1 条相关</span>
-  </div>
-  <div style="font-size:15px;color:#1e293b;line-height:1.65;margin-bottom:10px">OpenAI、Anthropic 的版本迭代和能力对比成为焦点，核心在看推理速度、多模态支持和实际产品落地速度的差异。</div>
-  <a href="https://x.com/ProlabCH/status/2039222069137723752" target="_blank" style="display:inline-block;margin-top:8px;padding:5px 14px;background:#1d9bf0;color:#fff;border-radius:8px;font-size:12px;text-decoration:none;font-weight:600">🔗 打开原文</a>
-</div>
-<div style="background:#ffffff;border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:4px solid #8b5cf6;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
-    <span style="background:#1e293b;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0">3</span>
-    <span style="background:#3b82f6;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">📊 中热</span>
-    <span style="color:#6b7280;font-size:12px">热度: 80</span>
-    
-    <span style="background:#1d9bf0;color:#fff;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600">X</span>
-    <span style="color:#9ca3af;font-size:12px">2026-04-01</span>
-    <span style="margin-left:auto;font-size:12px;color:#94a3b8">1 条相关</span>
-  </div>
-  <div style="font-size:15px;color:#1e293b;line-height:1.65;margin-bottom:10px">OpenAI、Anthropic 的版本迭代和能力对比成为焦点，核心在看推理速度、多模态支持和实际产品落地速度的差异。</div>
-  <a href="https://x.com/KwizatsH/status/2039222016960868457" target="_blank" style="display:inline-block;margin-top:8px;padding:5px 14px;background:#1d9bf0;color:#fff;border-radius:8px;font-size:12px;text-decoration:none;font-weight:600">🔗 打开原文</a>
+  <a href="https://x.com/quelquesoit/status/2039097410056581430" target="_blank" style="display:inline-block;margin-top:8px;padding:5px 14px;background:#1d9bf0;color:#fff;border-radius:8px;font-size:12px;text-decoration:none;font-weight:600">🔗 打开原文</a>
 </div></div>
 <div style="max-width:820px;margin-bottom:30px">
 <div style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);border-radius:12px 12px 0 0;padding:14px 20px;display:flex;align-items:center;gap:10px">
@@ -249,20 +249,20 @@ permalink: /research/morning/monitor/
   </div>
 </div>
 <div style="background:#f8fafc;border-radius:0 0 12px 12px;padding:14px 16px;margin-bottom:20px;border:1px solid #e2e8f0;border-top:none">
-  <ul style="margin:0;padding-left:18px;color:#475569;font-size:13px;line-height:1.7"><li style="margin-bottom:4px">知识库组织方式：本轮更有价值的样本通常在讨论 Obsidian 如何组织知识、卡片和长期积累。 当前保留 1 条较强样本</li></ul>
+  <ul style="margin:0;padding-left:18px;color:#475569;font-size:13px;line-height:1.7"><li style="margin-bottom:4px">其他有效信号：本轮有一些可参考但仍需继续观察的信号。 当前保留 1 条较强样本</li></ul>
 </div>
 <div style="background:#ffffff;border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:4px solid #f59e0b;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
     <span style="background:#1e293b;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0">1</span>
-    <span style="background:#3b82f6;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">📊 中热</span>
-    <span style="color:#6b7280;font-size:12px">热度: 82</span>
-    
+    <span style="background:#f97316;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold">🔶 高热</span>
+    <span style="color:#6b7280;font-size:12px">热度: 103</span>
+    <span style="color:#9ca3af;font-size:12px;margin-left:6px">1likes, 1rt</span>
     <span style="background:#1d9bf0;color:#fff;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600">X</span>
-    <span style="color:#9ca3af;font-size:12px">2026-04-01</span>
+    <span style="color:#9ca3af;font-size:12px">2026-03-31</span>
     <span style="margin-left:auto;font-size:12px;color:#94a3b8">1 条相关</span>
   </div>
-  <div style="font-size:15px;color:#1e293b;line-height:1.65;margin-bottom:10px">Obsidian 相关讨论，关键词：obsidian, is, only, half-way。点击原文了解详情。</div>
-  <a href="https://x.com/kuchin/status/2039206831927468048" target="_blank" style="display:inline-block;margin-top:8px;padding:5px 14px;background:#1d9bf0;color:#fff;border-radius:8px;font-size:12px;text-decoration:none;font-weight:600">🔗 打开原文</a>
+  <div style="font-size:15px;color:#1e293b;line-height:1.65;margin-bottom:10px">Obsidian 相关讨论，关键词：being, closed, source, is。点击原文了解详情。</div>
+  <a href="https://x.com/kensnyder/status/2039121545885372913" target="_blank" style="display:inline-block;margin-top:8px;padding:5px 14px;background:#1d9bf0;color:#fff;border-radius:8px;font-size:12px;text-decoration:none;font-weight:600">🔗 打开原文</a>
 </div></div>
 
 
@@ -278,10 +278,10 @@ permalink: /research/morning/monitor/
     <span style="font-size:20px">⚡</span>
     <span style="font-size:15px;font-weight:bold;color:#1e293b">Codex</span>
   </div>
-  <div style="font-size:28px;font-weight:bold;color:#f59e0b;margin-bottom:4px">170</div>
-  <div style="font-size:13px;color:#64748b;margin-bottom:10px">▓▓▓▓▓▓▓▓▓▓ 均值 147 · 3 条精品（3 条原始）</div>
+  <div style="font-size:28px;font-weight:bold;color:#f59e0b;margin-bottom:4px">172</div>
+  <div style="font-size:13px;color:#64748b;margin-bottom:10px">▓▓▓▓▓▓▓▓▓▓ 均值 139 · 5 条精品（5 条原始）</div>
   <div style="font-size:12px;color:#94a3b8;margin-bottom:8px">主要来源：X</div>
-  <div style="font-size:13px;color:#475569;line-height:1.6">Codex 产品动态，核心提及：repo, feels, like, a。点击原文了解更多。</div>
+  <div style="font-size:13px;color:#475569;line-height:1.6">Codex 产品动态，核心提及：codex, 源代码也泄露了, codex, 团队玩梗中...。点击原文了解更多。</div>
 </div>
 <div style="flex:1;min-width:200px;background:#f8fafc;border-radius:12px;padding:16px;border-top:4px solid #6366f1;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
@@ -298,8 +298,8 @@ permalink: /research/morning/monitor/
     <span style="font-size:20px">🧠</span>
     <span style="font-size:15px;font-weight:bold;color:#1e293b">大模型</span>
   </div>
-  <div style="font-size:28px;font-weight:bold;color:#10b981;margin-bottom:4px">116</div>
-  <div style="font-size:13px;color:#64748b;margin-bottom:10px">▓▓▓▓▓▓▓▓░░ 均值 95 · 3 条精品（3 条原始）</div>
+  <div style="font-size:28px;font-weight:bold;color:#10b981;margin-bottom:4px">145</div>
+  <div style="font-size:13px;color:#64748b;margin-bottom:10px">▓▓▓▓▓▓▓▓▓▓ 均值 145 · 1 条精品（1 条原始）</div>
   <div style="font-size:12px;color:#94a3b8;margin-bottom:8px">主要来源：X</div>
   <div style="font-size:13px;color:#475569;line-height:1.6">OpenAI、Anthropic、Gemini 的版本迭代和能力对比成为焦点，核心在看推理速度、多模态支持和实际产品落地速度的差异。</div>
 </div>
@@ -308,10 +308,10 @@ permalink: /research/morning/monitor/
     <span style="font-size:20px">📎</span>
     <span style="font-size:15px;font-weight:bold;color:#1e293b">Obsidian</span>
   </div>
-  <div style="font-size:28px;font-weight:bold;color:#8b5cf6;margin-bottom:4px">82</div>
-  <div style="font-size:13px;color:#64748b;margin-bottom:10px">▓▓▓▓▓▓░░░░ 均值 82 · 1 条精品（1 条原始）</div>
+  <div style="font-size:28px;font-weight:bold;color:#8b5cf6;margin-bottom:4px">103</div>
+  <div style="font-size:13px;color:#64748b;margin-bottom:10px">▓▓▓▓▓▓▓░░░ 均值 103 · 1 条精品（1 条原始）</div>
   <div style="font-size:12px;color:#94a3b8;margin-bottom:8px">主要来源：X</div>
-  <div style="font-size:13px;color:#475569;line-height:1.6">Obsidian 相关讨论，关键词：obsidian, is, only, half-way。点击原文了解详情。</div>
+  <div style="font-size:13px;color:#475569;line-height:1.6">Obsidian 相关讨论，关键词：being, closed, source, is。点击原文了解详情。</div>
 </div></div>
 
 <div style="background:linear-gradient(135deg,#1e293b,#334155);border-radius:12px;padding:16px 20px;color:#e2e8f0;font-size:13px;line-height:1.8">
