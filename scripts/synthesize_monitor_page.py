@@ -30,6 +30,9 @@ from synthesize_public_report import (
 
 TOPIC_ORDER = ["claude-code", "codex", "large-models", "obsidian"]
 OPENAI_CHAT_MODELS = ["gpt-5-mini", "gpt-4.1-mini"]
+TARGET_PAGE_ITEMS = 24
+BASE_ITEMS_PER_TOPIC = 3
+MAX_ITEMS_PER_TOPIC = 8
 
 
 @dataclass
@@ -126,7 +129,10 @@ def _merge_similar_items(selected: dict[str, list]) -> dict[str, list[MergedItem
             # 该组内按热度排序，取最高为 primary
             group.sort(key=lambda i: combined_heat_score(i, topic_key), reverse=True)
             primary = group[0]
-            score = combined_heat_score(primary, topic_key)
+            unique_sources = {item.source for item in group}
+            corroboration_bonus = max(0, len(unique_sources) - 1) * 6
+            trusted_bonus = 6 if any(item.source in {"web", "hn"} for item in group) else 0
+            score = combined_heat_score(primary, topic_key) + corroboration_bonus + trusted_bonus
             merged_item = MergedItem(
                 topic_key=topic_key,
                 primary_item=primary,
@@ -143,10 +149,10 @@ def _merge_similar_items(selected: dict[str, list]) -> dict[str, list[MergedItem
     return merged
 
 
-def select_global_items(sections: list[TopicSection], max_items: int = 40) -> dict[str, list]:
+def select_global_items(sections: list[TopicSection], max_items: int = TARGET_PAGE_ITEMS) -> dict[str, list]:
     """
-    收集所有候选按热度排序选入，去重留到 _merge_similar_items 统一处理。
-    每 topic 最多 15 条，总上限 40 条。
+    收集候选并尽量保证每个主题都有足够样本，再按全局热度补齐。
+    去重留到 _merge_similar_items 统一处理。
     """
     ranked = {
         section.topic_key: sorted(
@@ -158,7 +164,23 @@ def select_global_items(sections: list[TopicSection], max_items: int = 40) -> di
     }
 
     selected: dict[str, list] = {section.topic_key: [] for section in sections}
-    max_per_topic = 15
+    max_per_topic = MAX_ITEMS_PER_TOPIC
+
+    for section in sections:
+        topic_key = section.topic_key
+        base_items = ranked[topic_key][:BASE_ITEMS_PER_TOPIC]
+        selected[topic_key].extend(base_items)
+
+    chosen_keys = {
+        (
+            item.url or "",
+            item.identifier,
+            item.date,
+            topic_key,
+        )
+        for topic_key, items in selected.items()
+        for item in items
+    }
 
     all_candidates: list[tuple[int, str, object]] = []
     for section in sections:
@@ -167,13 +189,17 @@ def select_global_items(sections: list[TopicSection], max_items: int = 40) -> di
 
     all_candidates.sort(key=lambda entry: entry[0], reverse=True)
 
-    chosen_count = 0
+    chosen_count = sum(len(items) for items in selected.values())
     for _heat, topic_key, item in all_candidates:
+        item_key = (item.url or "", item.identifier, item.date, topic_key)
+        if item_key in chosen_keys:
+            continue
         if chosen_count >= max_items:
             break
         if len(selected[topic_key]) >= max_per_topic:
             continue
         selected[topic_key].append(item)
+        chosen_keys.add(item_key)
         chosen_count += 1
 
     for section in sections:

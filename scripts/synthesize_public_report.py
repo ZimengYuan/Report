@@ -9,6 +9,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
+from urllib.parse import urlparse
 
 
 SECTION_TO_SOURCE = {
@@ -39,16 +40,35 @@ SOURCE_LABELS = {
 
 SOURCE_PRIORITY = {
     "reddit": 6,
-    "hn": 5,
-    "youtube": 5,
+    "hn": 8,
+    "youtube": 6,
     "x": 4,
-    "web": 7,
+    "web": 12,
     "polymarket": 2,
     "bluesky": 2,
     "truthsocial": 1,
     "tiktok": 1,
     "instagram": 1,
 }
+
+OFFICIAL_DOMAIN_HINTS = (
+    "openai.com",
+    "anthropic.com",
+    "obsidian.md",
+    "docs.obsidian.md",
+    "ai.google.dev",
+    "blog.google",
+    "googleblog.com",
+    "huggingface.co",
+    "mistral.ai",
+    "deepseek.com",
+    "qwenlm.ai",
+    "meta.com",
+    "about.fb.com",
+)
+
+MAX_CURATION_POOL = 80
+MAX_CURATION_PER_SOURCE = 30
 
 TOPIC_RULES = {
     "claude-code": {
@@ -483,6 +503,42 @@ def score_item_for_topic(item: Item, topic_key: str) -> tuple[int, list[str], li
     return score, positive_hits, noise_hits
 
 
+def extract_domain(url: str) -> str:
+    if not url:
+        return ""
+    try:
+        return urlparse(url).netloc.lower().removeprefix("www.")
+    except ValueError:
+        return ""
+
+
+def source_depth_bonus(item: Item) -> int:
+    bonus = 0
+
+    if item.source == "web":
+        bonus += 10
+    elif item.source == "hn":
+        bonus += 7
+    elif item.source == "youtube":
+        bonus += 4
+    elif item.source == "reddit":
+        bonus += 3
+
+    if item.highlights:
+        bonus += min(len(item.highlights), 3)
+
+    domain = extract_domain(item.url)
+    if domain and any(domain == hint or domain.endswith(f".{hint}") for hint in OFFICIAL_DOMAIN_HINTS):
+        bonus += 8
+
+    if item.source == "x" and item.engagement:
+        counts = [int(token) for token in re.findall(r"\d+", item.engagement)]
+        if counts:
+            bonus += min(sum(counts) // 20, 4)
+
+    return bonus
+
+
 def pick_curated_items(report: ParsedCompactReport, topic_key: str) -> tuple[list[Item], dict[str, int]]:
     candidates: list[tuple[int, Item]] = []
     stats = {"kept": 0, "filtered_noise": 0, "filtered_weak": 0}
@@ -491,7 +547,7 @@ def pick_curated_items(report: ParsedCompactReport, topic_key: str) -> tuple[lis
         for item in items:
             # 时间窗口过滤已移除：保留所有时间范围内的条目以扩大候选池
             topic_score, positive_hits, noise_hits = score_item_for_topic(item, topic_key)
-            overall = item.score + topic_score * 8 + SOURCE_PRIORITY.get(source, 0)
+            overall = item.score + topic_score * 8 + SOURCE_PRIORITY.get(source, 0) + source_depth_bonus(item)
             if noise_hits:
                 stats["filtered_noise"] += 1
                 continue
@@ -506,11 +562,11 @@ def pick_curated_items(report: ParsedCompactReport, topic_key: str) -> tuple[lis
     per_source_kept: dict[str, int] = {}
 
     for _overall, item in candidates:
-        if per_source_kept.get(item.source, 0) >= 20:
+        if per_source_kept.get(item.source, 0) >= MAX_CURATION_PER_SOURCE:
             continue
         selected.append(item)
         per_source_kept[item.source] = per_source_kept.get(item.source, 0) + 1
-        if len(selected) >= 40:
+        if len(selected) >= MAX_CURATION_POOL:
             break
 
     stats["kept"] = len(selected)

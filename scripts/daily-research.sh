@@ -1,8 +1,11 @@
 #!/bin/bash
 # Daily Research Script
 # Schedule:
-#   - 10:00 Beijing time -> run one unified monitoring page
-#   - 20:00 Beijing time -> run one unified monitoring page
+#   - 10:00 Beijing time -> run one unified monitoring page (deep)
+#   - 20:00 Beijing time -> run one unified monitoring page (deep)
+# Strategy:
+#   - Each topic fans out into multiple focused queries.
+#   - Query outputs are merged into one normalized compact artifact per topic.
 
 set -euo pipefail
 
@@ -17,8 +20,8 @@ TIME="$(date +%H%M)"
 HOUR="$(date +%H)"
 TIMESTAMP="$(date +"%Y-%m-%d %H:%M:%S")"
 REPORT_UPDATED_AT="$(date +"%Y-%m-%d %H:%M:%S %z")"
-RESEARCH_DEPTH="${LAST30DAYS_RESEARCH_DEPTH:-quick}"
-RESEARCH_TIMEOUT="${LAST30DAYS_TIMEOUT:-180}"
+RESEARCH_DEPTH="${LAST30DAYS_RESEARCH_DEPTH:-deep}"
+RESEARCH_TIMEOUT="${LAST30DAYS_TIMEOUT:-420}"
 WINDOW_START=""
 WINDOW_END=""
 WINDOW_DAYS=1
@@ -131,6 +134,40 @@ filter_monitor_sources() {
     fi
 }
 
+topic_queries_for_key() {
+    local topic_key="$1"
+
+    case "$topic_key" in
+        claude-code)
+            printf '%s\n' \
+                "claude code anthropic coding agent terminal workflow" \
+                "claude code plugin delegate review tmux terminal" \
+                "claude code security sourcemap quota workflow"
+            ;;
+        codex)
+            printf '%s\n' \
+                "OpenAI Codex coding agent codex cli chatgpt codex" \
+                "Codex CLI MCP agents plugin integrations Figma Notion Slack" \
+                "Codex benchmark workflow developer review coding agent"
+            ;;
+        large-models)
+            printf '%s\n' \
+                "OpenAI Anthropic Gemini Llama Qwen DeepSeek LLM model reasoning" \
+                "large language model multimodal reasoning inference context benchmark" \
+                "foundation model release pricing latency open source model"
+            ;;
+        obsidian)
+            printf '%s\n' \
+                "Obsidian markdown notes plugin vault knowledge management" \
+                "Obsidian sync publish dataview templater community plugin" \
+                "Obsidian second brain zettelkasten knowledge base workflow"
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
 if ! SKILL_ROOT="$(find_skill_root)"; then
     echo "[$TIMESTAMP] ERROR: Could not find last30days.py" >> "$LOG_FILE"
     exit 1
@@ -150,10 +187,10 @@ PUBLIC_DIR="$PUBLIC_ROOT/$RESEARCH_TYPE"
 ARTIFACT_DIR="$ARTIFACT_ROOT/$RESEARCH_TYPE/$DATE"
 
 TOPIC_SPECS=(
-    "Claude Code|Claude Code|claude code anthropic coding agent terminal workflow|claude-code-raw|claude-code"
-    "Codex|Codex|OpenAI Codex coding agent codex cli chatgpt codex|codex-raw|codex"
-    "大模型|大模型|OpenAI Anthropic Gemini Llama Qwen DeepSeek LLM model reasoning|large-models-raw|large-models"
-    "Obsidian|Obsidian|Obsidian markdown notes plugin vault knowledge management|obsidian-raw|obsidian"
+    "Claude Code|Claude Code|claude-code-raw|claude-code"
+    "Codex|Codex|codex-raw|codex"
+    "大模型|大模型|large-models-raw|large-models"
+    "Obsidian|Obsidian|obsidian-raw|obsidian"
 )
 
 mkdir -p "$PUBLIC_DIR" "$ARTIFACT_DIR"
@@ -193,36 +230,75 @@ monitor_report="$(mktemp)"
 public_report="$PUBLIC_DIR/01-monitor.md"
 
 for spec in "${TOPIC_SPECS[@]}"; do
-    IFS='|' read -r display_title report_title search_topic raw_slug topic_key <<< "$spec"
+    IFS='|' read -r display_title report_title raw_slug topic_key <<< "$spec"
     raw_capture="$ARTIFACT_DIR/$raw_slug.md"
-    temp_capture="$(mktemp)"
+    successful_query_outputs=()
+    query_index=0
 
-    echo "[$TIMESTAMP] Running research for: $search_topic" >> "$LOG_FILE"
+    echo "[$TIMESTAMP] Running research for topic: $display_title" >> "$LOG_FILE"
     echo "[$TIMESTAMP] Raw capture -> $raw_capture" >> "$LOG_FILE"
 
-    LAST30DAYS_CMD=(
-        python3
-        "${SKILL_ROOT}/scripts/last30days.py"
-        "$search_topic"
-        --emit=compact
-        --search="$ALL_SEARCH_SOURCES"
-        --days "$WINDOW_DAYS"
-        "--$RESEARCH_DEPTH"
-        --timeout "$RESEARCH_TIMEOUT"
-    )
+    while IFS= read -r search_topic; do
+        [ -n "$search_topic" ] || continue
+        query_index=$((query_index + 1))
+        temp_capture="$(mktemp)"
 
-    if "${LAST30DAYS_CMD[@]}" > "$temp_capture" 2>>"$LOG_FILE"; then
-        mv "$temp_capture" "$raw_capture"
-        topic_args+=("--topic" "${topic_key}|${report_title}|${raw_capture}")
-        completed_topics=$((completed_topics + 1))
-    else
-        status=$?
-        rm -f "$temp_capture"
+        echo "[$TIMESTAMP] Query $query_index for $display_title: $search_topic" >> "$LOG_FILE"
+
+        LAST30DAYS_CMD=(
+            python3
+            "${SKILL_ROOT}/scripts/last30days.py"
+            "$search_topic"
+            --emit=compact
+            --search="$ALL_SEARCH_SOURCES"
+            --days "$WINDOW_DAYS"
+            "--$RESEARCH_DEPTH"
+            --timeout "$RESEARCH_TIMEOUT"
+        )
+
+        if "${LAST30DAYS_CMD[@]}" > "$temp_capture" 2>>"$LOG_FILE"; then
+            successful_query_outputs+=("$temp_capture")
+            echo "[$TIMESTAMP] Query $query_index succeeded for $display_title" >> "$LOG_FILE"
+        else
+            status=$?
+            rm -f "$temp_capture"
+            echo "[$TIMESTAMP] Query $query_index failed for $display_title (exit $status)" >> "$LOG_FILE"
+        fi
+    done < <(topic_queries_for_key "$topic_key")
+
+    if [ "${#successful_query_outputs[@]}" -eq 0 ]; then
         overall_status=1
-        echo "[$TIMESTAMP] Research failed: $search_topic (exit $status)" >> "$LOG_FILE"
+        echo "[$TIMESTAMP] All focused queries failed for $display_title" >> "$LOG_FILE"
         continue
     fi
-    echo "[$TIMESTAMP] Research completed: $display_title" >> "$LOG_FILE"
+
+    if [ "${#successful_query_outputs[@]}" -eq 1 ]; then
+        mv "${successful_query_outputs[0]}" "$raw_capture"
+    else
+        MERGE_CMD=(
+            python3
+            "$REPO_DIR/scripts/merge_compact_reports.py"
+            --topic "$report_title"
+        )
+        for merged_input in "${successful_query_outputs[@]}"; do
+            MERGE_CMD+=(--input "$merged_input")
+        done
+
+        if "${MERGE_CMD[@]}" > "$raw_capture" 2>>"$LOG_FILE"; then
+            :
+        else
+            status=$?
+            overall_status=1
+            echo "[$TIMESTAMP] Compact merge failed for $display_title (exit $status)" >> "$LOG_FILE"
+            rm -f "${successful_query_outputs[@]}"
+            continue
+        fi
+        rm -f "${successful_query_outputs[@]}"
+    fi
+
+    topic_args+=("--topic" "${topic_key}|${report_title}|${raw_capture}")
+    completed_topics=$((completed_topics + 1))
+    echo "[$TIMESTAMP] Research completed: $display_title (${#successful_query_outputs[@]} focused queries merged)" >> "$LOG_FILE"
 done
 
 if [ "${#topic_args[@]}" -gt 0 ]; then
