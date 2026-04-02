@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import datetime
 import html
 import json
@@ -37,9 +38,12 @@ from synthesize_public_report import (
 
 TOPIC_ORDER = ["claude-code", "codex", "large-models", "obsidian"]
 OPENAI_CHAT_MODELS = ["gpt-5-mini", "gpt-4.1-mini"]
+CODEX_CHAT_MODELS = ["gpt-5.1-codex-mini", "gpt-5.2"]
 TARGET_PAGE_ITEMS = 40
 BASE_ITEMS_PER_TOPIC = 3
 MAX_ITEMS_PER_TOPIC = 10
+OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
+CODEX_RESPONSES_URL = "https://chatgpt.com/backend-api/codex/responses"
 
 
 @dataclass
@@ -232,6 +236,238 @@ def load_runtime_env() -> dict[str, str]:
     return env
 
 
+def _decode_jwt_payload(token: str) -> dict | None:
+    try:
+        parts = token.split(".")
+        if len(parts) < 2:
+            return None
+        payload_b64 = parts[1]
+        pad = "=" * (-len(payload_b64) % 4)
+        decoded = base64.urlsafe_b64decode(payload_b64 + pad)
+        return json.loads(decoded.decode("utf-8"))
+    except Exception:
+        return None
+
+
+def _extract_chatgpt_account_id(access_token: str) -> str | None:
+    payload = _decode_jwt_payload(access_token)
+    if not payload:
+        return None
+    auth_claim = payload.get("https://api.openai.com/auth", {})
+    if isinstance(auth_claim, dict):
+        return auth_claim.get("chatgpt_account_id")
+    return None
+
+
+def resolve_openai_auth() -> dict[str, str]:
+    env = load_runtime_env()
+    api_key = env.get("OPENAI_API_KEY")
+    if api_key:
+        return {"token": api_key, "source": "api_key", "account_id": ""}
+
+    codex_auth_path = Path(os.environ.get("CODEX_AUTH_FILE", str(Path.home() / ".codex" / "auth.json")))
+    if not codex_auth_path.exists():
+        return {"token": "", "source": "none", "account_id": ""}
+
+    try:
+        auth = json.loads(codex_auth_path.read_text(encoding="utf-8"))
+    except Exception:
+        return {"token": "", "source": "none", "account_id": ""}
+
+    token = ""
+    if isinstance(auth, dict):
+        tokens = auth.get("tokens") or {}
+        if isinstance(tokens, dict):
+            token = str(tokens.get("access_token") or "")
+        if not token:
+            token = str(auth.get("access_token") or "")
+
+    if not token:
+        return {"token": "", "source": "none", "account_id": ""}
+
+    account_id = _extract_chatgpt_account_id(token) or ""
+    if not account_id:
+        return {"token": "", "source": "codex", "account_id": ""}
+    return {"token": token, "source": "codex", "account_id": account_id}
+
+
+def _parse_sse_chunk(chunk: str) -> dict | None:
+    lines = chunk.split("\n")
+    data_lines = []
+    for line in lines:
+        if line.startswith("data:"):
+            data_lines.append(line[5:].strip())
+    if not data_lines:
+        return None
+    data = "\n".join(data_lines).strip()
+    if not data or data == "[DONE]":
+        return None
+    try:
+        return json.loads(data)
+    except json.JSONDecodeError:
+        return None
+
+
+def _parse_sse_stream_raw(raw: str) -> list[dict]:
+    events: list[dict] = []
+    buffer = ""
+    for chunk in raw.splitlines(keepends=True):
+        buffer += chunk
+        while "\n\n" in buffer:
+            event_chunk, buffer = buffer.split("\n\n", 1)
+            event = _parse_sse_chunk(event_chunk)
+            if event is not None:
+                events.append(event)
+    if buffer.strip():
+        event = _parse_sse_chunk(buffer)
+        if event is not None:
+            events.append(event)
+    return events
+
+
+def _parse_codex_stream(raw: str) -> dict:
+    events = _parse_sse_stream_raw(raw)
+    for evt in reversed(events):
+        if isinstance(evt, dict):
+            if evt.get("type") == "response.completed" and isinstance(evt.get("response"), dict):
+                return evt["response"]
+            if isinstance(evt.get("response"), dict):
+                return evt["response"]
+
+    output_text = ""
+    for evt in events:
+        if not isinstance(evt, dict):
+            continue
+        delta = evt.get("delta")
+        if isinstance(delta, str):
+            output_text += delta
+            continue
+        text = evt.get("text")
+        if isinstance(text, str):
+            output_text += text
+
+    if output_text:
+        return {
+            "output": [
+                {
+                    "type": "message",
+                    "content": [{"type": "output_text", "text": output_text}],
+                }
+            ]
+        }
+    return {}
+
+
+def _extract_response_text(response: dict) -> str:
+    output_text = ""
+    if "output" in response:
+        output = response["output"]
+        if isinstance(output, str):
+            output_text = output
+        elif isinstance(output, list):
+            for item in output:
+                if isinstance(item, dict):
+                    if item.get("type") == "message":
+                        content = item.get("content", [])
+                        for c in content:
+                            if isinstance(c, dict) and c.get("type") == "output_text":
+                                output_text = c.get("text", "")
+                                break
+                    elif "text" in item:
+                        output_text = item["text"]
+                elif isinstance(item, str):
+                    output_text = item
+                if output_text:
+                    break
+
+    if not output_text and "choices" in response:
+        for choice in response["choices"]:
+            if "message" in choice:
+                output_text = choice["message"].get("content", "")
+                break
+
+    return clean_text(output_text)
+
+
+def _batched(items: list, size: int) -> list[list]:
+    return [items[i : i + size] for i in range(0, len(items), size)]
+
+
+def _call_openai_json(system_prompt: str, user_payload: dict, batch_hint: str = "items") -> dict:
+    auth = resolve_openai_auth()
+    token = auth.get("token", "")
+    if not token:
+        return {}
+
+    source = auth.get("source", "none")
+    account_id = auth.get("account_id", "")
+    models = CODEX_CHAT_MODELS if source == "codex" else OPENAI_CHAT_MODELS
+    user_text = json.dumps(user_payload, ensure_ascii=False)
+
+    for model in models:
+        try:
+            if source == "codex":
+                if not account_id:
+                    continue
+                body = {
+                    "model": model,
+                    "instructions": system_prompt,
+                    "input": [
+                        {
+                            "type": "message",
+                            "role": "user",
+                            "content": [{"type": "input_text", "text": user_text}],
+                        }
+                    ],
+                    "stream": True,
+                }
+                req = request.Request(
+                    CODEX_RESPONSES_URL,
+                    data=json.dumps(body).encode("utf-8"),
+                    headers={
+                        "Authorization": f"Bearer {token}",
+                        "chatgpt-account-id": account_id,
+                        "OpenAI-Beta": "responses=experimental",
+                        "originator": "pi",
+                        "Content-Type": "application/json",
+                    },
+                    method="POST",
+                )
+                with request.urlopen(req, timeout=60) as resp:
+                    response = _parse_codex_stream(resp.read().decode("utf-8"))
+            else:
+                body = {
+                    "model": model,
+                    "input": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_text},
+                    ],
+                    "text": {"format": {"type": "json_object"}},
+                }
+                req = request.Request(
+                    OPENAI_RESPONSES_URL,
+                    data=json.dumps(body).encode("utf-8"),
+                    headers={
+                        "Authorization": f"Bearer {token}",
+                        "Content-Type": "application/json",
+                    },
+                    method="POST",
+                )
+                with request.urlopen(req, timeout=60) as resp:
+                    response = json.loads(resp.read().decode("utf-8"))
+
+            content = _extract_response_text(response)
+            if not content:
+                continue
+            parsed = parse_json_object(content)
+            if batch_hint in parsed:
+                return parsed
+        except Exception:
+            continue
+
+    return {}
+
+
 def parse_json_object(text: str) -> dict:
     text = text.strip()
     if text.startswith("```"):
@@ -245,89 +481,116 @@ def parse_json_object(text: str) -> dict:
     return json.loads(text)
 
 
-def localize_item_summaries(topic_title: str, items: list) -> dict[int, str]:
-    env = load_runtime_env()
-    api_key = env.get("OPENAI_API_KEY")
-    if not api_key or not items:
+def localize_item_summaries(topic_title: str, topic_key: str, candidates: list[dict]) -> dict[int, dict]:
+    if not candidates:
         return {}
 
-    payload_items = []
-    for idx, item in enumerate(items, start=1):
-        # 尽量多传字段给模型，让摘要更具体
-        raw_parts = [
-            clean_text(item.summary or ""),
-            clean_text(item.why_relevant or ""),
-            clean_text(item.byline or ""),
-            clean_text(item.identifier or ""),
-        ]
-        # 也加入 highlights 如果有的话
-        highlights_text = ""
-        if item.highlights:
-            highlights_text = " | 高光：" + " ".join(item.highlights[:2])
-        full_text = " | ".join(p for p in raw_parts if p) + highlights_text
+    system_prompt = (
+        "你是一个中文技术编辑，负责把候选信息整理成真正可读的监控卡片摘要。\n"
+        "你会收到某个固定主题下的一批候选内容，内容可能来自推文、博客、网页、Hacker News 或视频摘录。\n"
+        "你的目标不是复述标题，而是基于提供的正文摘录和上下文，写出清楚、具体、信息密度高的中文总结。\n"
+        "要求：\n"
+        "1. 每条只写一句中文，控制在 45 到 90 个汉字。\n"
+        "2. 句子必须尽量写清“发生了什么 + 为什么值得看”。\n"
+        "3. 如果出现具体公司、产品、模型、插件、风险点、对比对象、版本或能力差异，必须写进去。\n"
+        "4. 不要写“内容聚焦”“内容关注”“值得继续观察”“点击原文了解更多”这种空话。\n"
+        "5. 如果一条内容明显与主题无关、像垃圾页、导流页或误抓结果，请标记为 irrelevant。\n"
+        "6. 不要编造原文没有的信息。\n"
+        "只返回 JSON，格式为 {\"items\":[{\"index\":1,\"summary_zh\":\"...\",\"is_irrelevant\":false}]}"
+    )
 
-        payload_items.append(
+    localized: dict[int, dict] = {}
+    for batch in _batched(candidates, 8):
+        payload_items = []
+        for candidate in batch:
+            item = candidate["item"]
+            page_context = candidate.get("page_context")
+            raw_parts = [
+                clean_text(item.identifier or ""),
+                clean_text(item.byline or ""),
+                clean_text(item.summary or ""),
+                clean_text(item.why_relevant or ""),
+                " | ".join(item.highlights[:3]) if item.highlights else "",
+                clean_text(page_context.title if page_context else ""),
+                clean_text(page_context.description if page_context else ""),
+                clean_text(page_context.excerpt if page_context else "")[:1400],
+            ]
+            payload_items.append(
+                {
+                    "index": candidate["index"],
+                    "topic": topic_title,
+                    "source": SOURCE_LABELS.get(item.source, item.source),
+                    "date": item.date or "日期未识别",
+                    "heat": candidate.get("score", 0),
+                    "merged_count": candidate.get("merged_count", 1),
+                    "text": clean_text(" | ".join(part for part in raw_parts if part))[:2200],
+                }
+            )
+
+        parsed = _call_openai_json(
+            system_prompt,
+            {"topic_key": topic_key, "topic": topic_title, "items": payload_items},
+        )
+        for entry in parsed.get("items", []):
+            try:
+                index = int(entry["index"])
+            except Exception:
+                continue
+            summary = clean_text(str(entry.get("summary_zh", "")))
+            is_irrelevant = bool(entry.get("is_irrelevant", False))
+            if summary or is_irrelevant:
+                localized[index] = {
+                    "summary_zh": summary,
+                    "is_irrelevant": is_irrelevant,
+                }
+
+    return localized
+
+
+def localize_topic_trends(sections: list[TopicSection], merged: dict[str, list["MergedItem"]]) -> dict[str, str]:
+    payload_topics = []
+    for section in sections:
+        items = merged.get(section.topic_key, [])
+        if not items:
+            continue
+        payload_topics.append(
             {
-                "index": idx,
-                "source": SOURCE_LABELS.get(item.source, item.source),
-                "date": item.date or "日期未识别",
-                "text": full_text[:600],  # 限制长度避免 token 浪费
+                "topic_key": section.topic_key,
+                "topic": section.title,
+                "source_summary": section.source_summary_text,
+                "items": [
+                    {
+                        "score": item.score,
+                        "source": SOURCE_LABELS.get(item.primary_item.source, item.primary_item.source),
+                        "date": item.primary_item.date or "日期未识别",
+                        "summary_zh": clean_text(item.summary_zh or fallback_summary_zh(section.topic_key, item.primary_item)),
+                    }
+                    for item in items[:5]
+                ],
             }
         )
 
+    if not payload_topics:
+        return {}
+
     system_prompt = (
-        "你是一个中文技术深度编辑。请根据每条内容的原文（来自推文/视频/博客/黑客新闻），撰写一条有信息量的中文技术摘要。\n"
-        "撰写规范：\n"
-        "1. 每条输出【一句】完整的中文句子（30~65个汉字），不得拆分多句。\n"
-        "2. 标题式信息（\"XX 发布\"、\"XX 开源\"）要补充具体细节：版本号、关键功能、数字指标。\n"
-        "3. 推文类内容要提炼出事件本身和核心看点，不只是\"讨论了XX\"。\n"
-        "4. 博客/视频类内容要交代作者身份、内容类型和最值得看的角度。\n"
-        "5. 相同事件的多条内容，摘要要有差异化，不能雷同。\n"
-        "6. 禁止：空话（\"引起了广泛关注\"）、营销腔（\"震撼发布\"）、编造细节。\n"
-        "7. 原文如有具体数字、人名、产品名，必须保留或转写进摘要。\n"
-        "只返回 JSON，格式为 {\"items\":[{\"index\":1,\"summary_zh\":\"...\"}]}，不要有其他文字。"
+        "你是中文技术编辑，需要根据每个主题下已经整理好的多条卡片，总结“这个主题本轮的发展趋势”。\n"
+        "要求：\n"
+        "1. 每个主题输出一句到两句中文，总长度控制在 55 到 120 个汉字。\n"
+        "2. 不是重复某一条卡片，而是概括这一轮主题整体在往哪里发展。\n"
+        "3. 要尽量写清主导信号，例如产品演进、风险争议、对比方向、生态变化、工作流落地。\n"
+        "4. 不要写空话，不要写“整体热度较高”这种没信息量的话。\n"
+        "只返回 JSON，格式为 {\"topics\":[{\"topic_key\":\"codex\",\"trend_summary\":\"...\"}]}"
     )
-    user_payload = json.dumps({"topic": topic_title, "items": payload_items}, ensure_ascii=False)
 
-    for model in OPENAI_CHAT_MODELS:
-        body = {
-            "model": model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_payload},
-            ],
-            "response_format": {"type": "json_object"},
-        }
-        req = request.Request(
-            "https://api.openai.com/v1/chat/completions",
-            data=json.dumps(body).encode("utf-8"),
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            },
-            method="POST",
-        )
-        try:
-            with request.urlopen(req, timeout=40) as resp:
-                raw = json.loads(resp.read().decode("utf-8"))
-            content = raw["choices"][0]["message"]["content"]
-            parsed = parse_json_object(content)
-            items_payload = parsed.get("items", [])
-            localized = {}
-            for entry in items_payload:
-                try:
-                    index = int(entry["index"])
-                except Exception:
-                    continue
-                summary = clean_text(str(entry.get("summary_zh", "")))
-                if summary:
-                    localized[index] = summary
-            if localized:
-                return localized
-        except Exception:
-            continue
-
-    return {}
+    parsed = _call_openai_json(system_prompt, {"topics": payload_topics}, batch_hint="topics")
+    localized: dict[str, str] = {}
+    for entry in parsed.get("topics", []):
+        topic_key = clean_text(str(entry.get("topic_key", "")))
+        trend_summary = clean_text(str(entry.get("trend_summary", "")))
+        if topic_key and trend_summary:
+            localized[topic_key] = trend_summary
+    return localized
 
 
 def enrich_merged_items(section: TopicSection, merged_items: list[MergedItem], page_cache: dict[str, object]) -> list[MergedItem]:
@@ -361,17 +624,20 @@ def enrich_merged_items(section: TopicSection, merged_items: list[MergedItem], p
                 "item": primary,
                 "page_context": page_context,
                 "page_relevance": page_relevance,
+                "score": merged_item.score,
+                "merged_count": len(merged_item.linked_items),
             }
         )
 
     if not prelim_items:
         return []
 
-    localized = summarize_candidates(section.title, section.topic_key, candidates)
+    localized = localize_item_summaries(section.title, section.topic_key, candidates)
+    fallback_localized = summarize_candidates(section.title, section.topic_key, candidates)
     final_items: list[MergedItem] = []
 
     for merged_item, candidate in zip(prelim_items, candidates):
-        result = localized.get(candidate["index"], {})
+        result = localized.get(candidate["index"]) or fallback_localized.get(candidate["index"], {})
         if result.get("is_irrelevant"):
             continue
 
@@ -739,7 +1005,7 @@ def build_sections(payloads: list[TopicPayload]) -> list[TopicSection]:
     return sections
 
 
-def _build_trend_summary(sections: list, merged: dict[str, list[MergedItem]]) -> list[str]:
+def _build_trend_summary(sections: list, merged: dict[str, list[MergedItem]], ai_topic_trends: dict[str, str] | None = None) -> list[str]:
     """生成趋势卡片和阅读提示。"""
     topic_stats = {}
     for section in sections:
@@ -754,7 +1020,7 @@ def _build_trend_summary(sections: list, merged: dict[str, list[MergedItem]]) ->
             key=lambda s: sum(1 for m in items for item in m.linked_items if item.source == s)
         )
         top_m = items[0]  # 已按热度排序
-        summary = top_m.summary_zh or fallback_summary_zh(section.topic_key, top_m.primary_item)
+        summary = clean_text((ai_topic_trends or {}).get(section.topic_key) or top_m.summary_zh or fallback_summary_zh(section.topic_key, top_m.primary_item))
         topic_stats[section.topic_key] = {
             "count": len(items),
             "raw_count": sum(len(m.linked_items) for m in items),
@@ -906,7 +1172,8 @@ def render_page(
         for section in sections
     )
 
-    trend_section = "\n".join(_build_trend_summary(sections, merged))
+    ai_topic_trends = localize_topic_trends(sections, merged)
+    trend_section = "\n".join(_build_trend_summary(sections, merged, ai_topic_trends))
 
     lines = [
         "",
