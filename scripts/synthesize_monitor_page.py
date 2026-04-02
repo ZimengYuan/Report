@@ -391,7 +391,33 @@ def enrich_merged_items(section: TopicSection, merged_items: list[MergedItem], p
             merged_item.summary_zh = summary
         final_items.append(merged_item)
 
-    return final_items
+    collapsed: dict[str, MergedItem] = {}
+    ordered: list[MergedItem] = []
+    for merged_item in final_items:
+        summary_key = clean_text(merged_item.summary_zh).lower()
+        if not summary_key:
+            ordered.append(merged_item)
+            continue
+        existing = collapsed.get(summary_key)
+        if existing is None:
+            collapsed[summary_key] = merged_item
+            ordered.append(merged_item)
+            continue
+
+        if merged_item.score > existing.score:
+            existing.primary_item = merged_item.primary_item
+            existing.score = merged_item.score
+
+        seen_links = {item.url or f"{item.identifier}|{item.date}" for item in existing.linked_items}
+        for item in merged_item.linked_items:
+            key = item.url or f"{item.identifier}|{item.date}"
+            if key in seen_links:
+                continue
+            existing.linked_items.append(item)
+            seen_links.add(key)
+
+    ordered.sort(key=lambda item: item.score, reverse=True)
+    return ordered
 
 
 def render_section_bullets(section: TopicSection) -> list[str]:

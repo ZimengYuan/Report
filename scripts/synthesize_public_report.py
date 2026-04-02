@@ -67,6 +67,109 @@ OFFICIAL_DOMAIN_HINTS = (
     "about.fb.com",
 )
 
+BLOCKED_WEB_DOMAINS = {
+    "edmunds.com",
+    "leioamt.com",
+    "valavancharitabletrust.com",
+    "bestbuy.ca",
+    "wordxbpo.com",
+    "discovery.researcher.life",
+    "cve.mitre.org",
+    "sec.gov",
+    "govinfo.gov",
+    "komga.org",
+    "gormleyltd.com",
+    "tactic.coach",
+}
+
+GENERIC_WEB_NOISE_TERMS = (
+    "specs & features",
+    "refurbished",
+    "shop",
+    "bracelet",
+    "ring",
+    "crystal",
+    "feng shui",
+    "unlocked",
+    "grand wagoneer",
+    "jeep",
+    "pixel 8",
+    "buy now",
+)
+
+LOW_VALUE_EVENT_TERMS = (
+    "webinar",
+    "workshop",
+    "meetup",
+    "conference",
+    "summit",
+    "register",
+    "registration",
+    "rsvp",
+    "event details",
+    "tickets",
+)
+
+TOPIC_STRONG_TERMS = {
+    "claude-code": (
+        "claude code",
+        "coding agent",
+        "terminal",
+        "review",
+        "sourcemap",
+        "agent skill",
+        "workflow",
+        "plugin",
+        "tmux",
+    ),
+    "codex": (
+        "codex cli",
+        "chatgpt codex",
+        "openai",
+        "mcp",
+        "agent",
+        "automation",
+        "benchmark",
+        "plugin",
+        "coding",
+    ),
+    "large-models": (
+        "openai",
+        "anthropic",
+        "gemini",
+        "llama",
+        "qwen",
+        "deepseek",
+        "reasoning",
+        "multimodal",
+        "whisper",
+        "speech",
+        "inference",
+        "gpt",
+        "claude",
+        "context window",
+        "benchmark",
+        "api",
+    ),
+    "obsidian": (
+        "vault",
+        "markdown",
+        "plugin",
+        "template",
+        "sync",
+        "publish",
+        "zettelkasten",
+        "second brain",
+        "note",
+        "notes",
+        "knowledge",
+        "graph",
+        "canvas",
+        "dataview",
+        "templater",
+    ),
+}
+
 MAX_CURATION_POOL = 80
 MAX_CURATION_PER_SOURCE = 30
 
@@ -541,6 +644,39 @@ def source_depth_bonus(item: Item) -> int:
     return bonus
 
 
+def fails_candidate_gate(item: Item, topic_key: str, haystack: str, positive_hits: list[str]) -> bool:
+    if item.source not in {"web", "hn"}:
+        return False
+
+    domain = extract_domain(item.url)
+    if domain in BLOCKED_WEB_DOMAINS:
+        return True
+
+    if any(term in haystack for term in GENERIC_WEB_NOISE_TERMS):
+        return True
+
+    if any(term in haystack for term in LOW_VALUE_EVENT_TERMS) and not any(
+        term in haystack for term in ("takeaways", "notes", "recording", "slides", "transcript", "write-up", "总结")
+    ):
+        return True
+
+    strong_terms = TOPIC_STRONG_TERMS.get(topic_key, ())
+    if strong_terms and not any(term in haystack for term in strong_terms):
+        return True
+
+    if topic_key == "obsidian" and positive_hits == ["obsidian"]:
+        return True
+
+    if topic_key == "claude-code" and all(hit not in {"claude code", "workflow", "plugin", "terminal", "review", "agent"} for hit in positive_hits):
+        if "claude code" not in haystack:
+            return True
+
+    if topic_key == "codex" and "codex" in positive_hits and "openai" not in haystack and "codex cli" not in haystack:
+        return True
+
+    return False
+
+
 def pick_curated_items(report: ParsedCompactReport, topic_key: str) -> tuple[list[Item], dict[str, int]]:
     candidates: list[tuple[int, Item]] = []
     stats = {"kept": 0, "filtered_noise": 0, "filtered_weak": 0}
@@ -549,8 +685,12 @@ def pick_curated_items(report: ParsedCompactReport, topic_key: str) -> tuple[lis
         for item in items:
             # 时间窗口过滤已移除：保留所有时间范围内的条目以扩大候选池
             topic_score, positive_hits, noise_hits = score_item_for_topic(item, topic_key)
+            haystack = item.raw_text.lower()
             overall = item.score + topic_score * 8 + SOURCE_PRIORITY.get(source, 0) + source_depth_bonus(item)
             if noise_hits:
+                stats["filtered_noise"] += 1
+                continue
+            if fails_candidate_gate(item, topic_key, haystack, positive_hits):
                 stats["filtered_noise"] += 1
                 continue
             if topic_score <= 0 or not positive_hits:

@@ -8,7 +8,14 @@ from dataclasses import dataclass
 from html import unescape
 from urllib import error, request
 
-from synthesize_public_report import TOPIC_RULES, clean_text, extract_domain
+from synthesize_public_report import (
+    BLOCKED_WEB_DOMAINS,
+    GENERIC_WEB_NOISE_TERMS,
+    LOW_VALUE_EVENT_TERMS,
+    TOPIC_RULES,
+    clean_text,
+    extract_domain,
+)
 
 
 FETCHABLE_SOURCES = {"web", "hn"}
@@ -19,6 +26,54 @@ TOPIC_LABELS = {
     "large-models": "大模型",
     "obsidian": "Obsidian",
 }
+
+OBSIDIAN_CONTEXT_TERMS = (
+    "vault",
+    "markdown",
+    "note",
+    "notes",
+    "knowledge",
+    "plugin",
+    "templater",
+    "dataview",
+    "sync",
+    "publish",
+    "second brain",
+    "zettelkasten",
+    "canvas",
+    "graph",
+)
+
+LARGE_MODEL_CONTEXT_TERMS = (
+    "openai",
+    "anthropic",
+    "gemini",
+    "llama",
+    "qwen",
+    "deepseek",
+    "mistral",
+    "gpt",
+    "claude opus",
+    "claude sonnet",
+    "reasoning",
+    "multimodal",
+    "context window",
+    "speech",
+    "audio",
+    "benchmark",
+    "inference",
+    "api",
+    "model release",
+)
+
+LOW_SIGNAL_SOURCE_TERMS = (
+    "webinar",
+    "workshop",
+    "register",
+    "rsvp",
+    "event",
+    "tickets",
+)
 
 
 @dataclass
@@ -31,6 +86,8 @@ class PageContext:
     content_type: str = ""
     ok: bool = False
     error: str = ""
+
+
 def should_fetch_url(source: str, url: str) -> bool:
     if source not in FETCHABLE_SOURCES or not url:
         return False
@@ -227,6 +284,20 @@ def _extract_first_sentence(text: str, limit: int = 48) -> str:
     return sentence
 
 
+def _contains_any(text: str, *tokens: str) -> bool:
+    return any(token in text for token in tokens)
+
+
+def _normalized_page_title(title: str) -> str:
+    title = clean_text(title)
+    if not title:
+        return ""
+    parts = [part.strip() for part in re.split(r"\s+[|\-–—]\s+", title) if clean_text(part)]
+    if parts:
+        return parts[0]
+    return title
+
+
 def _quoted_title(title: str, limit: int = 32) -> str:
     title = clean_text(title)
     if not title:
@@ -234,6 +305,82 @@ def _quoted_title(title: str, limit: int = 32) -> str:
     if len(title) > limit:
         title = title[: limit - 1].rstrip(" ,;:") + "…"
     return f"《{title}》"
+
+
+def _summary_from_title(topic_label: str, page_title: str, lowered: str) -> str:
+    quoted = _quoted_title(_normalized_page_title(page_title))
+    if not quoted:
+        return ""
+    if _contains_any(lowered, "compare", "comparison", "vs ", "versus", "benchmark"):
+        return f"这篇内容围绕 {quoted} 展开，核心是在对比不同方案或工具的实际表现与适用场景。"
+    if _contains_any(lowered, "guide", "tutorial", "how to", "docs", "documentation", "integration", "plugin", "template"):
+        return f"这篇内容更像一份 {topic_label} 的教程或文档，重点在具体接入方式、配置步骤或插件用法。"
+    if _contains_any(lowered, "release", "launch", "introduces", "announces", "new feature", "update"):
+        return f"这篇文章介绍了 {topic_label} 相关的新功能或新版本，重点在产品能力的新增与落地方式。"
+    if _contains_any(lowered, "security", "vulnerability", "prompt injection", "zero trust", "leak"):
+        return f"这篇内容聚焦 {topic_label} 的安全议题，核心在风险暴露、攻击面或治理方式。"
+    return f"这篇文章围绕 {quoted} 展开，属于 {topic_label} 方向里值得继续细看的具体案例。"
+
+
+def _low_value_page(topic_key: str, item, context: PageContext | None, lowered: str) -> bool:
+    domain = extract_domain((context.final_url if context else "") or (context.url if context else "") or getattr(item, "url", ""))
+    if domain in BLOCKED_WEB_DOMAINS:
+        return True
+
+    if any(term in lowered for term in GENERIC_WEB_NOISE_TERMS):
+        return True
+
+    if item.source in FETCHABLE_SOURCES and any(term in lowered for term in LOW_VALUE_EVENT_TERMS):
+        if not any(term in lowered for term in ("takeaways", "notes", "recording", "slides", "transcript", "write-up", "总结")):
+            return True
+
+    if topic_key == "obsidian" and not any(term in lowered for term in OBSIDIAN_CONTEXT_TERMS):
+        return True
+
+    if topic_key == "claude-code" and not any(
+        term in lowered
+        for term in (
+            "claude code",
+            "anthropic",
+            "sourcemap",
+            "source code",
+            "terminal",
+            "tmux",
+            "review",
+            "plugin",
+            "agent skill",
+            "ollama",
+            "quota",
+        )
+    ):
+        return True
+
+    if topic_key == "codex" and not any(
+        term in lowered
+        for term in (
+            "codex",
+            "openai",
+            "codex cli",
+            "mcp",
+            "gmail",
+            "figma",
+            "notion",
+            "slack",
+            "prompt injection",
+            "benchmark",
+            "coding agent",
+        )
+    ):
+        return True
+
+    if topic_key == "large-models" and not any(term in lowered for term in LARGE_MODEL_CONTEXT_TERMS):
+        return True
+
+    if topic_key == "large-models" and _contains_any(lowered, "claude code", "cursor", "copilot", "coding agent"):
+        if not _contains_any(lowered, "gpt", "gemini", "llama", "qwen", "deepseek", "mistral", "opus", "sonnet", "reasoning", "multimodal", "model"):
+            return True
+
+    return False
 
 
 def heuristic_candidate_summary(
@@ -250,15 +397,30 @@ def heuristic_candidate_summary(
     lowered = haystack.lower()
     page_title = clean_text(context.title if context else "")
     page_desc = clean_text(context.description if context else "")
+    normalized_title = _normalized_page_title(page_title)
     best_sentence = _extract_first_sentence(page_desc or (context.excerpt if context else "") or clean_text(getattr(item, "summary", "") or ""))
     topic_label = TOPIC_LABELS.get(topic_key, topic_title)
+    domain = extract_domain((context.final_url if context else "") or (context.url if context else "") or getattr(item, "url", ""))
 
     def has(*tokens: str) -> bool:
         return any(token in lowered for token in tokens)
 
+    if _low_value_page(topic_key, item, context, lowered):
+        return "", True
+
     if topic_key == "claude-code":
+        if has("published claude code", "published claude codes source code", "source code") and has("claude code", "anthropic"):
+            return "文章讨论 Anthropic 意外公开 Claude Code 源码后的连锁影响，重点在泄露细节和社区对风险的再解读。", False
+        if has("hype", "overblown") and has("leak", "source code", "claude code"):
+            return "这条讨论认为 Claude Code 源码泄露被过度渲染，争论焦点在事件真实危害是否像舆论说得那么严重。", False
         if has("sourcemap", "source map", "source code leaked", "leaked source", "typescript source"):
             return "文章围绕 Claude Code 源码暴露事件展开，重点在 sourcemap 导致源码被抓取后的安全风险。", False
+        if has("can someone share", "share claude source code", "share source code"):
+            return "源码泄露话题还在扩散，社区已经出现直接索要 Claude Code 源码镜像的讨论，说明事件热度并未消退。", False
+        if has("promptfoo", "agent skill", "eval", "evals"):
+            return "这篇文档介绍 Promptfoo 的 agent skill 集成方式，核心是把外部 agent 接进评测流程，自动生成和执行更复杂的 eval。", False
+        if has("同僚", "100万トークン", "voice", "1m token") or ("同僚" in haystack):
+            return "这条讨论把 Claude Code 放进“AI 从工具走向同事”的叙事里，重点是语音交互、超长上下文和 agent 自主性。", False
         if has("cursor", "copilot", "compare", "comparison", "vs "):
             return "内容比较了 Claude Code 与其他 AI 编码工具的定位差异，重点在复杂任务、自主性和团队协作场景。", False
         if has("plugin", "extension", "integration", "review", "terminal", "tmux", "workflow"):
@@ -267,16 +429,22 @@ def heuristic_candidate_summary(
             return "讨论集中在 Claude Code 的本地接入、配额与成本控制，反映出一线使用中的工程现实问题。", False
 
     if topic_key == "codex":
+        if has("prompt injection", "vulnerability", "security flaw", "read access"):
+            return "这条内容聚焦 Codex 的 prompt injection 风险，担心 agent 在拥有代码和文档读取权限时被恶意指令带偏。", False
         if has("figma", "notion", "gmail", "slack", "jira", "linear"):
             return "文章讨论 Codex 与外部工具的连接能力，重点是把编码 agent 扩展到设计、协作和项目管理流程。", False
         if has("mcp", "agents v2", "hooks", "codex cli", "cli", "plugin"):
             return "内容聚焦 Codex CLI 与插件能力演进，说明它正从写码工具转向更完整的 agent 工作流平台。", False
+        if has("benchmark", "live against both", "vs claude", "vs cursor", "qwen", "grok"):
+            return "讨论重点是拿 Codex 与 Claude、Grok、Qwen 等工具做实战对比，关注真实任务完成率而不是演示效果。", False
         if has("benchmark", "swe-bench", "evaluation", "compare", "cursor", "copilot", "claude"):
             return "文章比较了 Codex 与其他 coding agent 的能力差异，重点在任务完成质量、稳定性和开发体验。", False
         if has("automation", "agentic", "workflow", "end-to-end"):
             return "讨论焦点是 Codex 如何承担端到端自动化任务，而不再局限于单点代码生成。", False
 
     if topic_key == "large-models":
+        if has("gemini 2.5", "gpt-5", "claude 4", "qwen3", "llama 4", "deepseek", "mistral", "model release"):
+            return "这条内容关注主流模型的新版本变化，重点在推理能力、上下文长度或产品化速度上的直接竞争。", False
         if has("reasoning", "chain-of-thought", "thinking budget", "cot"):
             return "内容围绕大模型推理能力展开，重点讨论长思维链、thinking budget 与成本延迟之间的权衡。", False
         if has("whisper", "transcribe", "speech", "voice", "audio"):
@@ -289,6 +457,16 @@ def heuristic_candidate_summary(
             return "内容聚焦大模型价格与成本变化，反映出 API 性价比竞争正在影响应用层的选型。", False
 
     if topic_key == "obsidian":
+        if has("from zero", "desde cero", "markdown", "notion") and has("obsidian"):
+            return "作者预告一场从零开始的 Obsidian 教学，并解释自己为何从 Notion 转向基于 Markdown 的笔记工作流。", False
+        if has("second brain", "shared context layer", "actual productivity stack"):
+            return "这条分享把 Obsidian 当作第二大脑和共享上下文层，用来给其他 AI 工具持续提供可调用的个人知识背景。", False
+        if has("graveyard for good ideas", "sprouted", "second brain"):
+            return "这条内容反思 Obsidian/Notion 式第二大脑容易只收藏不回看，问题不在工具本身，而在缺少回顾和执行闭环。", False
+        if has("obsidian sync"):
+            return "这条讨论虽然很短，但再次说明同步体验仍是 Obsidian 用户最敏感、最常被提起的核心需求之一。", False
+        if has("markdown notes", "ai directly", "manage everything for you", "forget notion", "forget obsidian"):
+            return "讨论把 AI 直接接进 Markdown 笔记库，目标是让代理替你整理和调用知识，而不是手动维护 Obsidian/Notion。", False
         if has("sync", "vault", "icloud", "onedrive", "git sync"):
             return "文章围绕 Obsidian 的 vault 同步与跨端管理展开，重点比较不同同步方案的稳定性和维护成本。", False
         if has("plugin", "community plugin", "dataview", "templater", "publish"):
@@ -301,17 +479,30 @@ def heuristic_candidate_summary(
     if context and context.ok:
         if re.search(r"[\u4e00-\u9fff]", best_sentence):
             return best_sentence, False
-        if page_title:
-            return f"{topic_label} 相关网页 { _quoted_title(page_title) }，主要围绕实践经验、产品更新或使用方法展开。", False
+        if normalized_title:
+            return _summary_from_title(topic_label, normalized_title, lowered), False
 
     raw_hint = clean_text(" ".join(filter(None, [getattr(item, "summary", ""), getattr(item, "why_relevant", ""), getattr(item, "byline", ""), getattr(item, "identifier", "")])))
     raw_sentence = _extract_first_sentence(raw_hint)
     if raw_sentence:
         if re.search(r"[\u4e00-\u9fff]", raw_sentence):
             return raw_sentence, False
-        return f"这条内容与 {topic_label} 相关，主要围绕一线实践、工具对比或产品动态展开。", False
+        if has("compare", "vs ", "benchmark"):
+            return f"这条内容围绕 {topic_label} 的横向对比展开，重点是不同工具或方案在真实使用中的差异。", False
+        if has("security", "leak", "vulnerability", "prompt injection"):
+            return f"这条内容聚焦 {topic_label} 的安全或风险问题，重点在暴露面、攻击路径或治理手段。", False
+        if has("plugin", "integration", "workflow", "template", "sync", "publish"):
+            return f"这条内容更偏向 {topic_label} 的工作流或集成实践，适合顺着原文继续看具体做法。", False
+        if domain:
+            return f"这条内容来自 {domain}，围绕 {topic_label} 的具体案例展开，值得顺着原文核对细节。", False
 
-    return f"这条内容与 {topic_label} 相关，建议点开原文查看具体细节。", False
+    if normalized_title:
+        return _summary_from_title(topic_label, normalized_title, lowered), False
+
+    if domain:
+        return f"这条内容来自 {domain}，属于 {topic_label} 方向里的具体信号，建议结合原文判断其实际价值。", False
+
+    return f"这条内容提供了 {topic_label} 方向的新信号，但信息密度有限，建议打开原文确认关键细节。", False
 
 
 def summarize_candidates(topic_title: str, topic_key: str, candidates: list[dict]) -> dict[int, dict]:
