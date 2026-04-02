@@ -642,7 +642,7 @@ def _merged_item_card(index: int, m: MergedItem, section: TopicSection) -> str:
     <div class="monitor-item-card__meta">{meta_html}</div>
   </div>
   <div class="monitor-item-card__section">
-    <p class="monitor-item-card__section-label">重点结论</p>
+    <p class="monitor-item-card__section-label">总结</p>
     <p class="monitor-item-card__summary">{summary_escaped}</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
@@ -699,7 +699,7 @@ def render_topic_section(section: TopicSection, merged_items: list[MergedItem]) 
         <p class="monitor-topic__tagline">{html.escape(c.get('tagline', ''))}</p>
       </div>
     </div>
-    <div class="monitor-topic__count">{len(merged_items)} 条精品 · {total_raw} 条原始</div>
+    <div class="monitor-topic__count">{len(merged_items)} 张卡片 · 合并自 {total_raw} 条候选</div>
   </div>
   <div class="monitor-topic__body">
     <div class="monitor-topic__chips">{chips_html}</div>
@@ -794,7 +794,7 @@ def _build_trend_summary(sections: list, merged: dict[str, list[MergedItem]]) ->
   <div class="monitor-trend-card__score">{stats['max']}</div>
   <div class="monitor-trend-card__meta">
     <span class="monitor-trend-bar">{bar}</span>
-    <span>均值 {stats['avg']} · {stats['count']} 条精品（{stats['raw_count']} 条原始）</span>
+    <span>均值 {stats['avg']} · {stats['count']} 张卡片（合并自 {stats['raw_count']} 条候选）</span>
   </div>
   <div class="monitor-trend-card__meta">主要来源：{top_source}</div>
   <div class="monitor-trend-card__summary">{top_summary}</div>
@@ -881,7 +881,7 @@ def render_page(
       <p class="monitor-hero__window">最近时段窗口：{html.escape(window_date_str)} · 约 {window_hours} 小时</p>
     </div>
     <div class="monitor-hero__stats">
-      <div class="monitor-stat"><span class="monitor-stat__value">{total_merged}</span><span class="monitor-stat__label">精品条数</span></div>
+      <div class="monitor-stat"><span class="monitor-stat__value">{total_merged}</span><span class="monitor-stat__label">最终卡片</span></div>
       <div class="monitor-stat"><span class="monitor-stat__value">{x_hits}</span><span class="monitor-stat__label">X / 推文</span></div>
       <div class="monitor-stat"><span class="monitor-stat__value">{youtube_hits}</span><span class="monitor-stat__label">YouTube</span></div>
       <div class="monitor-stat"><span class="monitor-stat__value">{hn_hits}</span><span class="monitor-stat__label">Hacker News</span></div>
@@ -890,8 +890,8 @@ def render_page(
   </div>
   <div class="monitor-hero__meta">
     <span class="monitor-meta-pill">📡 启用数据源：{html.escape(search_sources or '未记录')}</span>
-    <span class="monitor-meta-pill">🔍 原始候选：{total_raw} 条</span>
-    <span class="monitor-meta-pill">🧹 去重精简后：{total_merged} 条</span>
+    <span class="monitor-meta-pill">🔍 候选条目：{total_raw} 条</span>
+    <span class="monitor-meta-pill">🧹 最终展示：{total_merged} 张卡片</span>
     <span class="monitor-meta-pill">🗂 监控主题：Claude Code · Codex · 大模型 · Obsidian</span>
   </div>
 </section>"""

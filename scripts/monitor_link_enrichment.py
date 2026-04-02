@@ -307,19 +307,39 @@ def _quoted_title(title: str, limit: int = 32) -> str:
     return f"《{title}》"
 
 
+def _present_labels(lowered: str, mapping: list[tuple[str, str]], limit: int = 3) -> list[str]:
+    labels: list[str] = []
+    for token, label in mapping:
+        if token in lowered and label not in labels:
+            labels.append(label)
+        if len(labels) >= limit:
+            break
+    return labels
+
+
+def _join_labels(labels: list[str]) -> str:
+    if not labels:
+        return ""
+    if len(labels) == 1:
+        return labels[0]
+    if len(labels) == 2:
+        return f"{labels[0]} 和 {labels[1]}"
+    return "、".join(labels[:-1]) + f" 和 {labels[-1]}"
+
+
 def _summary_from_title(topic_label: str, page_title: str, lowered: str) -> str:
     quoted = _quoted_title(_normalized_page_title(page_title))
     if not quoted:
         return ""
     if _contains_any(lowered, "compare", "comparison", "vs ", "versus", "benchmark"):
-        return f"这篇内容围绕 {quoted} 展开，核心是在对比不同方案或工具的实际表现与适用场景。"
+        return f"{quoted} 主要在做方案对比，重点是不同工具或模型在真实任务里的表现差异、适用边界和取舍。"
     if _contains_any(lowered, "guide", "tutorial", "how to", "docs", "documentation", "integration", "plugin", "template"):
-        return f"这篇内容更像一份 {topic_label} 的教程或文档，重点在具体接入方式、配置步骤或插件用法。"
+        return f"{quoted} 更像一份 {topic_label} 上手文档，重点交代具体接入步骤、配置方法和可复用的工作流。"
     if _contains_any(lowered, "release", "launch", "introduces", "announces", "new feature", "update"):
-        return f"这篇文章介绍了 {topic_label} 相关的新功能或新版本，重点在产品能力的新增与落地方式。"
+        return f"{quoted} 记录了一次版本或功能更新，重点是新增能力、适用场景以及这次变化对实际使用的影响。"
     if _contains_any(lowered, "security", "vulnerability", "prompt injection", "zero trust", "leak"):
-        return f"这篇内容聚焦 {topic_label} 的安全议题，核心在风险暴露、攻击面或治理方式。"
-    return f"这篇文章围绕 {quoted} 展开，属于 {topic_label} 方向里值得继续细看的具体案例。"
+        return f"{quoted} 聚焦 {topic_label} 的安全问题，重点在攻击路径、暴露面和可执行的缓解思路。"
+    return f"{quoted} 提供了一个可复查的 {topic_label} 具体案例，关键信息主要落在标题涉及的功能、流程或争议点上。"
 
 
 def _low_value_page(topic_key: str, item, context: PageContext | None, lowered: str) -> bool:
@@ -422,39 +442,49 @@ def heuristic_candidate_summary(
         if has("同僚", "100万トークン", "voice", "1m token") or ("同僚" in haystack):
             return "这条讨论把 Claude Code 放进“AI 从工具走向同事”的叙事里，重点是语音交互、超长上下文和 agent 自主性。", False
         if has("cursor", "copilot", "compare", "comparison", "vs "):
-            return "内容比较了 Claude Code 与其他 AI 编码工具的定位差异，重点在复杂任务、自主性和团队协作场景。", False
+            rivals = _present_labels(lowered, [("cursor", "Cursor"), ("copilot", "GitHub Copilot"), ("codex", "Codex")])
+            rival_text = _join_labels(rivals) or "其他 AI 编码工具"
+            return f"这篇内容把 Claude Code 与 {rival_text} 放在一起比较，重点看复杂任务处理、自主执行深度和团队协作场景里的差异。", False
         if has("plugin", "extension", "integration", "review", "terminal", "tmux", "workflow"):
-            return "文章聚焦 Claude Code 的终端工作流与插件整合，强调它如何进入真实开发、review 与协作链路。", False
+            return "文章聚焦 Claude Code 的终端工作流与插件整合，重点在 review、tmux、多步骤执行和团队协作链路里的实际落地方式。", False
         if has("ollama", "local model", "self-hosted", "quota", "billing", "cost"):
-            return "讨论集中在 Claude Code 的本地接入、配额与成本控制，反映出一线使用中的工程现实问题。", False
+            return "讨论集中在 Claude Code 的本地接入、模型切换、配额限制与成本控制，反映出一线使用里最现实的工程约束。", False
 
     if topic_key == "codex":
         if has("prompt injection", "vulnerability", "security flaw", "read access"):
             return "这条内容聚焦 Codex 的 prompt injection 风险，担心 agent 在拥有代码和文档读取权限时被恶意指令带偏。", False
         if has("figma", "notion", "gmail", "slack", "jira", "linear"):
-            return "文章讨论 Codex 与外部工具的连接能力，重点是把编码 agent 扩展到设计、协作和项目管理流程。", False
+            tools = _present_labels(lowered, [("figma", "Figma"), ("notion", "Notion"), ("gmail", "Gmail"), ("slack", "Slack"), ("jira", "Jira"), ("linear", "Linear")])
+            tool_text = _join_labels(tools) or "外部工具"
+            return f"文章讨论 Codex 与 {tool_text} 的连接能力，重点是把编码 agent 从单纯写码扩展到设计、沟通和项目管理流程。", False
         if has("mcp", "agents v2", "hooks", "codex cli", "cli", "plugin"):
-            return "内容聚焦 Codex CLI 与插件能力演进，说明它正从写码工具转向更完整的 agent 工作流平台。", False
+            return "内容聚焦 Codex CLI、MCP、hooks 或插件能力的演进，说明它正从代码补全工具转向可编排的 agent 工作流平台。", False
         if has("benchmark", "live against both", "vs claude", "vs cursor", "qwen", "grok"):
-            return "讨论重点是拿 Codex 与 Claude、Grok、Qwen 等工具做实战对比，关注真实任务完成率而不是演示效果。", False
+            rivals = _present_labels(lowered, [("claude", "Claude"), ("cursor", "Cursor"), ("grok", "Grok"), ("qwen", "Qwen")])
+            rival_text = _join_labels(rivals) or "其他工具"
+            return f"讨论重点是拿 Codex 与 {rival_text} 做实战对比，关注真实任务完成率、稳定性以及失败时的恢复能力。", False
         if has("benchmark", "swe-bench", "evaluation", "compare", "cursor", "copilot", "claude"):
-            return "文章比较了 Codex 与其他 coding agent 的能力差异，重点在任务完成质量、稳定性和开发体验。", False
+            return "文章比较了 Codex 与其他 coding agent 的能力差异，重点在任务完成质量、稳定性、调试成本和开发体验。", False
         if has("automation", "agentic", "workflow", "end-to-end"):
-            return "讨论焦点是 Codex 如何承担端到端自动化任务，而不再局限于单点代码生成。", False
+            return "讨论焦点是 Codex 如何承担端到端自动化任务，例如串起检索、改码、验证和交付，而不再局限于单点代码生成。", False
 
     if topic_key == "large-models":
         if has("gemini 2.5", "gpt-5", "claude 4", "qwen3", "llama 4", "deepseek", "mistral", "model release"):
-            return "这条内容关注主流模型的新版本变化，重点在推理能力、上下文长度或产品化速度上的直接竞争。", False
+            vendors = _present_labels(lowered, [("openai", "OpenAI"), ("anthropic", "Anthropic"), ("gemini", "Gemini"), ("qwen", "Qwen"), ("llama", "Llama"), ("deepseek", "DeepSeek"), ("mistral", "Mistral")])
+            vendor_text = _join_labels(vendors) or "主流模型厂商"
+            return f"这条内容关注 {vendor_text} 的新版本变化，重点在推理能力、上下文长度、多模态支持和产品化速度上的直接竞争。", False
         if has("reasoning", "chain-of-thought", "thinking budget", "cot"):
-            return "内容围绕大模型推理能力展开，重点讨论长思维链、thinking budget 与成本延迟之间的权衡。", False
+            return "内容围绕大模型推理能力展开，重点讨论长思维链、thinking budget 与成本、时延和稳定性之间的权衡。", False
         if has("whisper", "transcribe", "speech", "voice", "audio"):
-            return "文章聚焦语音方向的大模型更新，核心看点是转写准确率、语音理解能力和开源替代方案。", False
+            return "文章聚焦语音方向的大模型更新，核心看点是转写准确率、语音理解能力、实时交互体验和开源替代方案。", False
         if has("openai", "anthropic", "gemini", "llama", "qwen", "deepseek", "mistral"):
-            return "内容关注主流大模型厂商的新版本与能力比较，重点在推理、多模态和产品化速度的差异。", False
+            vendors = _present_labels(lowered, [("openai", "OpenAI"), ("anthropic", "Anthropic"), ("gemini", "Gemini"), ("llama", "Llama"), ("qwen", "Qwen"), ("deepseek", "DeepSeek"), ("mistral", "Mistral")])
+            vendor_text = _join_labels(vendors) or "主流大模型厂商"
+            return f"内容关注 {vendor_text} 的能力比较，重点在推理、多模态、价格和开发者可用性上的差异。", False
         if has("multimodal", "vision", "video", "image"):
-            return "文章讨论大模型的多模态进展，重点在图像、视频或音频理解能力的增强及其应用场景。", False
+            return "文章讨论大模型的多模态进展，重点在图像、视频或音频理解能力的增强，以及这些能力如何进入真实产品场景。", False
         if has("pricing", "price", "cost", "cheaper", "降价"):
-            return "内容聚焦大模型价格与成本变化，反映出 API 性价比竞争正在影响应用层的选型。", False
+            return "内容聚焦大模型价格与成本变化，反映出 API 性价比竞争已经开始明显影响应用层的模型选型和部署策略。", False
 
     if topic_key == "obsidian":
         if has("from zero", "desde cero", "markdown", "notion") and has("obsidian"):
@@ -468,13 +498,17 @@ def heuristic_candidate_summary(
         if has("markdown notes", "ai directly", "manage everything for you", "forget notion", "forget obsidian"):
             return "讨论把 AI 直接接进 Markdown 笔记库，目标是让代理替你整理和调用知识，而不是手动维护 Obsidian/Notion。", False
         if has("sync", "vault", "icloud", "onedrive", "git sync"):
-            return "文章围绕 Obsidian 的 vault 同步与跨端管理展开，重点比较不同同步方案的稳定性和维护成本。", False
+            sync_tools = _present_labels(lowered, [("icloud", "iCloud"), ("onedrive", "OneDrive"), ("git sync", "Git Sync"), ("obsidian sync", "Obsidian Sync")])
+            sync_text = _join_labels(sync_tools) or "不同同步方案"
+            return f"文章围绕 Obsidian 的 vault 同步与跨端管理展开，重点比较 {sync_text} 在稳定性、成本和维护复杂度上的差异。", False
         if has("plugin", "community plugin", "dataview", "templater", "publish"):
-            return "内容聚焦 Obsidian 插件生态或发布工作流，重点在如何把知识库进一步自动化和结构化。", False
+            plugins = _present_labels(lowered, [("dataview", "Dataview"), ("templater", "Templater"), ("publish", "Publish")])
+            plugin_text = _join_labels(plugins) or "插件生态"
+            return f"内容聚焦 Obsidian 的 {plugin_text} 或发布工作流，重点在如何把知识库进一步自动化、结构化并复用到日常写作。", False
         if has("zettelkasten", "atomic note", "digital garden", "public garden", "双向链接"):
             return "文章讨论 Obsidian 的知识组织方法，重点在卡片盒、双向链接与数字花园式的内容沉淀。", False
         if has("ai", "rag", "retrieval", "assistant", "second brain"):
-            return "内容关注 Obsidian 与 AI 检索或写作能力的结合，重点在知识库如何成为更可调用的工作台。", False
+            return "内容关注 Obsidian 与 AI 检索或写作能力的结合，重点在知识库如何从静态笔记演变成可调用、可检索的工作台。", False
 
     if context and context.ok:
         if re.search(r"[\u4e00-\u9fff]", best_sentence):
@@ -488,21 +522,21 @@ def heuristic_candidate_summary(
         if re.search(r"[\u4e00-\u9fff]", raw_sentence):
             return raw_sentence, False
         if has("compare", "vs ", "benchmark"):
-            return f"这条内容围绕 {topic_label} 的横向对比展开，重点是不同工具或方案在真实使用中的差异。", False
+            return f"这条内容围绕 {topic_label} 的横向对比展开，重点是不同工具或方案在真实任务、效果和使用成本上的差异。", False
         if has("security", "leak", "vulnerability", "prompt injection"):
-            return f"这条内容聚焦 {topic_label} 的安全或风险问题，重点在暴露面、攻击路径或治理手段。", False
+            return f"这条内容聚焦 {topic_label} 的安全或风险问题，重点在暴露面、攻击路径以及可操作的防护思路。", False
         if has("plugin", "integration", "workflow", "template", "sync", "publish"):
-            return f"这条内容更偏向 {topic_label} 的工作流或集成实践，适合顺着原文继续看具体做法。", False
+            return f"这条内容更偏向 {topic_label} 的工作流或集成实践，顺着原文通常能看到更具体的配置方法和落地步骤。", False
         if domain:
-            return f"这条内容来自 {domain}，围绕 {topic_label} 的具体案例展开，值得顺着原文核对细节。", False
+            return f"这条内容来自 {domain}，围绕 {topic_label} 的具体案例展开，建议顺着原文核对其中提到的方法、结论和限制条件。", False
 
     if normalized_title:
         return _summary_from_title(topic_label, normalized_title, lowered), False
 
     if domain:
-        return f"这条内容来自 {domain}，属于 {topic_label} 方向里的具体信号，建议结合原文判断其实际价值。", False
+        return f"这条内容来自 {domain}，属于 {topic_label} 方向里的具体信号，最好结合原文判断它对应的是教程、案例还是风险提醒。", False
 
-    return f"这条内容提供了 {topic_label} 方向的新信号，但信息密度有限，建议打开原文确认关键细节。", False
+    return f"这条内容提供了 {topic_label} 方向的新信号，但公开信息仍偏有限，建议打开原文确认具体结论、证据和适用场景。", False
 
 
 def summarize_candidates(topic_title: str, topic_key: str, candidates: list[dict]) -> dict[int, dict]:
