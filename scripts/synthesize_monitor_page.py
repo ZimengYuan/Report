@@ -54,6 +54,7 @@ class TopicSection:
     topic_key: str
     title: str
     report_date_range: str
+    model: str
     source_summary_text: str
     error_summary_text: str
     quality_line: str
@@ -724,6 +725,7 @@ def build_sections(payloads: list[TopicPayload]) -> list[TopicSection]:
             topic_key=payload.topic_key,
             title=payload.title,
             report_date_range=report.date_range,
+            model=clean_text(report.model),
             source_summary_text=source_summary(report),
             error_summary_text=error_summary(report),
             quality_line=clean_text(report.quality_line),
@@ -841,6 +843,8 @@ def render_page(
 
     total_merged = sum(len(v) for v in merged.values())
     total_raw = sum(len(items) for items in selected.values())
+    models = sorted({section.model for section in sections if section.model})
+    model_text = " / ".join(models) if models else "未识别"
     slot_label = "早间" if slot == "morning" else "晚间"
     slot_icon = "🌅" if slot == "morning" else "🌙"
 
@@ -890,6 +894,7 @@ def render_page(
   </div>
   <div class="monitor-hero__meta">
     <span class="monitor-meta-pill">📡 启用数据源：{html.escape(search_sources or '未记录')}</span>
+    <span class="monitor-meta-pill">🤖 本轮模型：{html.escape(model_text)}</span>
     <span class="monitor-meta-pill">🔍 候选条目：{total_raw} 条</span>
     <span class="monitor-meta-pill">🧹 最终展示：{total_merged} 张卡片</span>
     <span class="monitor-meta-pill">🗂 监控主题：Claude Code · Codex · 大模型 · Obsidian</span>
