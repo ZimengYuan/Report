@@ -4,11 +4,11 @@ title: "四主题监控简报"
 type: "evening"
 public_report: true
 date: 2026-04-02
-updated_at: "2026-04-02 15:15:47 +0800"
+updated_at: "2026-04-02 15:59:20 +0800"
 trigger_mode: "cron"
 trigger_schedule: "0 10,20 * * * Asia/Shanghai"
 window_start: "2026-04-02 10:00:00 +0800"
-window_end: "2026-04-02 15:15:47 +0800"
+window_end: "2026-04-02 15:59:20 +0800"
 search_sources: "x,web,youtube,hn"
 permalink: /research/evening/monitor/
 ---
@@ -21,20 +21,20 @@ permalink: /research/evening/monitor/
     <div>
       <p class="monitor-eyebrow">四主题监控简报</p>
       <h1 class="monitor-hero__title"><span>🌙</span><span>晚间版 · 2026-04-02</span></h1>
-      <p class="monitor-hero__window">最近时段窗口：04/02 10:00 – 15:15 · 约 5.3 小时</p>
+      <p class="monitor-hero__window">最近时段窗口：04/02 10:00 – 15:59 · 约 6.0 小时</p>
     </div>
     <div class="monitor-hero__stats">
       <div class="monitor-stat"><span class="monitor-stat__value">18</span><span class="monitor-stat__label">最终卡片</span></div>
       <div class="monitor-stat"><span class="monitor-stat__value">22</span><span class="monitor-stat__label">X / 推文</span></div>
       <div class="monitor-stat"><span class="monitor-stat__value">0</span><span class="monitor-stat__label">YouTube</span></div>
       <div class="monitor-stat"><span class="monitor-stat__value">0</span><span class="monitor-stat__label">Hacker News</span></div>
-      <div class="monitor-stat"><span class="monitor-stat__value">16</span><span class="monitor-stat__label">博客 / 网页</span></div>
+      <div class="monitor-stat"><span class="monitor-stat__value">17</span><span class="monitor-stat__label">博客 / 网页</span></div>
     </div>
   </div>
   <div class="monitor-hero__meta">
     <span class="monitor-meta-pill">📡 启用数据源：x,web,youtube,hn</span>
     <span class="monitor-meta-pill">🤖 本轮模型：gpt-5.1-codex-mini</span>
-    <span class="monitor-meta-pill">🔍 候选条目：38 条</span>
+    <span class="monitor-meta-pill">🔍 候选条目：39 条</span>
     <span class="monitor-meta-pill">🧹 最终展示：18 张卡片</span>
     <span class="monitor-meta-pill">🗂 监控主题：Claude Code · Codex · 大模型 · Obsidian</span>
   </div>
@@ -47,7 +47,7 @@ permalink: /research/evening/monitor/
       <div class="monitor-topic__copy">
         <p class="monitor-topic__eyebrow">编码工作流</p>
         <h2 class="monitor-topic__title">Claude Code</h2>
-        <p class="monitor-topic__subtitle">X 15 条、YouTube 16 条、博客/网页 9 条</p>
+        <p class="monitor-topic__subtitle">X 14 条、YouTube 15 条、博客/网页 9 条</p>
         <p class="monitor-topic__tagline">追踪终端 Agent、插件生态与真实开发链路里的新信号。</p>
       </div>
     </div>
@@ -55,7 +55,7 @@ permalink: /research/evening/monitor/
   </div>
   <div class="monitor-topic__body">
     <div class="monitor-topic__chips"><span class="monitor-topic__chip">终端</span><span class="monitor-topic__chip">插件</span><span class="monitor-topic__chip">Review</span></div>
-    <ul class="monitor-topic__notes"><li class="monitor-topic__note">工作流与一线体验：可用样本主要反映真实开发体验，包括终端工作流、配额消耗和人与 agent 的协作方式。 当前保留 9 条较强样本</li><li class="monitor-topic__note">工具整合与生态：讨论重点落在 Claude Code 如何接入真实开发链路，包括插件、命令行、IDE 和 review 流程。 当前保留 6 条较强样本</li></ul>
+    <ul class="monitor-topic__notes"><li class="monitor-topic__note">工具整合与生态：讨论重点落在 Claude Code 如何接入真实开发链路，包括插件、命令行、IDE 和 review 流程。 当前保留 7 条较强样本</li><li class="monitor-topic__note">工作流与一线体验：可用样本主要反映真实开发体验，包括终端工作流、配额消耗和人与 agent 的协作方式。 当前保留 7 条较强样本</li></ul>
     <div class="monitor-topic__grid">
 
 <article class="monitor-item-card">
@@ -135,7 +135,7 @@ permalink: /research/evening/monitor/
     <p class="monitor-item-card__section-label">信息概览</p>
     <p class="monitor-item-card__factline">来源：X · 时间：2026-04-02 · 同事件已合并 3 条相关来源</p>
   </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/myopenclaw/status/2039583693266669618" target="_blank" rel="noopener noreferrer">查看主链接</a><a class="monitor-link monitor-link--alt" href="https://x.com/Nitix_/status/2039501912601510361" target="_blank" rel="noopener noreferrer">关联来源 1</a><a class="monitor-link monitor-link--alt" href="https://x.com/charliejhills/status/2039602879728947400" target="_blank" rel="noopener noreferrer">关联来源 2</a></div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/myopenclaw/status/2039583693266669618" target="_blank" rel="noopener noreferrer">查看主链接</a><a class="monitor-link monitor-link--alt" href="https://x.com/Nitix_/status/2039501912601510361" target="_blank" rel="noopener noreferrer">关联来源 1</a><a class="monitor-link monitor-link--alt" href="https://x.com/Axel_bitblaze69/status/2039613314167439365" target="_blank" rel="noopener noreferrer">关联来源 2</a></div>
 </article>
 
 <article class="monitor-item-card">
@@ -143,9 +143,9 @@ permalink: /research/evening/monitor/
     <div class="monitor-item-card__badges">
       <span class="monitor-rank">5</span>
       <span class="monitor-heat monitor-heat--high">🔶 高热</span>
-      <span class="monitor-source-badge monitor-source-badge--x">X</span>
+      <span class="monitor-source-badge monitor-source-badge--web">博客/网页</span>
     </div>
-    <div class="monitor-item-card__meta"><span>热度 115</span><span>2026-04-02</span><span>1 条相关</span></div>
+    <div class="monitor-item-card__meta"><span>热度 118</span><span>2026-04-02</span><span>1 条相关</span></div>
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
@@ -153,9 +153,9 @@ permalink: /research/evening/monitor/
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
-    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-02 · 当前展示为单条高置信信号</p>
+    <p class="monitor-item-card__factline">来源：博客/网页 · 时间：2026-04-02 · 当前展示为单条高置信信号</p>
   </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/49agents/status/2039602839278760196" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://composio.dev/toolkits/better_proposals/framework/claude-code" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
     </div>
   </div>
@@ -169,7 +169,7 @@ permalink: /research/evening/monitor/
       <div class="monitor-topic__copy">
         <p class="monitor-topic__eyebrow">产品能力</p>
         <h2 class="monitor-topic__title">Codex</h2>
-        <p class="monitor-topic__subtitle">X 7 条、YouTube 16 条、博客/网页 27 条</p>
+        <p class="monitor-topic__subtitle">X 7 条、YouTube 3 条、博客/网页 27 条</p>
         <p class="monitor-topic__tagline">关注 Codex CLI、工具扩展与端到端自动化能力的演进。</p>
       </div>
     </div>
@@ -311,7 +311,7 @@ permalink: /research/evening/monitor/
       <div class="monitor-topic__copy">
         <p class="monitor-topic__eyebrow">模型战况</p>
         <h2 class="monitor-topic__title">大模型</h2>
-        <p class="monitor-topic__subtitle">X 1 条、YouTube 8 条、博客/网页 25 条</p>
+        <p class="monitor-topic__subtitle">X 2 条、YouTube 3 条、博客/网页 25 条</p>
         <p class="monitor-topic__tagline">观察模型发布、推理能力、多模态与价格竞争的趋势变化。</p>
       </div>
     </div>
@@ -319,7 +319,7 @@ permalink: /research/evening/monitor/
   </div>
   <div class="monitor-topic__body">
     <div class="monitor-topic__chips"><span class="monitor-topic__chip">推理</span><span class="monitor-topic__chip">多模态</span><span class="monitor-topic__chip">版本</span></div>
-    <ul class="monitor-topic__notes"><li class="monitor-topic__note">模型发布与版本竞争：更可靠的信号往往来自模型版本更新、能力对比和官方技术说明，而不是泛行业口号。 当前保留 7 条较强样本</li><li class="monitor-topic__note">推理与成本取舍：本轮更值得看的通常是推理能力、上下文长度和推理成本之间的取舍讨论。 当前保留 2 条较强样本</li></ul>
+    <ul class="monitor-topic__notes"><li class="monitor-topic__note">模型发布与版本竞争：更可靠的信号往往来自模型版本更新、能力对比和官方技术说明，而不是泛行业口号。 当前保留 7 条较强样本</li><li class="monitor-topic__note">推理与成本取舍：本轮更值得看的通常是推理能力、上下文长度和推理成本之间的取舍讨论。 当前保留 3 条较强样本</li></ul>
     <div class="monitor-topic__grid">
 
 <article class="monitor-item-card">
@@ -413,15 +413,15 @@ permalink: /research/evening/monitor/
       <div class="monitor-topic__copy">
         <p class="monitor-topic__eyebrow">知识管理</p>
         <h2 class="monitor-topic__title">Obsidian</h2>
-        <p class="monitor-topic__subtitle">X 6 条、YouTube 25 条、博客/网页 38 条</p>
+        <p class="monitor-topic__subtitle">X 7 条、博客/网页 39 条</p>
         <p class="monitor-topic__tagline">筛选插件、同步、知识库组织和数字花园相关的高质量讨论。</p>
       </div>
     </div>
-    <div class="monitor-topic__count">3 张卡片 · 合并自 7 条候选</div>
+    <div class="monitor-topic__count">3 张卡片 · 合并自 8 条候选</div>
   </div>
   <div class="monitor-topic__body">
     <div class="monitor-topic__chips"><span class="monitor-topic__chip">插件</span><span class="monitor-topic__chip">同步</span><span class="monitor-topic__chip">知识库</span></div>
-    <ul class="monitor-topic__notes"><li class="monitor-topic__note">知识库组织方式：本轮更有价值的样本通常在讨论 Obsidian 如何组织知识、卡片和长期积累。 当前保留 6 条较强样本</li><li class="monitor-topic__note">其他有效信号：本轮有一些可参考但仍需继续观察的信号。 当前保留 1 条较强样本</li></ul>
+    <ul class="monitor-topic__notes"><li class="monitor-topic__note">知识库组织方式：本轮更有价值的样本通常在讨论 Obsidian 如何组织知识、卡片和长期积累。 当前保留 6 条较强样本</li><li class="monitor-topic__note">与 AI 结合：如果有高质量内容，往往体现在 Obsidian 与 AI 检索、写作和自动化能力的结合方式。 当前保留 2 条较强样本</li></ul>
     <div class="monitor-topic__grid">
 
 <article class="monitor-item-card">
@@ -431,7 +431,7 @@ permalink: /research/evening/monitor/
       <span class="monitor-heat monitor-heat--blast">🔥 爆热</span>
       <span class="monitor-source-badge monitor-source-badge--x">X</span>
     </div>
-    <div class="monitor-item-card__meta"><span>热度 140</span><span>2026-04-02</span><span>3 条相关</span></div>
+    <div class="monitor-item-card__meta"><span>热度 136</span><span>2026-04-02</span><span>3 条相关</span></div>
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
@@ -441,7 +441,7 @@ permalink: /research/evening/monitor/
     <p class="monitor-item-card__section-label">信息概览</p>
     <p class="monitor-item-card__factline">来源：X · 时间：2026-04-02 · 同事件已合并 3 条相关来源</p>
   </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/IcarusHermes/status/2039493762028818687" target="_blank" rel="noopener noreferrer">查看主链接</a><a class="monitor-link monitor-link--alt" href="https://x.com/pluglab_ai/status/2039591790983131597" target="_blank" rel="noopener noreferrer">关联来源 1</a><a class="monitor-link monitor-link--alt" href="https://x.com/Jilles/status/2039503604315299881" target="_blank" rel="noopener noreferrer">关联来源 2</a></div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/IcarusHermes/status/2039493762028818687" target="_blank" rel="noopener noreferrer">查看主链接</a><a class="monitor-link monitor-link--alt" href="https://x.com/Jilles/status/2039503604315299881" target="_blank" rel="noopener noreferrer">关联来源 1</a><a class="monitor-link monitor-link--alt" href="https://x.com/pluglab_ai/status/2039591790983131597" target="_blank" rel="noopener noreferrer">关联来源 2</a></div>
 </article>
 
 <article class="monitor-item-card">
@@ -451,7 +451,7 @@ permalink: /research/evening/monitor/
       <span class="monitor-heat monitor-heat--high">🔶 高热</span>
       <span class="monitor-source-badge monitor-source-badge--x">X</span>
     </div>
-    <div class="monitor-item-card__meta"><span>热度 107</span><span>2likes</span><span>2026-04-02</span><span>3 条相关</span></div>
+    <div class="monitor-item-card__meta"><span>热度 122</span><span>2likes</span><span>2026-04-02</span><span>3 条相关</span></div>
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
@@ -471,7 +471,7 @@ permalink: /research/evening/monitor/
       <span class="monitor-heat monitor-heat--high">🔶 高热</span>
       <span class="monitor-source-badge monitor-source-badge--x">X</span>
     </div>
-    <div class="monitor-item-card__meta"><span>热度 91</span><span>2026-04-02</span><span>1 条相关</span></div>
+    <div class="monitor-item-card__meta"><span>热度 122</span><span>1likes</span><span>2026-04-02</span><span>2 条相关</span></div>
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
@@ -479,9 +479,9 @@ permalink: /research/evening/monitor/
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
-    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-02 · 当前展示为单条高置信信号</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-02 · 同事件已合并 2 条相关来源 · 互动：1likes</p>
   </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/pluglab_ai/status/2039591789003419651" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/productledrich/status/2039616198694908380" target="_blank" rel="noopener noreferrer">查看主链接</a><a class="monitor-link monitor-link--alt" href="https://x.com/pluglab_ai/status/2039591789003419651" target="_blank" rel="noopener noreferrer">关联来源 1</a></div>
 </article>
     </div>
   </div>
@@ -509,7 +509,7 @@ permalink: /research/evening/monitor/
   <div class="monitor-trend-card__score">156</div>
   <div class="monitor-trend-card__meta">
     <span class="monitor-trend-bar">▓▓▓▓▓▓▓▓▓▓</span>
-    <span>均值 144 · 5 张卡片（合并自 10 条候选）</span>
+    <span>均值 145 · 5 张卡片（合并自 10 条候选）</span>
   </div>
   <div class="monitor-trend-card__meta">主要来源：X</div>
   <div class="monitor-trend-card__summary">文章围绕 Claude Code 源码暴露事件展开，重点在 sourcemap 导致源码被抓取后的安全风险。</div>
@@ -519,10 +519,10 @@ permalink: /research/evening/monitor/
     <span class="monitor-topic__icon">📎</span>
     <span class="monitor-trend-card__label">Obsidian</span>
   </div>
-  <div class="monitor-trend-card__score">140</div>
+  <div class="monitor-trend-card__score">136</div>
   <div class="monitor-trend-card__meta">
     <span class="monitor-trend-bar">▓▓▓▓▓▓▓▓▓▓</span>
-    <span>均值 112 · 3 张卡片（合并自 7 条候选）</span>
+    <span>均值 126 · 3 张卡片（合并自 8 条候选）</span>
   </div>
   <div class="monitor-trend-card__meta">主要来源：X</div>
   <div class="monitor-trend-card__summary">作者预告一场从零开始的 Obsidian 教学，并解释自己为何从 Notion 转向基于 Markdown 的笔记工作流。</div>
