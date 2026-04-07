@@ -273,7 +273,7 @@ def _joined_candidate_text(item, context: PageContext | None) -> str:
     return clean_text(" ".join(part for part in parts if part))
 
 
-def _extract_first_sentence(text: str, limit: int = 48) -> str:
+def _extract_first_sentence(text: str, limit: int = 120) -> str:
     text = clean_text(text)
     if not text:
         return ""
@@ -298,7 +298,7 @@ def _normalized_page_title(title: str) -> str:
     return title
 
 
-def _quoted_title(title: str, limit: int = 32) -> str:
+def _quoted_title(title: str, limit: int = 60) -> str:
     title = clean_text(title)
     if not title:
         return ""
@@ -356,6 +356,11 @@ def _low_value_page(topic_key: str, item, context: PageContext | None, lowered: 
 
     if topic_key == "obsidian" and not any(term in lowered for term in OBSIDIAN_CONTEXT_TERMS):
         return True
+
+    # For X posts, skip strict topic keyword filtering since tweet content is limited
+    # The heuristic rules below will handle X post summarization
+    if item.source not in FETCHABLE_SOURCES:
+        return False
 
     if topic_key == "claude-code" and not any(
         term in lowered

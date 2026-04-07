@@ -29,9 +29,12 @@ WINDOW_DAYS=1
 mkdir -p "$LOG_DIR"
 cd "$REPO_DIR"
 
+# 确保 yt-dlp 和 node 都在 PATH 中（yt-dlp subprocess 需要 node JS 运行时）
 if [ -x "$HOME/miniconda3/envs/node22/bin/node" ]; then
     export PATH="$HOME/miniconda3/envs/node22/bin:$PATH"
 fi
+# nvm node 也需要加入 PATH（yt-dlp 需要 JS 运行时）
+export PATH="$HOME/.nvm/versions/node/v20.20.1/bin:$PATH"
 
 find_skill_root() {
     local dir

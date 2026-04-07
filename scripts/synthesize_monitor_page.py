@@ -4,14 +4,16 @@
 from __future__ import annotations
 
 import argparse
-import base64
 import datetime
 import html
 import json
 import os
+import shutil
+import subprocess
+import sys
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from urllib import error, request
 
 from monitor_link_enrichment import (
     fallback_summary_from_page,
@@ -37,13 +39,11 @@ from synthesize_public_report import (
 
 
 TOPIC_ORDER = ["claude-code", "codex", "large-models", "obsidian"]
-OPENAI_CHAT_MODELS = ["gpt-5-mini", "gpt-4.1-mini"]
-CODEX_CHAT_MODELS = ["gpt-5.1-codex-mini", "gpt-5.2"]
 TARGET_PAGE_ITEMS = 40
 BASE_ITEMS_PER_TOPIC = 3
 MAX_ITEMS_PER_TOPIC = 10
-OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
-CODEX_RESPONSES_URL = "https://chatgpt.com/backend-api/codex/responses"
+CODEX_EXEC_TIMEOUT_SECONDS = 180
+_LOGGED_LOCAL_PROVIDERS: set[str] = set()
 
 
 @dataclass
@@ -223,249 +223,8 @@ def select_global_items(sections: list[TopicSection], max_items: int = TARGET_PA
     return selected
 
 
-def load_runtime_env() -> dict[str, str]:
-    env = dict(os.environ)
-    env_path = Path.home() / ".config" / "last30days" / ".env"
-    if env_path.exists():
-        for raw_line in env_path.read_text(encoding="utf-8").splitlines():
-            line = raw_line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, value = line.split("=", 1)
-            env.setdefault(key.strip(), value.strip().strip('"').strip("'"))
-    return env
-
-
-def _decode_jwt_payload(token: str) -> dict | None:
-    try:
-        parts = token.split(".")
-        if len(parts) < 2:
-            return None
-        payload_b64 = parts[1]
-        pad = "=" * (-len(payload_b64) % 4)
-        decoded = base64.urlsafe_b64decode(payload_b64 + pad)
-        return json.loads(decoded.decode("utf-8"))
-    except Exception:
-        return None
-
-
-def _extract_chatgpt_account_id(access_token: str) -> str | None:
-    payload = _decode_jwt_payload(access_token)
-    if not payload:
-        return None
-    auth_claim = payload.get("https://api.openai.com/auth", {})
-    if isinstance(auth_claim, dict):
-        return auth_claim.get("chatgpt_account_id")
-    return None
-
-
-def resolve_openai_auth() -> dict[str, str]:
-    env = load_runtime_env()
-    api_key = env.get("OPENAI_API_KEY")
-    if api_key:
-        return {"token": api_key, "source": "api_key", "account_id": ""}
-
-    codex_auth_path = Path(os.environ.get("CODEX_AUTH_FILE", str(Path.home() / ".codex" / "auth.json")))
-    if not codex_auth_path.exists():
-        return {"token": "", "source": "none", "account_id": ""}
-
-    try:
-        auth = json.loads(codex_auth_path.read_text(encoding="utf-8"))
-    except Exception:
-        return {"token": "", "source": "none", "account_id": ""}
-
-    token = ""
-    if isinstance(auth, dict):
-        tokens = auth.get("tokens") or {}
-        if isinstance(tokens, dict):
-            token = str(tokens.get("access_token") or "")
-        if not token:
-            token = str(auth.get("access_token") or "")
-
-    if not token:
-        return {"token": "", "source": "none", "account_id": ""}
-
-    account_id = _extract_chatgpt_account_id(token) or ""
-    if not account_id:
-        return {"token": "", "source": "codex", "account_id": ""}
-    return {"token": token, "source": "codex", "account_id": account_id}
-
-
-def _parse_sse_chunk(chunk: str) -> dict | None:
-    lines = chunk.split("\n")
-    data_lines = []
-    for line in lines:
-        if line.startswith("data:"):
-            data_lines.append(line[5:].strip())
-    if not data_lines:
-        return None
-    data = "\n".join(data_lines).strip()
-    if not data or data == "[DONE]":
-        return None
-    try:
-        return json.loads(data)
-    except json.JSONDecodeError:
-        return None
-
-
-def _parse_sse_stream_raw(raw: str) -> list[dict]:
-    events: list[dict] = []
-    buffer = ""
-    for chunk in raw.splitlines(keepends=True):
-        buffer += chunk
-        while "\n\n" in buffer:
-            event_chunk, buffer = buffer.split("\n\n", 1)
-            event = _parse_sse_chunk(event_chunk)
-            if event is not None:
-                events.append(event)
-    if buffer.strip():
-        event = _parse_sse_chunk(buffer)
-        if event is not None:
-            events.append(event)
-    return events
-
-
-def _parse_codex_stream(raw: str) -> dict:
-    events = _parse_sse_stream_raw(raw)
-    for evt in reversed(events):
-        if isinstance(evt, dict):
-            if evt.get("type") == "response.completed" and isinstance(evt.get("response"), dict):
-                return evt["response"]
-            if isinstance(evt.get("response"), dict):
-                return evt["response"]
-
-    output_text = ""
-    for evt in events:
-        if not isinstance(evt, dict):
-            continue
-        delta = evt.get("delta")
-        if isinstance(delta, str):
-            output_text += delta
-            continue
-        text = evt.get("text")
-        if isinstance(text, str):
-            output_text += text
-
-    if output_text:
-        return {
-            "output": [
-                {
-                    "type": "message",
-                    "content": [{"type": "output_text", "text": output_text}],
-                }
-            ]
-        }
-    return {}
-
-
-def _extract_response_text(response: dict) -> str:
-    output_text = ""
-    if "output" in response:
-        output = response["output"]
-        if isinstance(output, str):
-            output_text = output
-        elif isinstance(output, list):
-            for item in output:
-                if isinstance(item, dict):
-                    if item.get("type") == "message":
-                        content = item.get("content", [])
-                        for c in content:
-                            if isinstance(c, dict) and c.get("type") == "output_text":
-                                output_text = c.get("text", "")
-                                break
-                    elif "text" in item:
-                        output_text = item["text"]
-                elif isinstance(item, str):
-                    output_text = item
-                if output_text:
-                    break
-
-    if not output_text and "choices" in response:
-        for choice in response["choices"]:
-            if "message" in choice:
-                output_text = choice["message"].get("content", "")
-                break
-
-    return clean_text(output_text)
-
-
 def _batched(items: list, size: int) -> list[list]:
     return [items[i : i + size] for i in range(0, len(items), size)]
-
-
-def _call_openai_json(system_prompt: str, user_payload: dict, batch_hint: str = "items") -> dict:
-    auth = resolve_openai_auth()
-    token = auth.get("token", "")
-    if not token:
-        return {}
-
-    source = auth.get("source", "none")
-    account_id = auth.get("account_id", "")
-    models = CODEX_CHAT_MODELS if source == "codex" else OPENAI_CHAT_MODELS
-    user_text = json.dumps(user_payload, ensure_ascii=False)
-
-    for model in models:
-        try:
-            if source == "codex":
-                if not account_id:
-                    continue
-                body = {
-                    "model": model,
-                    "instructions": system_prompt,
-                    "input": [
-                        {
-                            "type": "message",
-                            "role": "user",
-                            "content": [{"type": "input_text", "text": user_text}],
-                        }
-                    ],
-                    "stream": True,
-                }
-                req = request.Request(
-                    CODEX_RESPONSES_URL,
-                    data=json.dumps(body).encode("utf-8"),
-                    headers={
-                        "Authorization": f"Bearer {token}",
-                        "chatgpt-account-id": account_id,
-                        "OpenAI-Beta": "responses=experimental",
-                        "originator": "pi",
-                        "Content-Type": "application/json",
-                    },
-                    method="POST",
-                )
-                with request.urlopen(req, timeout=60) as resp:
-                    response = _parse_codex_stream(resp.read().decode("utf-8"))
-            else:
-                body = {
-                    "model": model,
-                    "input": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_text},
-                    ],
-                    "text": {"format": {"type": "json_object"}},
-                }
-                req = request.Request(
-                    OPENAI_RESPONSES_URL,
-                    data=json.dumps(body).encode("utf-8"),
-                    headers={
-                        "Authorization": f"Bearer {token}",
-                        "Content-Type": "application/json",
-                    },
-                    method="POST",
-                )
-                with request.urlopen(req, timeout=60) as resp:
-                    response = json.loads(resp.read().decode("utf-8"))
-
-            content = _extract_response_text(response)
-            if not content:
-                continue
-            parsed = parse_json_object(content)
-            if batch_hint in parsed:
-                return parsed
-        except Exception:
-            continue
-
-    return {}
 
 
 def parse_json_object(text: str) -> dict:
@@ -481,6 +240,242 @@ def parse_json_object(text: str) -> dict:
     return json.loads(text)
 
 
+def _codex_output_schema(batch_hint: str) -> dict:
+    if batch_hint == "topics":
+        item_schema = {
+            "type": "object",
+            "properties": {
+                "topic_key": {"type": "string"},
+                "trend_summary": {"type": "string"},
+            },
+            "required": ["topic_key", "trend_summary"],
+            "additionalProperties": False,
+        }
+    else:
+        item_schema = {
+            "type": "object",
+            "properties": {
+                "index": {"type": "integer"},
+                "summary_zh": {"type": "string"},
+                "is_irrelevant": {"type": "boolean"},
+            },
+            "required": ["index", "summary_zh", "is_irrelevant"],
+            "additionalProperties": False,
+        }
+
+    return {
+        "type": "object",
+        "properties": {
+            batch_hint: {
+                "type": "array",
+                "items": item_schema,
+            }
+        },
+        "required": [batch_hint],
+        "additionalProperties": False,
+    }
+
+
+def _prepare_isolated_codex_home(temp_root: Path) -> tuple[dict[str, str], str]:
+    env = dict(os.environ)
+    codex_home = temp_root / "codex-home"
+    codex_home.mkdir(parents=True, exist_ok=True)
+
+    source_home = Path(env.get("CODEX_HOME", str(Path.home() / ".codex")))
+    copied: list[str] = []
+    for filename in ("auth.json", "config.toml"):
+        src = source_home / filename
+        if not src.exists():
+            continue
+        shutil.copy2(src, codex_home / filename)
+        copied.append(filename)
+
+    env["CODEX_HOME"] = str(codex_home)
+    return env, ",".join(copied) if copied else "none"
+
+
+def _build_structured_prompt(system_prompt: str, user_payload: dict, batch_hint: str) -> str:
+    return (
+        "你是一个只负责返回 JSON 的中文技术编辑助手。\n"
+        "严格只基于下面给出的任务说明和输入 JSON 作答。\n"
+        "不要运行任何工具，不要读取或修改任何文件，不要输出 Markdown，不要补充解释。\n"
+        f"输出必须是一个合法 JSON 对象，且顶层键必须是 `{batch_hint}`。\n\n"
+        f"任务说明：\n{system_prompt}\n\n"
+        f"输入 JSON：\n{json.dumps(user_payload, ensure_ascii=False)}\n"
+    )
+
+
+def _log_local_provider_once(provider: str) -> None:
+    if provider in _LOGGED_LOCAL_PROVIDERS:
+        return
+    _LOGGED_LOCAL_PROVIDERS.add(provider)
+    print(f"[monitor] structured summaries via local {provider} CLI", file=sys.stderr)
+
+
+def _call_claude_print_json(system_prompt: str, user_payload: dict, batch_hint: str = "items") -> dict:
+    claude_bin = shutil.which("claude")
+    if not claude_bin:
+        return {}
+
+    prompt = _build_structured_prompt(system_prompt, user_payload, batch_hint)
+    schema_text = json.dumps(_codex_output_schema(batch_hint), ensure_ascii=False, separators=(",", ":"))
+
+    try:
+        proc = subprocess.run(
+            [
+                claude_bin,
+                "-p",
+                "--output-format",
+                "json",
+                "--no-session-persistence",
+                "--tools",
+                "",
+                "--json-schema",
+                schema_text,
+                prompt,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=CODEX_EXEC_TIMEOUT_SECONDS,
+        )
+        if proc.returncode != 0:
+            stderr_text = clean_text(proc.stderr or proc.stdout or "")
+            if stderr_text:
+                print(
+                    f"[monitor] claude print failed for {batch_hint}: {stderr_text[:240]}",
+                    file=sys.stderr,
+                )
+            return {}
+
+        response_text = (proc.stdout or "").strip()
+        if not response_text:
+            return {}
+
+        envelope = json.loads(response_text)
+        structured = envelope.get("structured_output")
+        if not structured:
+            result_text = clean_text(str(envelope.get("result", "")))
+            if result_text:
+                structured = parse_json_object(result_text)
+        if isinstance(structured, dict) and batch_hint in structured:
+            _log_local_provider_once("claude")
+            return structured
+    except subprocess.TimeoutExpired:
+        print(f"[monitor] claude print timed out for {batch_hint}", file=sys.stderr)
+    except Exception as exc:
+        print(f"[monitor] claude print error for {batch_hint}: {clean_text(str(exc))}", file=sys.stderr)
+
+    return {}
+
+
+def _call_codex_exec_json(system_prompt: str, user_payload: dict, batch_hint: str = "items") -> dict:
+    codex_bin = shutil.which("codex")
+    if not codex_bin:
+        return {}
+
+    prompt = _build_structured_prompt(system_prompt, user_payload, batch_hint)
+
+    try:
+        with tempfile.TemporaryDirectory(prefix="monitor-codex-") as tmp_dir_str:
+            tmp_dir = Path(tmp_dir_str)
+            schema_path = tmp_dir / "schema.json"
+            output_path = tmp_dir / "output.json"
+            schema_path.write_text(
+                json.dumps(_codex_output_schema(batch_hint), ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+
+            env, copied_files = _prepare_isolated_codex_home(tmp_dir)
+            cmd = [
+                codex_bin,
+                "exec",
+                "--ephemeral",
+                "--skip-git-repo-check",
+                "--sandbox",
+                "read-only",
+                "--color",
+                "never",
+                "-C",
+                tmp_dir_str,
+                "--output-schema",
+                str(schema_path),
+                "--output-last-message",
+                str(output_path),
+                "-",
+            ]
+            proc = subprocess.run(
+                cmd,
+                input=prompt,
+                capture_output=True,
+                text=True,
+                timeout=CODEX_EXEC_TIMEOUT_SECONDS,
+                env=env,
+            )
+            if proc.returncode != 0:
+                stderr_text = clean_text(proc.stderr or proc.stdout or "")
+                if stderr_text:
+                    print(
+                        f"[monitor] codex exec failed for {batch_hint}: {stderr_text[:240]}",
+                        file=sys.stderr,
+                    )
+                return {}
+
+            if not output_path.exists():
+                print(
+                    f"[monitor] codex exec returned no output file for {batch_hint} (copied {copied_files})",
+                    file=sys.stderr,
+                )
+                return {}
+
+            content = output_path.read_text(encoding="utf-8").strip()
+            if not content:
+                return {}
+
+            parsed = parse_json_object(content)
+            if batch_hint in parsed:
+                _log_local_provider_once("codex")
+                return parsed
+    except subprocess.TimeoutExpired:
+        print(f"[monitor] codex exec timed out for {batch_hint}", file=sys.stderr)
+    except Exception as exc:
+        print(f"[monitor] codex exec error for {batch_hint}: {clean_text(str(exc))}", file=sys.stderr)
+
+    return {}
+
+
+def _available_local_llm_providers() -> list[str]:
+    override = clean_text(os.environ.get("REPORT_MONITOR_LLM_PROVIDER", "")).lower()
+    preferred: list[str] = []
+    if override in {"claude", "codex"}:
+        preferred.append(override)
+    else:
+        if any(os.environ.get(name) for name in ("CLAUDECODE", "CLAUDE_SESSION_ID", "CLAUDE_PROJECT_DIR")):
+            preferred.append("claude")
+        if any(os.environ.get(name) for name in ("CODEX_THREAD_ID", "CODEX_CI", "CODEX_INTERNAL_ORIGINATOR_OVERRIDE")):
+            preferred.append("codex")
+        preferred.extend(["claude", "codex"])
+
+    resolved: list[str] = []
+    for provider in preferred:
+        if provider in resolved:
+            continue
+        binary = "claude" if provider == "claude" else "codex"
+        if shutil.which(binary):
+            resolved.append(provider)
+    return resolved
+
+
+def _call_local_llm_json(system_prompt: str, user_payload: dict, batch_hint: str = "items") -> dict:
+    for provider in _available_local_llm_providers():
+        if provider == "claude":
+            parsed = _call_claude_print_json(system_prompt, user_payload, batch_hint)
+        else:
+            parsed = _call_codex_exec_json(system_prompt, user_payload, batch_hint)
+        if batch_hint in parsed:
+            return parsed
+    return {}
+
+
 def localize_item_summaries(topic_title: str, topic_key: str, candidates: list[dict]) -> dict[int, dict]:
     if not candidates:
         return {}
@@ -490,7 +485,7 @@ def localize_item_summaries(topic_title: str, topic_key: str, candidates: list[d
         "你会收到某个固定主题下的一批候选内容，内容可能来自推文、博客、网页、Hacker News 或视频摘录。\n"
         "你的目标不是复述标题，而是基于提供的正文摘录和上下文，写出清楚、具体、信息密度高的中文总结。\n"
         "要求：\n"
-        "1. 每条只写一句中文，控制在 45 到 90 个汉字。\n"
+        "1. 每条只写一句中文，控制在 80 到 150 个汉字。\n"
         "2. 句子必须尽量写清“发生了什么 + 为什么值得看”。\n"
         "3. 如果出现具体公司、产品、模型、插件、风险点、对比对象、版本或能力差异，必须写进去。\n"
         "4. 不要写“内容聚焦”“内容关注”“值得继续观察”“点击原文了解更多”这种空话。\n"
@@ -500,7 +495,7 @@ def localize_item_summaries(topic_title: str, topic_key: str, candidates: list[d
     )
 
     localized: dict[int, dict] = {}
-    for batch in _batched(candidates, 8):
+    for batch in _batched(candidates, 12):
         payload_items = []
         for candidate in batch:
             item = candidate["item"]
@@ -527,7 +522,7 @@ def localize_item_summaries(topic_title: str, topic_key: str, candidates: list[d
                 }
             )
 
-        parsed = _call_openai_json(
+        parsed = _call_local_llm_json(
             system_prompt,
             {"topic_key": topic_key, "topic": topic_title, "items": payload_items},
         )
@@ -583,7 +578,7 @@ def localize_topic_trends(sections: list[TopicSection], merged: dict[str, list["
         "只返回 JSON，格式为 {\"topics\":[{\"topic_key\":\"codex\",\"trend_summary\":\"...\"}]}"
     )
 
-    parsed = _call_openai_json(system_prompt, {"topics": payload_topics}, batch_hint="topics")
+    parsed = _call_local_llm_json(system_prompt, {"topics": payload_topics}, batch_hint="topics")
     localized: dict[str, str] = {}
     for entry in parsed.get("topics", []):
         topic_key = clean_text(str(entry.get("topic_key", "")))
@@ -1088,6 +1083,105 @@ def _build_trend_summary(sections: list, merged: dict[str, list[MergedItem]], ai
     ]
 
 
+def _build_archive_section(current_date: str, current_slot: str) -> str:
+    """扫描最近7天的monitor页面，生成归档列表。
+
+    从git历史中查找过去7天的morning和evening monitor页面commit，
+    解析commit消息中的日期和slot信息来构建归档列表。
+    """
+    repo_root = Path(__file__).parent.parent
+    archive_lines = ["<section class='monitor-archive'>"]
+    archive_lines.append("<div class='monitor-section-heading'><span>📋</span><h2>最近7天归档</h2></div>")
+
+    from datetime import datetime, timedelta
+
+    try:
+        ref_date = datetime.strptime(current_date, "%Y-%m-%d").date()
+    except Exception:
+        return ""
+
+    found_dates = []
+
+    # Run git log to find monitor page commits from the last 7 days
+    # Commit message format: "Research update: evening 2026-04-01 2126" or "Research update: morning 2026-04-02 1442"
+    try:
+        result = subprocess.run(
+            [
+                "git", "log", "--since=7 days ago", "--format=%H %s",
+                "--", "_research/morning/01-monitor.md", "_research/evening/01-monitor.md"
+            ],
+            cwd=str(repo_root),
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+        if result.returncode == 0:
+            for line in result.stdout.strip().split("\n"):
+                if not line.strip():
+                    continue
+                # Parse: <hash> Research update: <slot> 2026-04-01 2126
+                parts = line.split(" ", 2)
+                if len(parts) < 3:
+                    continue
+                commit_hash = parts[0]
+                message = parts[2] if len(parts) > 2 else parts[1]
+
+                # Extract slot and date from commit message
+                # Format: "Research update: evening 2026-04-01 2126"
+                msg_match = re.search(r'Research update:\s+(morning|evening)\s+(\d{4}-\d{2}-\d{2})', message)
+                if not msg_match:
+                    continue
+
+                slot = msg_match.group(1)
+                file_date_str = msg_match.group(2)
+
+                try:
+                    file_date = datetime.strptime(file_date_str, "%Y-%m-%d").date()
+                except Exception:
+                    continue
+
+                # Exclude today and only include within 1-7 days
+                days_diff = (ref_date - file_date).days
+                if days_diff < 1 or days_diff > 7:
+                    continue
+
+                # Check if this is the latest commit for this date/slot (to avoid duplicates)
+                # by checking if we already have this date+slot combination
+                existing_keys = {(d["date"], d["slot"]) for d in found_dates}
+                if (file_date_str, slot) in existing_keys:
+                    continue
+
+                slot_icon = "🌅" if slot == "morning" else "🌙"
+                url = f"/research/{slot}/monitor/"
+                found_dates.append({
+                    "date": file_date_str,
+                    "slot": slot,
+                    "slot_icon": slot_icon,
+                    "url": url,
+                    "days_ago": days_diff,
+                })
+    except Exception as e:
+        sys.stderr.write(f"[archive] git log failed: {e}\n")
+
+    if found_dates:
+        archive_lines.append("<ul class='monitor-archive__list'>")
+        for item in sorted(found_dates, key=lambda x: (x["date"], x["slot"]), reverse=True):
+            days_str = f"{item['days_ago']}天前" if item['days_ago'] > 1 else "昨天"
+            title = f"{item['slot_icon']} {item['slot']}版"
+            archive_lines.append(
+                f"<li class='monitor-archive__item'>"
+                f"<span class='monitor-archive__date'>{item['slot_icon']} {item['date']}（{days_str}）</span>"
+                f"<a class='monitor-archive__link' href='{item['url']}'>{title}</a>"
+                f"</li>"
+            )
+        archive_lines.append("</ul>")
+    else:
+        archive_lines.append("<p class='monitor-archive__empty'>暂无历史归档</p>")
+
+    archive_lines.append("</section>")
+    return "\n".join(archive_lines)
+
+
 def render_page(
     sections: list[TopicSection],
     slot: str,
@@ -1174,6 +1268,7 @@ def render_page(
 
     ai_topic_trends = localize_topic_trends(sections, merged)
     trend_section = "\n".join(_build_trend_summary(sections, merged, ai_topic_trends))
+    archive_section = _build_archive_section(report_date, slot)
 
     lines = [
         "",
@@ -1181,6 +1276,7 @@ def render_page(
         overview_card,
         topic_cards,
         trend_section,
+        archive_section,
         "</div>",
         "",
     ]

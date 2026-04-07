@@ -1,23 +1,24 @@
 # Report
 
-Automated research briefs published to GitHub Pages.
+Automated monitoring pages published to GitHub Pages.
 
 ## What This Repo Does
 
-- `10:00` Beijing time: generate the morning briefs for both topics
-- `20:00` Beijing time: generate the evening briefs for both topics
-- publish only the curated Markdown briefs under `_research/`
-- keep raw compact captures under `artifacts/raw-research/`, then synthesize them into trend pages with at most 15 条精选条目
+- `10:00` Beijing time: generate the morning unified monitoring page
+- `20:00` Beijing time: generate the evening unified monitoring page
+- publish only the curated Markdown monitor pages under `_research/`
+- keep raw compact captures under `artifacts/raw-research/`, then synthesize them into one four-topic monitoring page
 - each run now uses a rolling window from the previous official slot to "now"
 
 Raw compact outputs are saved under `artifacts/raw-research/` for local debugging and are excluded from both git and the public site.
 
 ## Repo Layout
 
-- `_research/`: published trend briefs and per-section indexes
+- `_research/`: published monitor pages and per-slot indexes
 - `artifacts/raw-research/`: local-only raw captures
 - `scripts/daily-research.sh`: automation entrypoint
-- `scripts/synthesize_public_report.py`: second-stage formatter for the published briefs
+- `scripts/merge_compact_reports.py`: merges focused-query compact outputs per topic
+- `scripts/synthesize_monitor_page.py`: builds the final four-topic monitor page
 - `cron/research.cron`: canonical cron schedule for 10:00 / 20:00 Beijing runs
 - `scripts/install-cron.sh`: installs the repo cron file into local crontab
 - `memory/`: local operating notes
@@ -58,10 +59,10 @@ The script:
 1. infers the active slot from the current hour
 2. computes a rolling window from the previous official slot to the current time
 3. runs `scripts/select_last30days_sources.py` to pick healthy sources for the current machine
-4. runs `last30days --emit=compact --quick --days 1` for both standard topics using focused search queries
+4. runs `last30days --emit=compact --deep` for four standard topics using focused search queries
 5. records the exact slot window in both front matter and the page body
 6. stores raw captures under `artifacts/raw-research/<slot>/<date>/`
-7. synthesizes curated briefs into `_research/<slot>/01-claude-code-codex.md` and `_research/<slot>/02-ai-overview.md`
+7. synthesizes one unified page into `_research/<slot>/01-monitor.md`
 8. refreshes the slot-level index files under `_research/morning/` and `_research/evening/`
 9. writes `updated_at` with second-level precision into each page front matter
 10. commits only `_research/` when there are published changes

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Convert last30days compact output into a concise trend brief."""
+"""Shared compact-report parsing and curation helpers for monitor synthesis."""
 
 from __future__ import annotations
 
@@ -42,7 +42,7 @@ SOURCE_PRIORITY = {
     "reddit": 6,
     "hn": 8,
     "youtube": 6,
-    "x": 4,
+    "x": 12,
     "web": 12,
     "polymarket": 2,
     "bluesky": 2,
@@ -170,8 +170,8 @@ TOPIC_STRONG_TERMS = {
     ),
 }
 
-MAX_CURATION_POOL = 80
-MAX_CURATION_PER_SOURCE = 30
+MAX_CURATION_POOL = 120
+MAX_CURATION_PER_SOURCE = 50
 
 TOPIC_RULES = {
     "claude-code": {
@@ -622,6 +622,8 @@ def source_depth_bonus(item: Item) -> int:
 
     if item.source == "web":
         bonus += 10
+    elif item.source == "x":
+        bonus += 8
     elif item.source == "hn":
         bonus += 7
     elif item.source == "youtube":
