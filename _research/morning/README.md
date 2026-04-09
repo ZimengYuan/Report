@@ -1,4 +1,4 @@
-# Morning Research
+# Daily Research
 
 Research conducted at 10:00 Beijing time.
 
@@ -9,4 +9,6 @@ This index lists public reports only. Raw captures are written to `artifacts/raw
 | Topic | File |
 |-------|------|
 | 四主题监控简报 | [01-monitor.md](./01-monitor.md) |
+| archive.md | [archive.md](./archive.md) |
 | index.md | [index.md](./index.md) |
+| 四主题监控简报 | [monitor-2026-04-09.md](./monitor-2026-04-09.md) |
