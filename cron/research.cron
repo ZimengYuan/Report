@@ -2,5 +2,4 @@ SHELL=/bin/bash
 PATH=/home/nie/miniconda3/envs/node22/bin:/usr/local/bin:/usr/bin:/bin
 TZ=Asia/Shanghai
 
-0 10 * * * cd /home/nie/Claude/info/Report && bash scripts/daily-research.sh >> /home/nie/Claude/info/Report/logs/cron.log 2>&1
-0 20 * * * cd /home/nie/Claude/info/Report && bash scripts/daily-research.sh >> /home/nie/Claude/info/Report/logs/cron.log 2>&1
+0 10 * * * cd /home/nie/Claude/info/Report && bash scripts/daily-research.sh --trigger-mode cron --publish --time-windows 1,7 >> /home/nie/Claude/info/Report/logs/cron.log 2>&1

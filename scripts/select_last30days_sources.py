@@ -115,6 +115,8 @@ def probe_polymarket() -> tuple[bool, str]:
 def choose_sources(diag: dict[str, Any], env_file: dict[str, str]) -> tuple[list[str], dict[str, str]]:
     selected: list[str] = []
     reasons: dict[str, str] = {}
+    scrapecreators_token = env_file.get("SCRAPECREATORS_API_KEY")
+    apify_token = env_file.get("APIFY_API_TOKEN")
 
     def enable(source: str, reason: str) -> None:
         if source not in selected:
@@ -122,8 +124,8 @@ def choose_sources(diag: dict[str, Any], env_file: dict[str, str]) -> tuple[list
         reasons[source] = reason
 
     if diag.get("openai") or diag.get("reddit_public"):
-        if env_file.get("SCRAPECREATORS_API_KEY"):
-            sc_ok, sc_reason = probe_scrapecreators(env_file.get("SCRAPECREATORS_API_KEY"))
+        if scrapecreators_token:
+            sc_ok, sc_reason = probe_scrapecreators(scrapecreators_token)
             if sc_ok:
                 enable("reddit", sc_reason)
                 if diag.get("tiktok"):
@@ -131,13 +133,26 @@ def choose_sources(diag: dict[str, Any], env_file: dict[str, str]) -> tuple[list
                 if diag.get("instagram"):
                     enable("instagram", sc_reason)
             else:
-                reasons["reddit"] = sc_reason
+                if diag.get("reddit_public"):
+                    enable("reddit", f"ScrapeCreators unavailable ({sc_reason}); fallback to Reddit public")
+                else:
+                    reasons["reddit"] = sc_reason
                 if diag.get("tiktok"):
                     reasons["tiktok"] = sc_reason
                 if diag.get("instagram"):
                     reasons["instagram"] = sc_reason
+                if apify_token:
+                    if diag.get("tiktok"):
+                        enable("tiktok", "Using APIFY_API_TOKEN fallback")
+                    if diag.get("instagram"):
+                        enable("instagram", "Using APIFY_API_TOKEN fallback")
         else:
             enable("reddit", "Using non-ScrapeCreators Reddit fallback")
+            if apify_token:
+                if diag.get("tiktok"):
+                    enable("tiktok", "Using APIFY_API_TOKEN fallback")
+                if diag.get("instagram"):
+                    enable("instagram", "Using APIFY_API_TOKEN fallback")
 
     x_source = diag.get("x_source")
     if x_source == "xai" and diag.get("xai"):
@@ -181,6 +196,8 @@ def choose_sources(diag: dict[str, Any], env_file: dict[str, str]) -> tuple[list
         pm_ok, pm_reason = probe_polymarket()
         if pm_ok:
             enable("polymarket", pm_reason)
+        elif "CERTIFICATE_VERIFY_FAILED" in pm_reason:
+            enable("polymarket", "Polymarket diagnose passed; probe SSL mismatch ignored")
         else:
             reasons["polymarket"] = pm_reason
 
