@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import html
+import os
 import re
 from dataclasses import dataclass, field
 from datetime import date
@@ -170,8 +171,32 @@ TOPIC_STRONG_TERMS = {
     ),
 }
 
-MAX_CURATION_POOL = 120
-MAX_CURATION_PER_SOURCE = 50
+MAX_CURATION_POOL = int(os.environ.get("REPORT_MAX_CURATION_POOL", "80"))
+MAX_CURATION_PER_SOURCE = int(os.environ.get("REPORT_MAX_CURATION_PER_SOURCE", "25"))
+
+SOURCE_KEEP_CAP = {
+    "web": int(os.environ.get("REPORT_SOURCE_CAP_WEB", "25")),
+    "hn": int(os.environ.get("REPORT_SOURCE_CAP_HN", "20")),
+    "x": int(os.environ.get("REPORT_SOURCE_CAP_X", "12")),
+    "youtube": int(os.environ.get("REPORT_SOURCE_CAP_YOUTUBE", "10")),
+    "reddit": int(os.environ.get("REPORT_SOURCE_CAP_REDDIT", "8")),
+}
+
+MIN_TOPIC_SCORE_BY_SOURCE = {
+    "web": 1,
+    "hn": 1,
+    "x": 2,
+    "youtube": 2,
+    "reddit": 2,
+}
+
+MIN_OVERALL_SCORE_BY_SOURCE = {
+    "web": int(os.environ.get("REPORT_MIN_OVERALL_WEB", "45")),
+    "hn": int(os.environ.get("REPORT_MIN_OVERALL_HN", "42")),
+    "x": int(os.environ.get("REPORT_MIN_OVERALL_X", "56")),
+    "youtube": int(os.environ.get("REPORT_MIN_OVERALL_YOUTUBE", "52")),
+    "reddit": int(os.environ.get("REPORT_MIN_OVERALL_REDDIT", "56")),
+}
 
 TOPIC_RULES = {
     "claude-code": {
@@ -681,11 +706,14 @@ def fails_candidate_gate(item: Item, topic_key: str, haystack: str, positive_hit
 
 def pick_curated_items(report: ParsedCompactReport, topic_key: str) -> tuple[list[Item], dict[str, int]]:
     candidates: list[tuple[int, Item]] = []
-    stats = {"kept": 0, "filtered_noise": 0, "filtered_weak": 0}
+    stats = {"kept": 0, "filtered_noise": 0, "filtered_weak": 0, "filtered_stale": 0}
 
     for source, items in report.items_by_source.items():
         for item in items:
-            # 时间窗口过滤已移除：保留所有时间范围内的条目以扩大候选池
+            if not item_within_window(item, report):
+                stats["filtered_stale"] += 1
+                continue
+
             topic_score, positive_hits, noise_hits = score_item_for_topic(item, topic_key)
             haystack = item.raw_text.lower()
             overall = item.score + topic_score * 8 + SOURCE_PRIORITY.get(source, 0) + source_depth_bonus(item)
@@ -698,6 +726,12 @@ def pick_curated_items(report: ParsedCompactReport, topic_key: str) -> tuple[lis
             if topic_score <= 0 or not positive_hits:
                 stats["filtered_weak"] += 1
                 continue
+            if topic_score < MIN_TOPIC_SCORE_BY_SOURCE.get(source, 1):
+                stats["filtered_weak"] += 1
+                continue
+            if overall < MIN_OVERALL_SCORE_BY_SOURCE.get(source, 45):
+                stats["filtered_weak"] += 1
+                continue
             candidates.append((overall, item))
 
     candidates.sort(key=lambda pair: pair[0], reverse=True)
@@ -707,6 +741,8 @@ def pick_curated_items(report: ParsedCompactReport, topic_key: str) -> tuple[lis
 
     for _overall, item in candidates:
         if per_source_kept.get(item.source, 0) >= MAX_CURATION_PER_SOURCE:
+            continue
+        if per_source_kept.get(item.source, 0) >= SOURCE_KEEP_CAP.get(item.source, MAX_CURATION_PER_SOURCE):
             continue
         selected.append(item)
         per_source_kept[item.source] = per_source_kept.get(item.source, 0) + 1
@@ -870,8 +906,11 @@ def render_overall_summary(
 
     if report.limited_recent:
         lines.append("- 抓取阶段已经提示最近有效数据偏少，所以这次结论强度需要下调。")
-    if stats["filtered_noise"] > 0 or stats["filtered_weak"] > 0:
-        lines.append(f"- 本轮过滤了 {stats['filtered_weak']} 条弱相关样本和 {stats['filtered_noise']} 条明显噪声，列表只保留更能代表趋势的条目。")
+    if stats["filtered_noise"] > 0 or stats["filtered_weak"] > 0 or stats.get("filtered_stale", 0) > 0:
+        lines.append(
+            f"- 本轮过滤了 {stats['filtered_weak']} 条弱相关样本、{stats['filtered_noise']} 条明显噪声"
+            f"，并剔除了 {stats.get('filtered_stale', 0)} 条超出窗口条目，列表只保留更能代表趋势的条目。"
+        )
 
     theme_labels = [assign_theme(item, topic_key) for item in curated_items]
     dominant_theme = max(set(theme_labels), key=theme_labels.count) if theme_labels else "持续观察"
@@ -891,7 +930,7 @@ def render_report(
     search_sources: str,
 ) -> str:
     curated_items, stats = pick_curated_items(report, topic_key)
-    slot_label = "早间" if slot == "morning" else "晚间"
+    slot_label = "每日" if slot == "morning" else "晚间"
     errors = error_summary(report)
 
     lines = [

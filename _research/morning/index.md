@@ -1,10 +1,10 @@
 ---
 layout: default
-title: 早间研究
+title: 每日研究
 permalink: /research/morning/
 ---
 
-<h1>早间研究</h1>
+<h1>每日研究</h1>
 
 <ul>
 {% assign morning_reports = site.research | where: "public_report", true | where: "type", "morning" | sort: "title" %}

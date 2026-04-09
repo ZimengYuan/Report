@@ -21,7 +21,7 @@ permalink: /research/morning/monitor/
   <div class="monitor-hero__top">
     <div>
       <p class="monitor-eyebrow">四主题监控简报</p>
-      <h1 class="monitor-hero__title"><span>🌅</span><span>早间版 · 2026-04-09</span></h1>
+      <h1 class="monitor-hero__title"><span>🗓️</span><span>每日版 · 2026-04-09</span></h1>
       <p class="monitor-hero__window">最近时段窗口：04/09 10:00 – 17:47 · 约 7.8 小时</p>
     </div>
     <div class="monitor-hero__stats">

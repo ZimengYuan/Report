@@ -15,9 +15,7 @@ layout: default
         {% if page.search_sources %}
         <p><strong>启用数据源：</strong> {{ page.search_sources }}</p>
         {% endif %}
-        {% if page.type %}
-        <p><strong>研究时段：</strong> {% if page.type == "morning" %}早间{% elsif page.type == "evening" %}晚间{% else %}{{ page.type }}{% endif %}</p>
-        {% endif %}
+        <p><strong>更新频率：</strong> 每日 10:00 北京时间</p>
     </div>
     {{ content }}
 </article>

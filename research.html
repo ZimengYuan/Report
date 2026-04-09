@@ -5,57 +5,29 @@ title: 研究归档
 
 <div class="research-archive">
     <h1>研究归档</h1>
-    <p>这里只保留整理后的统一监控页。每个时段只生成一个页面，集中展示 Claude Code、Codex、大模型、Obsidian 的优质内容。</p>
+    <p>这里只保留整理后的统一监控页。现在每天只保留一个公开时间点，集中展示 Claude Code、Codex、大模型、Obsidian 的优质内容。</p>
 
-    <h2 class="section-title">早间研究</h2>
+    <h2 class="section-title">每日研究</h2>
     <div class="card-grid">
-    {% assign public_reports = site.research | where: "public_report", true | where: "type", "morning" | sort: "title" %}
+    {% assign public_reports = site.research | where: "public_report", true | where: "type", "morning" | where_exp: "doc", "doc.name != 'index.md'" | sort: "date" | reverse %}
     {% for doc in public_reports %}
-        {% if doc.type == 'morning' %}
-            <article class="report-card">
-                <div class="card-kicker">Morning Brief</div>
-                <h3>{{ doc.title }}</h3>
-                <p class="card-summary">四主题统一监控页，优先保留博客、Hacker News 与高信噪比推文。</p>
-                <div class="card-chip-row">
-                    <span class="card-chip">最多 15 条</span>
-                    <span class="card-chip">趋势总结</span>
-                </div>
-                <ul class="card-meta-list">
-                    <li><strong>更新时间：</strong>{% if doc.updated_at %}{{ doc.updated_at | date: "%Y-%m-%d %H:%M:%S" }}{% elsif doc.date %}{{ doc.date | date: "%Y-%m-%d" }}{% endif %}</li>
-                    <li><strong>触发方式：</strong>{{ doc.trigger_mode | default: "cron" }}</li>
-                    <li><strong>研究时段：</strong>早间</li>
-                </ul>
-                <div class="card-link-row">
-                    <a class="card-link" href="{{ doc.url | relative_url }}">打开页面</a>
-                </div>
-            </article>
-        {% endif %}
-    {% endfor %}
-    </div>
-
-    <h2 class="section-title">晚间研究</h2>
-    <div class="card-grid">
-    {% assign public_reports = site.research | where: "public_report", true | where: "type", "evening" | sort: "title" %}
-    {% for doc in public_reports %}
-        {% if doc.type == 'evening' %}
-            <article class="report-card">
-                <div class="card-kicker">Evening Brief</div>
-                <h3>{{ doc.title }}</h3>
-                <p class="card-summary">四主题统一监控页，优先保留博客、Hacker News 与高信噪比推文。</p>
-                <div class="card-chip-row">
-                    <span class="card-chip">最多 15 条</span>
-                    <span class="card-chip">趋势总结</span>
-                </div>
-                <ul class="card-meta-list">
-                    <li><strong>更新时间：</strong>{% if doc.updated_at %}{{ doc.updated_at | date: "%Y-%m-%d %H:%M:%S" }}{% elsif doc.date %}{{ doc.date | date: "%Y-%m-%d" }}{% endif %}</li>
-                    <li><strong>触发方式：</strong>{{ doc.trigger_mode | default: "cron" }}</li>
-                    <li><strong>研究时段：</strong>晚间</li>
-                </ul>
-                <div class="card-link-row">
-                    <a class="card-link" href="{{ doc.url | relative_url }}">打开页面</a>
-                </div>
-            </article>
-        {% endif %}
+        <article class="report-card">
+            <div class="card-kicker">Daily Brief</div>
+            <h3>{{ doc.title }}</h3>
+            <p class="card-summary">四主题统一监控页，优先保留博客、Hacker News 与高信噪比推文。</p>
+            <div class="card-chip-row">
+                <span class="card-chip">最多 15 条</span>
+                <span class="card-chip">趋势总结</span>
+            </div>
+            <ul class="card-meta-list">
+                <li><strong>更新时间：</strong>{% if doc.updated_at %}{{ doc.updated_at | date: "%Y-%m-%d %H:%M:%S" }}{% elsif doc.date %}{{ doc.date | date: "%Y-%m-%d" }}{% endif %}</li>
+                <li><strong>触发方式：</strong>{{ doc.trigger_mode | default: "cron" }}</li>
+                <li><strong>更新频率：</strong>每日 10:00 北京时间</li>
+            </ul>
+            <div class="card-link-row">
+                <a class="card-link" href="{{ doc.url | relative_url }}">打开页面</a>
+            </div>
+        </article>
     {% endfor %}
     </div>
 </div>

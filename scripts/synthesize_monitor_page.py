@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -39,11 +40,13 @@ from synthesize_public_report import (
 
 
 TOPIC_ORDER = ["claude-code", "codex", "large-models", "obsidian"]
-TARGET_PAGE_ITEMS = 40
+TARGET_PAGE_ITEMS = 28
 BASE_ITEMS_PER_TOPIC = 3
-MAX_ITEMS_PER_TOPIC = 10
+MAX_ITEMS_PER_TOPIC = 8
 CODEX_EXEC_TIMEOUT_SECONDS = 180
 _LOGGED_LOCAL_PROVIDERS: set[str] = set()
+_LOGGED_LLM_DISABLED = False
+_MONITOR_START = time.monotonic()
 
 
 @dataclass
@@ -87,19 +90,32 @@ def is_publishable(section: TopicSection) -> bool:
     return top_heat >= 52 or trusted_hit or len(section.curated_items) >= 2
 
 
+def monitor_log(message: str) -> None:
+    elapsed = time.monotonic() - _MONITOR_START
+    print(f"[monitor +{elapsed:0.1f}s] {message}", file=sys.stderr)
+
+
+def _env_flag(name: str) -> bool:
+    value = clean_text(os.environ.get(name, "")).lower()
+    return value in {"1", "true", "yes", "on"}
+
+
+def _local_llm_disabled() -> bool:
+    return _env_flag("REPORT_MONITOR_DISABLE_LLM")
+
+
+def _log_llm_disabled_once() -> None:
+    global _LOGGED_LLM_DISABLED
+    if _LOGGED_LLM_DISABLED:
+        return
+    _LOGGED_LLM_DISABLED = True
+    monitor_log("local LLM disabled; falling back to heuristic summaries")
+
+
 def _content_fingerprint(item) -> str:
     """生成内容指纹：正文 normalized 后前 120 字符作为去重依据。"""
     raw = clean_text(item.summary or item.why_relevant or item.byline or item.identifier or "")
     return raw.lower().strip()[:120]
-
-
-def _is_similar(a, b, threshold: float = 0.75) -> bool:
-    """判断两条内容是否高度相似（正文前 120 字符相同）。"""
-    fa = _content_fingerprint(a)
-    fb = _content_fingerprint(b)
-    if not fa or not fb:
-        return False
-    return fa == fb
 
 
 def _item_fingerprint(item) -> str:
@@ -444,6 +460,9 @@ def _call_codex_exec_json(system_prompt: str, user_payload: dict, batch_hint: st
 
 
 def _available_local_llm_providers() -> list[str]:
+    if _local_llm_disabled():
+        return []
+
     override = clean_text(os.environ.get("REPORT_MONITOR_LLM_PROVIDER", "")).lower()
     preferred: list[str] = []
     if override in {"claude", "codex"}:
@@ -466,6 +485,10 @@ def _available_local_llm_providers() -> list[str]:
 
 
 def _call_local_llm_json(system_prompt: str, user_payload: dict, batch_hint: str = "items") -> dict:
+    if _local_llm_disabled():
+        _log_llm_disabled_once()
+        return {}
+
     for provider in _available_local_llm_providers():
         if provider == "claude":
             parsed = _call_claude_print_json(system_prompt, user_payload, batch_hint)
@@ -495,7 +518,9 @@ def localize_item_summaries(topic_title: str, topic_key: str, candidates: list[d
     )
 
     localized: dict[int, dict] = {}
-    for batch in _batched(candidates, 12):
+    batches = _batched(candidates, 12)
+    monitor_log(f"{topic_title}: summarizing {len(candidates)} candidates in {len(batches)} batch(es)")
+    for batch in batches:
         payload_items = []
         for candidate in batch:
             item = candidate["item"]
@@ -539,6 +564,7 @@ def localize_item_summaries(topic_title: str, topic_key: str, candidates: list[d
                     "is_irrelevant": is_irrelevant,
                 }
 
+    monitor_log(f"{topic_title}: structured summaries ready for {len(localized)}/{len(candidates)} candidates")
     return localized
 
 
@@ -568,6 +594,8 @@ def localize_topic_trends(sections: list[TopicSection], merged: dict[str, list["
     if not payload_topics:
         return {}
 
+    monitor_log(f"trend synthesis: summarizing {len(payload_topics)} topic trends")
+
     system_prompt = (
         "你是中文技术编辑，需要根据每个主题下已经整理好的多条卡片，总结“这个主题本轮的发展趋势”。\n"
         "要求：\n"
@@ -585,6 +613,7 @@ def localize_topic_trends(sections: list[TopicSection], merged: dict[str, list["
         trend_summary = clean_text(str(entry.get("trend_summary", "")))
         if topic_key and trend_summary:
             localized[topic_key] = trend_summary
+    monitor_log(f"trend synthesis: received {len(localized)}/{len(payload_topics)} topic summaries")
     return localized
 
 
@@ -595,6 +624,9 @@ def enrich_merged_items(section: TopicSection, merged_items: list[MergedItem], p
 
     candidates: list[dict] = []
     prelim_items: list[MergedItem] = []
+    fetched_pages = 0
+
+    monitor_log(f"{section.title}: evaluating {len(merged_items)} merged items")
 
     for merged_item in merged_items:
         primary = merged_item.primary_item
@@ -606,6 +638,7 @@ def enrich_merged_items(section: TopicSection, merged_items: list[MergedItem], p
             if page_context is None:
                 page_context = fetch_page_context(primary.url)
                 page_cache[primary.url] = page_context
+                fetched_pages += 1
             if page_context and page_context.ok:
                 page_relevance = page_relevance_score(section.topic_key, page_context)
 
@@ -625,7 +658,11 @@ def enrich_merged_items(section: TopicSection, merged_items: list[MergedItem], p
         )
 
     if not prelim_items:
+        monitor_log(f"{section.title}: no items survived relevance checks")
         return []
+
+    if fetched_pages:
+        monitor_log(f"{section.title}: fetched {fetched_pages} linked page(s) for enrichment")
 
     localized = localize_item_summaries(section.title, section.topic_key, candidates)
     fallback_localized = summarize_candidates(section.title, section.topic_key, candidates)
@@ -679,6 +716,7 @@ def enrich_merged_items(section: TopicSection, merged_items: list[MergedItem], p
             seen_links.add(key)
 
     ordered.sort(key=lambda item: item.score, reverse=True)
+    monitor_log(f"{section.title}: kept {len(ordered)} card(s) after summary + dedupe")
     return ordered
 
 
@@ -1086,8 +1124,8 @@ def _build_trend_summary(sections: list, merged: dict[str, list[MergedItem]], ai
 def _build_archive_section(current_date: str, current_slot: str) -> str:
     """扫描最近7天的monitor页面，生成归档列表。
 
-    从git历史中查找过去7天的morning和evening monitor页面commit，
-    解析commit消息中的日期和slot信息来构建归档列表。
+    从 git 历史中查找过去 7 天的公开 monitor 页面 commit。
+    当前公开站点只展示单一每日时段，因此默认只回看 canonical daily slot。
     """
     repo_root = Path(__file__).parent.parent
     archive_lines = ["<section class='monitor-archive'>"]
@@ -1102,13 +1140,17 @@ def _build_archive_section(current_date: str, current_slot: str) -> str:
 
     found_dates = []
 
-    # Run git log to find monitor page commits from the last 7 days
-    # Commit message format: "Research update: evening 2026-04-01 2126" or "Research update: morning 2026-04-02 1442"
+    tracked_paths = ["_research/morning/01-monitor.md"]
+    if current_slot == "evening":
+        tracked_paths = ["_research/evening/01-monitor.md"]
+
+    # Run git log to find monitor page commits from the last 7 days.
+    # Historical commit format may still contain morning/evening labels.
     try:
         result = subprocess.run(
             [
                 "git", "log", "--since=7 days ago", "--format=%H %s",
-                "--", "_research/morning/01-monitor.md", "_research/evening/01-monitor.md"
+                "--", *tracked_paths
             ],
             cwd=str(repo_root),
             capture_output=True,
@@ -1151,12 +1193,18 @@ def _build_archive_section(current_date: str, current_slot: str) -> str:
                 if (file_date_str, slot) in existing_keys:
                     continue
 
-                slot_icon = "🌅" if slot == "morning" else "🌙"
-                url = f"/research/{slot}/monitor/"
+                if current_slot == "morning":
+                    slot_icon = "🗓️"
+                    slot_label = "每日版"
+                else:
+                    slot_icon = "🌙"
+                    slot_label = "晚间版"
+                url = "/research/morning/monitor/" if current_slot == "morning" else f"/research/{slot}/monitor/"
                 found_dates.append({
                     "date": file_date_str,
                     "slot": slot,
                     "slot_icon": slot_icon,
+                    "slot_label": slot_label,
                     "url": url,
                     "days_ago": days_diff,
                 })
@@ -1167,7 +1215,7 @@ def _build_archive_section(current_date: str, current_slot: str) -> str:
         archive_lines.append("<ul class='monitor-archive__list'>")
         for item in sorted(found_dates, key=lambda x: (x["date"], x["slot"]), reverse=True):
             days_str = f"{item['days_ago']}天前" if item['days_ago'] > 1 else "昨天"
-            title = f"{item['slot_icon']} {item['slot']}版"
+            title = f"{item['slot_icon']} {item['slot_label']}"
             archive_lines.append(
                 f"<li class='monitor-archive__item'>"
                 f"<span class='monitor-archive__date'>{item['slot_icon']} {item['date']}（{days_str}）</span>"
@@ -1193,20 +1241,23 @@ def render_page(
     if not sections:
         raise ValueError("No publishable sections available")
 
+    monitor_log(f"render: selecting global items across {len(sections)} section(s)")
     selected = select_global_items(sections)
 
     # ---- 合并相似条目 ----
     merged = _merge_similar_items(selected)
+    pre_enrich_cards = sum(len(items) for items in merged.values())
+    total_raw = sum(len(items) for items in selected.values())
+    monitor_log(f"render: selected {total_raw} raw candidates and merged to {pre_enrich_cards} card(s) before enrichment")
     page_cache: dict[str, object] = {}
     for section in sections:
         merged[section.topic_key] = enrich_merged_items(section, merged[section.topic_key], page_cache)
 
     total_merged = sum(len(v) for v in merged.values())
-    total_raw = sum(len(items) for items in selected.values())
     models = sorted({section.model for section in sections if section.model})
     model_text = " / ".join(models) if models else "未识别"
-    slot_label = "早间" if slot == "morning" else "晚间"
-    slot_icon = "🌅" if slot == "morning" else "🌙"
+    slot_label = "每日" if slot == "morning" else "晚间"
+    slot_icon = "🗓️" if slot == "morning" else "🌙"
 
     blog_hits = sum(
         1 for topic_items in selected.values() for item in topic_items if item.source == "web"
@@ -1266,6 +1317,7 @@ def render_page(
         for section in sections
     )
 
+    monitor_log("render: building trend summary")
     ai_topic_trends = localize_topic_trends(sections, merged)
     trend_section = "\n".join(_build_trend_summary(sections, merged, ai_topic_trends))
     archive_section = _build_archive_section(report_date, slot)
@@ -1281,6 +1333,7 @@ def render_page(
         "",
     ]
 
+    monitor_log(f"render complete: {total_merged} final card(s)")
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -1297,10 +1350,13 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     args = build_parser().parse_args()
+    monitor_log(f"startup: loading {len(args.topic)} topic payload(s)")
     payloads = [parse_topic_payload(raw) for raw in args.topic]
     sections = build_sections(payloads)
     if not sections:
+        monitor_log("startup: no publishable sections")
         return 2
+    monitor_log("startup: publishable sections -> " + ", ".join(section.topic_key for section in sections))
     print(
         render_page(
             sections,
