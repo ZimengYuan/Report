@@ -40,9 +40,9 @@ from synthesize_public_report import (
 
 
 TOPIC_ORDER = ["claude-code", "codex", "large-models", "obsidian"]
-TARGET_PAGE_ITEMS = 28
-BASE_ITEMS_PER_TOPIC = 3
-MAX_ITEMS_PER_TOPIC = 8
+TARGET_PAGE_ITEMS = 40
+BASE_ITEMS_PER_TOPIC = 4
+MAX_ITEMS_PER_TOPIC = 12
 CODEX_EXEC_TIMEOUT_SECONDS = 180
 _LOGGED_LOCAL_PROVIDERS: set[str] = set()
 _LOGGED_LLM_DISABLED = False

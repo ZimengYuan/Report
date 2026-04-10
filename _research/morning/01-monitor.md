@@ -4,9 +4,9 @@ title: "四主题监控简报"
 type: "morning"
 public_report: true
 date: 2026-04-10
-updated_at: "2026-04-10 10:00:01 +0800"
-trigger_mode: "cron"
-trigger_schedule: "0 10 * * * Asia/Shanghai"
+updated_at: "2026-04-10 14:53:04 +0800"
+trigger_mode: "manual"
+trigger_schedule: "manual"
 time_windows_days: "1,7"
 window_start: "2026-04-09 10:00:00 +0800"
 window_end: "2026-04-10 10:00:01 +0800"
@@ -25,18 +25,18 @@ permalink: /research/morning/monitor/
       <p class="monitor-hero__window">最近时段窗口：04/09 10:00 – 10:00 · 约 24.0 小时</p>
     </div>
     <div class="monitor-hero__stats">
-      <div class="monitor-stat"><span class="monitor-stat__value">23</span><span class="monitor-stat__label">最终卡片</span></div>
-      <div class="monitor-stat"><span class="monitor-stat__value">14</span><span class="monitor-stat__label">X / 推文</span></div>
+      <div class="monitor-stat"><span class="monitor-stat__value">25</span><span class="monitor-stat__label">最终卡片</span></div>
+      <div class="monitor-stat"><span class="monitor-stat__value">16</span><span class="monitor-stat__label">X / 推文</span></div>
       <div class="monitor-stat"><span class="monitor-stat__value">0</span><span class="monitor-stat__label">YouTube</span></div>
       <div class="monitor-stat"><span class="monitor-stat__value">0</span><span class="monitor-stat__label">Hacker News</span></div>
-      <div class="monitor-stat"><span class="monitor-stat__value">14</span><span class="monitor-stat__label">博客 / 网页</span></div>
+      <div class="monitor-stat"><span class="monitor-stat__value">24</span><span class="monitor-stat__label">博客 / 网页</span></div>
     </div>
   </div>
   <div class="monitor-hero__meta">
     <span class="monitor-meta-pill">📡 启用数据源：x,web,hn</span>
     <span class="monitor-meta-pill">🤖 本轮模型：gpt-5.1-codex-mini</span>
-    <span class="monitor-meta-pill">🔍 候选条目：28 条</span>
-    <span class="monitor-meta-pill">🧹 最终展示：23 张卡片</span>
+    <span class="monitor-meta-pill">🔍 候选条目：40 条</span>
+    <span class="monitor-meta-pill">🧹 最终展示：25 张卡片</span>
     <span class="monitor-meta-pill">🗂 监控主题：Claude Code · Codex · 大模型 · Obsidian</span>
   </div>
 </section>
@@ -52,7 +52,7 @@ permalink: /research/morning/monitor/
         <p class="monitor-topic__tagline">追踪终端 Agent、插件生态与真实开发链路里的新信号。</p>
       </div>
     </div>
-    <div class="monitor-topic__count">5 张卡片 · 合并自 6 条候选</div>
+    <div class="monitor-topic__count">8 张卡片 · 合并自 12 条候选</div>
   </div>
   <div class="monitor-topic__body">
     <div class="monitor-topic__chips"><span class="monitor-topic__chip">终端</span><span class="monitor-topic__chip">插件</span><span class="monitor-topic__chip">Review</span></div>
@@ -70,7 +70,7 @@ permalink: /research/morning/monitor/
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">这条观点把 Claude Code 放进更大的 AI 编码竞赛格局：Anthropic 选择终端优先且不绑定 IDE，OpenAI 推独立的 Codex 代理控制台，Google 的 Antigravity 也强调编辑器只是配角，说明头部厂商正集体从补全工具转向自主代理。</p>
+    <p class="monitor-item-card__summary">这篇内容把 Claude Code 与 Cursor 和 Codex 放在一起比较，重点看复杂任务处理、自主执行深度和团队协作场景里的差异。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
@@ -86,17 +86,17 @@ permalink: /research/morning/monitor/
       <span class="monitor-heat monitor-heat--blast">🔥 爆热</span>
       <span class="monitor-source-badge monitor-source-badge--web">博客/网页</span>
     </div>
-    <div class="monitor-item-card__meta"><span>热度 138</span><span>2026-04-08</span><span>1 条相关</span></div>
+    <div class="monitor-item-card__meta"><span>热度 138</span><span>2026-04-08</span><span>4 条相关</span></div>
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">安全研究者在泄露版 Claude Code 源码里发现权限控制缺陷：复杂工作流超过 50 个子命令后，deny 规则不再直接拦截，而改为请求用户确认，在 CI/CD 的自动批准和非交互模式下几乎失去防护意义。</p>
+    <p class="monitor-item-card__summary">文章聚焦 Claude Code 的终端工作流与插件整合，重点在 review、tmux、多步骤执行和团队协作链路里的实际落地方式。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
-    <p class="monitor-item-card__factline">来源：博客/网页 · 时间：2026-04-08 · 当前展示为单条高置信信号</p>
+    <p class="monitor-item-card__factline">来源：博客/网页 · 时间：2026-04-08 · 同事件已合并 4 条相关来源</p>
   </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://securitybrief.asia/story/claude-code-flaw-leaves-deny-rules-vulnerable-in-long-workflows" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://securitybrief.asia/story/claude-code-flaw-leaves-deny-rules-vulnerable-in-long-workflows" target="_blank" rel="noopener noreferrer">查看主链接</a><a class="monitor-link monitor-link--alt" href="https://theaiengineer.substack.com/p/how-claude-code-actually-works" target="_blank" rel="noopener noreferrer">关联来源 1</a><a class="monitor-link monitor-link--alt" href="https://yunpan.plus/t/21952-1-1" target="_blank" rel="noopener noreferrer">关联来源 2</a><a class="monitor-link monitor-link--alt" href="https://x.com/eitagaucho/status/2042420396457136533" target="_blank" rel="noopener noreferrer">关联来源 3</a></div>
 </article>
 
 <article class="monitor-item-card">
@@ -106,31 +106,11 @@ permalink: /research/morning/monitor/
       <span class="monitor-heat monitor-heat--blast">🔥 爆热</span>
       <span class="monitor-source-badge monitor-source-badge--web">博客/网页</span>
     </div>
-    <div class="monitor-item-card__meta"><span>热度 134</span><span>2026-04-03</span><span>1 条相关</span></div>
-  </div>
-  <div class="monitor-item-card__section">
-    <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">这篇架构拆解把 Claude Code 描述为一个用 TypeScript 编写的终端代理，按“收集代码库上下文、执行文件编辑与 bash、运行测试验证”三段循环工作，能帮助理解它为何不同于只做 IDE 自动补全的编码工具。</p>
-  </div>
-  <div class="monitor-item-card__section monitor-item-card__section--soft">
-    <p class="monitor-item-card__section-label">信息概览</p>
-    <p class="monitor-item-card__factline">来源：博客/网页 · 时间：2026-04-03 · 当前展示为单条高置信信号</p>
-  </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://theaiengineer.substack.com/p/how-claude-code-actually-works" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
-</article>
-
-<article class="monitor-item-card">
-  <div class="monitor-item-card__top">
-    <div class="monitor-item-card__badges">
-      <span class="monitor-rank">4</span>
-      <span class="monitor-heat monitor-heat--blast">🔥 爆热</span>
-      <span class="monitor-source-badge monitor-source-badge--web">博客/网页</span>
-    </div>
     <div class="monitor-item-card__meta"><span>热度 132</span><span>2026-04-07</span><span>2 条相关</span></div>
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">这篇对比把 Claude Code 多会话管理分成两条路线：tmux 适合传统终端分屏并行，AgentsRoom 则提供代理状态可视化、通知和跨项目整理，适合需要同时运行多个 Claude Code 任务的人评估是否迁移工作流。</p>
+    <p class="monitor-item-card__summary">这篇内容把 Claude Code 与 其他 AI 编码工具 放在一起比较，重点看复杂任务处理、自主执行深度和团队协作场景里的差异。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
@@ -142,7 +122,7 @@ permalink: /research/morning/monitor/
 <article class="monitor-item-card">
   <div class="monitor-item-card__top">
     <div class="monitor-item-card__badges">
-      <span class="monitor-rank">5</span>
+      <span class="monitor-rank">4</span>
       <span class="monitor-heat monitor-heat--high">🔶 高热</span>
       <span class="monitor-source-badge monitor-source-badge--web">博客/网页</span>
     </div>
@@ -150,13 +130,93 @@ permalink: /research/morning/monitor/
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">GitHub Issue #44035 指出 Claude Code 终端会错误回报“文件已写入、git 已提交”，但磁盘和仓库实际没有变化，这种假成功会破坏开发者对代理执行结果的信任，也可能让后续自动化在错误前提下继续运行。</p>
+    <p class="monitor-item-card__summary">这条内容来自 github.com，围绕 Claude Code 的具体案例展开，建议顺着原文核对其中提到的方法、结论和限制条件。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
     <p class="monitor-item-card__factline">来源：博客/网页 · 时间：2026-04-06 · 当前展示为单条高置信信号</p>
   </div>
   <div class="monitor-item-card__links"><a class="monitor-link" href="https://github.com/anthropics/claude-code/issues/44035" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+</article>
+
+<article class="monitor-item-card">
+  <div class="monitor-item-card__top">
+    <div class="monitor-item-card__badges">
+      <span class="monitor-rank">5</span>
+      <span class="monitor-heat monitor-heat--high">🔶 高热</span>
+      <span class="monitor-source-badge monitor-source-badge--web">博客/网页</span>
+    </div>
+    <div class="monitor-item-card__meta"><span>热度 126</span><span>2026-04-05</span><span>1 条相关</span></div>
+  </div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">总结</p>
+    <p class="monitor-item-card__summary">这条内容来自 translunar.io，围绕 Claude Code 的具体案例展开，建议顺着原文核对其中提到的方法、结论和限制条件。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：博客/网页 · 时间：2026-04-05 · 当前展示为单条高置信信号</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://translunar.io/blog/2026/04/05/magicdocs-removed/" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+</article>
+
+<article class="monitor-item-card">
+  <div class="monitor-item-card__top">
+    <div class="monitor-item-card__badges">
+      <span class="monitor-rank">6</span>
+      <span class="monitor-heat monitor-heat--high">🔶 高热</span>
+      <span class="monitor-source-badge monitor-source-badge--web">博客/网页</span>
+    </div>
+    <div class="monitor-item-card__meta"><span>热度 123</span><span>2026-04-03</span><span>1 条相关</span></div>
+  </div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">总结</p>
+    <p class="monitor-item-card__summary">文章讨论 Anthropic 意外公开 Claude Code 源码后的连锁影响，重点在泄露细节和社区对风险的再解读。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：博客/网页 · 时间：2026-04-03 · 当前展示为单条高置信信号</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://tech-insider.org/anthropic-claude-code-source-code-leak-npm-2026/" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+</article>
+
+<article class="monitor-item-card">
+  <div class="monitor-item-card__top">
+    <div class="monitor-item-card__badges">
+      <span class="monitor-rank">7</span>
+      <span class="monitor-heat monitor-heat--high">🔶 高热</span>
+      <span class="monitor-source-badge monitor-source-badge--web">博客/网页</span>
+    </div>
+    <div class="monitor-item-card__meta"><span>热度 120</span><span>2026-04-04</span><span>1 条相关</span></div>
+  </div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">总结</p>
+    <p class="monitor-item-card__summary">这条内容来自 medium.com，围绕 Claude Code 的具体案例展开，建议顺着原文核对其中提到的方法、结论和限制条件。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：博客/网页 · 时间：2026-04-04 · 当前展示为单条高置信信号</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://medium.com/@sathishkraju/claude-code-subagents-the-complete-guide-to-ai-agent-delegation-d0a9aba419d0" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+</article>
+
+<article class="monitor-item-card">
+  <div class="monitor-item-card__top">
+    <div class="monitor-item-card__badges">
+      <span class="monitor-rank">8</span>
+      <span class="monitor-heat monitor-heat--high">🔶 高热</span>
+      <span class="monitor-source-badge monitor-source-badge--web">博客/网页</span>
+    </div>
+    <div class="monitor-item-card__meta"><span>热度 118</span><span>2026-04-03</span><span>1 条相关</span></div>
+  </div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">总结</p>
+    <p class="monitor-item-card__summary">这条内容来自 remoteopenclaw.com，围绕 Claude Code 的具体案例展开，建议顺着原文核对其中提到的方法、结论和限制条件。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：博客/网页 · 时间：2026-04-03 · 当前展示为单条高置信信号</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://remoteopenclaw.com/blog/claude-code-guide" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
     </div>
   </div>
@@ -174,11 +234,11 @@ permalink: /research/morning/monitor/
         <p class="monitor-topic__tagline">关注 Codex CLI、工具扩展与端到端自动化能力的演进。</p>
       </div>
     </div>
-    <div class="monitor-topic__count">7 张卡片 · 合并自 7 条候选</div>
+    <div class="monitor-topic__count">9 张卡片 · 合并自 12 条候选</div>
   </div>
   <div class="monitor-topic__body">
     <div class="monitor-topic__chips"><span class="monitor-topic__chip">CLI</span><span class="monitor-topic__chip">MCP</span><span class="monitor-topic__chip">自动化</span></div>
-    <ul class="monitor-topic__notes"><li class="monitor-topic__note">产品能力与入口：可靠信号通常集中在 Codex 的产品入口、命令行能力和可交付的 agent 体验，而不是泛泛提及。 当前保留 31 条较强样本</li><li class="monitor-topic__note">开发者工作流：本轮更有价值的样本通常直接描述 Codex 如何进入开发者的任务拆解、写码和 review 过程。 当前保留 2 条较强样本</li></ul>
+    <ul class="monitor-topic__notes"><li class="monitor-topic__note">产品能力与入口：可靠信号通常集中在 Codex 的产品入口、命令行能力和可交付的 agent 体验，而不是泛泛提及。 当前保留 33 条较强样本</li><li class="monitor-topic__note">开发者工作流：本轮更有价值的样本通常直接描述 Codex 如何进入开发者的任务拆解、写码和 review 过程。 当前保留 2 条较强样本</li></ul>
     <div class="monitor-topic__grid">
 
 <article class="monitor-item-card">
@@ -192,7 +252,7 @@ permalink: /research/morning/monitor/
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">这篇对比把 OpenAI Codex 定位为可在云端沙箱里异步克隆仓库、改代码、跑测试并提 PR 的代理，而把 Claude Code 定位为本地终端助手，并用 Next.js 单体仓库与 Python 后端上的重构、修 Bug、升级依赖等任务比较并行处理、人工返工和合入效率。</p>
+    <p class="monitor-item-card__summary">讨论重点是拿 Codex 与 Claude 做实战对比，关注真实任务完成率、稳定性以及失败时的恢复能力。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
@@ -212,7 +272,7 @@ permalink: /research/morning/monitor/
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">这是一篇围绕 Codex 子代理体系的入门综述，重点讲经理-工人架构、Codex Desktop、自动漏洞检测、Symphony 编排框架以及与 Claude Code、Cursor 的对比，但从摘录看更像概念性指南和能力清单，缺少可核实的新产品发布或一手结果。</p>
+    <p class="monitor-item-card__summary">这条内容来自 lushbinary.com，围绕 Codex 的具体案例展开，建议顺着原文核对其中提到的方法、结论和限制条件。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
@@ -228,63 +288,43 @@ permalink: /research/morning/monitor/
       <span class="monitor-heat monitor-heat--blast">🔥 爆热</span>
       <span class="monitor-source-badge monitor-source-badge--web">博客/网页</span>
     </div>
-    <div class="monitor-item-card__meta"><span>热度 137</span><span>2026-04-07</span><span>1 条相关</span></div>
+    <div class="monitor-item-card__meta"><span>热度 137</span><span>2026-04-07</span><span>4 条相关</span></div>
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">GitHub Issue #17024 报告 Codex CLI 0.118.0 在 Linux WSL2 上连接本地 stdio MCP 服务器时启动握手失败，尽管手动 initialize 可以成功，这说明 CLI 的自动启动链路与 MCP 协议交互可能存在缺陷，直接影响本地工具接入和代理编排稳定性。</p>
+    <p class="monitor-item-card__summary">内容聚焦 Codex CLI、MCP、hooks 或插件能力的演进，说明它正从代码补全工具转向可编排的 agent 工作流平台。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
-    <p class="monitor-item-card__factline">来源：博客/网页 · 时间：2026-04-07 · 当前展示为单条高置信信号</p>
+    <p class="monitor-item-card__factline">来源：博客/网页 · 时间：2026-04-07 · 同事件已合并 4 条相关来源</p>
   </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://github.com/openai/codex/issues/17024" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://github.com/openai/codex/issues/17024" target="_blank" rel="noopener noreferrer">查看主链接</a><a class="monitor-link monitor-link--alt" href="https://x.com/wandb/status/2042382083260367241" target="_blank" rel="noopener noreferrer">关联来源 1</a><a class="monitor-link monitor-link--alt" href="https://github.com/openai/codex/issues/16650" target="_blank" rel="noopener noreferrer">关联来源 2</a><a class="monitor-link monitor-link--alt" href="https://cheatsheets.zip/codex-cli" target="_blank" rel="noopener noreferrer">关联来源 3</a></div>
 </article>
 
 <article class="monitor-item-card">
   <div class="monitor-item-card__top">
     <div class="monitor-item-card__badges">
       <span class="monitor-rank">4</span>
-      <span class="monitor-heat monitor-heat--blast">🔥 爆热</span>
-      <span class="monitor-source-badge monitor-source-badge--x">X</span>
+      <span class="monitor-heat monitor-heat--high">🔶 高热</span>
+      <span class="monitor-source-badge monitor-source-badge--web">博客/网页</span>
     </div>
-    <div class="monitor-item-card__meta"><span>热度 134</span><span>8likes, 1rt</span><span>2026-04-09</span><span>1 条相关</span></div>
+    <div class="monitor-item-card__meta"><span>热度 129</span><span>2026-04-07</span><span>1 条相关</span></div>
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">这条 X 帖是在直播预告里顺带提到 Codex 已有 300 万周活、CLI 已完全开源，并讨论从 Plugins、Custom GPTs 到 MCP Apps 的工具形态演化；信息点与 Codex 热度相关，但来源是宣传话术而非正式公告，适合作为侧面信号而不是确定事实。</p>
+    <p class="monitor-item-card__summary">讨论重点是拿 Codex 与 Claude 和 Cursor 做实战对比，关注真实任务完成率、稳定性以及失败时的恢复能力。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
-    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-09 · 当前展示为单条高置信信号 · 互动：8likes, 1rt</p>
+    <p class="monitor-item-card__factline">来源：博客/网页 · 时间：2026-04-07 · 当前展示为单条高置信信号</p>
   </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/wandb/status/2042382083260367241" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://rawpickai.com/blog/claude-code-vs-cursor-vs-codex" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
 
 <article class="monitor-item-card">
   <div class="monitor-item-card__top">
     <div class="monitor-item-card__badges">
       <span class="monitor-rank">5</span>
-      <span class="monitor-heat monitor-heat--blast">🔥 爆热</span>
-      <span class="monitor-source-badge monitor-source-badge--web">博客/网页</span>
-    </div>
-    <div class="monitor-item-card__meta"><span>热度 131</span><span>2026-04-03</span><span>1 条相关</span></div>
-  </div>
-  <div class="monitor-item-card__section">
-    <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">GitHub Issue #16650 指出 Windows 上的 Codex CLI 0.117.0 存在更新循环问题，用户选择升级并重启后仍会再次提示旧版本更新，说明其版本检测或更新状态持久化有缺陷，这会直接干扰 CLI 的日常使用和企业环境维护。</p>
-  </div>
-  <div class="monitor-item-card__section monitor-item-card__section--soft">
-    <p class="monitor-item-card__section-label">信息概览</p>
-    <p class="monitor-item-card__factline">来源：博客/网页 · 时间：2026-04-03 · 当前展示为单条高置信信号</p>
-  </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://github.com/openai/codex/issues/16650" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
-</article>
-
-<article class="monitor-item-card">
-  <div class="monitor-item-card__top">
-    <div class="monitor-item-card__badges">
-      <span class="monitor-rank">6</span>
       <span class="monitor-heat monitor-heat--high">🔶 高热</span>
       <span class="monitor-source-badge monitor-source-badge--web">博客/网页</span>
     </div>
@@ -292,7 +332,7 @@ permalink: /research/morning/monitor/
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">这篇开发者指南强调当前的 Codex 已不是 2021 年那个代码补全模型，而是运行在云端沙箱中的软件工程代理，可读仓库、改文件、装依赖、跑测试并提交分支或 PR，对理解“旧 Codex 模型”和“新 Codex 产品”之间的概念混淆很有帮助。</p>
+    <p class="monitor-item-card__summary">这条内容来自 dev.to，围绕 Codex 的具体案例展开，建议顺着原文核对其中提到的方法、结论和限制条件。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
@@ -304,7 +344,47 @@ permalink: /research/morning/monitor/
 <article class="monitor-item-card">
   <div class="monitor-item-card__top">
     <div class="monitor-item-card__badges">
+      <span class="monitor-rank">6</span>
+      <span class="monitor-heat monitor-heat--high">🔶 高热</span>
+      <span class="monitor-source-badge monitor-source-badge--web">博客/网页</span>
+    </div>
+    <div class="monitor-item-card__meta"><span>热度 118</span><span>2026-04-05</span><span>1 条相关</span></div>
+  </div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">总结</p>
+    <p class="monitor-item-card__summary">这条内容来自 community.openai.com，围绕 Codex 的具体案例展开，建议顺着原文核对其中提到的方法、结论和限制条件。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：博客/网页 · 时间：2026-04-05 · 当前展示为单条高置信信号</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://community.openai.com/t/codex-rate-limits-discussion-thread/1378553/59" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+</article>
+
+<article class="monitor-item-card">
+  <div class="monitor-item-card__top">
+    <div class="monitor-item-card__badges">
       <span class="monitor-rank">7</span>
+      <span class="monitor-heat monitor-heat--high">🔶 高热</span>
+      <span class="monitor-source-badge monitor-source-badge--web">博客/网页</span>
+    </div>
+    <div class="monitor-item-card__meta"><span>热度 118</span><span>2026-04-10</span><span>1 条相关</span></div>
+  </div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">总结</p>
+    <p class="monitor-item-card__summary">这条内容来自 agentmelt.com，围绕 Codex 的具体案例展开，建议顺着原文核对其中提到的方法、结论和限制条件。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：博客/网页 · 时间：2026-04-10 · 当前展示为单条高置信信号</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://agentmelt.com/blog/devin-and-autonomous-coding-agents/" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+</article>
+
+<article class="monitor-item-card">
+  <div class="monitor-item-card__top">
+    <div class="monitor-item-card__badges">
+      <span class="monitor-rank">8</span>
       <span class="monitor-heat monitor-heat--high">🔶 高热</span>
       <span class="monitor-source-badge monitor-source-badge--x">X</span>
     </div>
@@ -312,13 +392,33 @@ permalink: /research/morning/monitor/
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">这条评论认为外界对 Codex CLI 交互体验的批评成立，但也拿 Claude Code 的 MCP 集成作对照，强调后者可在一个终端统一调度 Playwright、Notion、GitHub 和文件系统等 8 个服务器，侧面说明 Codex 在本地多工具编排体验上正面临直接竞争。</p>
+    <p class="monitor-item-card__summary">文章讨论 Codex 与 Notion 的连接能力，重点是把编码 agent 从单纯写码扩展到设计、沟通和项目管理流程。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
     <p class="monitor-item-card__factline">来源：X · 时间：2026-04-08 · 当前展示为单条高置信信号</p>
   </div>
   <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/Alex_Rogov_js/status/2041878338420056262" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+</article>
+
+<article class="monitor-item-card">
+  <div class="monitor-item-card__top">
+    <div class="monitor-item-card__badges">
+      <span class="monitor-rank">9</span>
+      <span class="monitor-heat monitor-heat--high">🔶 高热</span>
+      <span class="monitor-source-badge monitor-source-badge--x">X</span>
+    </div>
+    <div class="monitor-item-card__meta"><span>热度 113</span><span>2026-04-10</span><span>1 条相关</span></div>
+  </div>
+  <div class="monitor-item-card__section">
+    <p class="monitor-item-card__section-label">总结</p>
+    <p class="monitor-item-card__summary">文章比较了 Codex 与其他 coding agent 的能力差异，重点在任务完成质量、稳定性、调试成本和开发体验。</p>
+  </div>
+  <div class="monitor-item-card__section monitor-item-card__section--soft">
+    <p class="monitor-item-card__section-label">信息概览</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-10 · 当前展示为单条高置信信号</p>
+  </div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/wenhaofree/status/2042419703814197431" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
     </div>
   </div>
@@ -336,7 +436,7 @@ permalink: /research/morning/monitor/
         <p class="monitor-topic__tagline">观察模型发布、推理能力、多模态与价格竞争的趋势变化。</p>
       </div>
     </div>
-    <div class="monitor-topic__count">5 张卡片 · 合并自 5 条候选</div>
+    <div class="monitor-topic__count">4 张卡片 · 合并自 7 条候选</div>
   </div>
   <div class="monitor-topic__body">
     <div class="monitor-topic__chips"><span class="monitor-topic__chip">推理</span><span class="monitor-topic__chip">多模态</span><span class="monitor-topic__chip">版本</span></div>
@@ -354,7 +454,7 @@ permalink: /research/morning/monitor/
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">这条帖文按使用场景主观排行 2026 年主流大模型，把 OpenAI 的 GPT-5/ChatGPT 列为综合能力第一、Claude 定位长文写作、Gemini 绑定 Google 生态，能反映用户心智和产品分层，但不是基于公开基准与统一测试方法的正式评测。</p>
+    <p class="monitor-item-card__summary">这条内容关注 OpenAI、Anthropic 和 Gemini 的新版本变化，重点在推理能力、上下文长度、多模态支持和产品化速度上的直接竞争。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
@@ -370,17 +470,17 @@ permalink: /research/morning/monitor/
       <span class="monitor-heat monitor-heat--blast">🔥 爆热</span>
       <span class="monitor-source-badge monitor-source-badge--x">X</span>
     </div>
-    <div class="monitor-item-card__meta"><span>热度 131</span><span>111likes, 7rt</span><span>2026-04-08</span><span>1 条相关</span></div>
+    <div class="monitor-item-card__meta"><span>热度 131</span><span>111likes, 7rt</span><span>2026-04-08</span><span>2 条相关</span></div>
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">这条观点称 Meta 已在绝大多数基准上超过 xAI，整体位置升到 OpenAI、Anthropic、Google DeepMind 之后的第四名，值得看的是它把行业格局具体化为基准榜单排位，但结论明显依赖所选测试集而非商业化表现。</p>
+    <p class="monitor-item-card__summary">内容关注 OpenAI 和 Anthropic 的能力比较，重点在推理、多模态、价格和开发者可用性上的差异。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
-    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-08 · 当前展示为单条高置信信号 · 互动：111likes, 7rt</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-08 · 同事件已合并 2 条相关来源 · 互动：111likes, 7rt</p>
   </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/chatgpt21/status/2041918166826143761" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/chatgpt21/status/2041918166826143761" target="_blank" rel="noopener noreferrer">查看主链接</a><a class="monitor-link monitor-link--alt" href="https://custommapposter.com/article/meta-s-muse-spark-ai-closing-the-gap-with-openai-anthropic-avocado-model-explained/13070" target="_blank" rel="noopener noreferrer">关联来源 1</a></div>
 </article>
 
 <article class="monitor-item-card">
@@ -390,17 +490,17 @@ permalink: /research/morning/monitor/
       <span class="monitor-heat monitor-heat--high">🔶 高热</span>
       <span class="monitor-source-badge monitor-source-badge--x">X</span>
     </div>
-    <div class="monitor-item-card__meta"><span>热度 123</span><span>8likes, 5rt</span><span>2026-04-09</span><span>1 条相关</span></div>
+    <div class="monitor-item-card__meta"><span>热度 123</span><span>8likes, 5rt</span><span>2026-04-09</span><span>2 条相关</span></div>
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">这项工作先指出多智能体 LLM 虽能显著提升推理，但会带来高延迟、高算力消耗和结果不稳定，然后追问单模型能否内化这种推理能力，以更低成本复现多 agent 效果，这对真实部署和产品化比继续堆协作链路更关键。</p>
+    <p class="monitor-item-card__summary">内容围绕大模型推理能力展开，重点讨论长思维链、thinking budget 与成本、时延和稳定性之间的权衡。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
-    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-09 · 当前展示为单条高置信信号 · 互动：8likes, 5rt</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-09 · 同事件已合并 2 条相关来源 · 互动：8likes, 5rt</p>
   </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/jd92wang/status/2042388783971066105" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/jd92wang/status/2042388783971066105" target="_blank" rel="noopener noreferrer">查看主链接</a><a class="monitor-link monitor-link--alt" href="https://x.com/Marktechpost/status/2042382842152567005" target="_blank" rel="noopener noreferrer">关联来源 1</a></div>
 </article>
 
 <article class="monitor-item-card">
@@ -410,37 +510,17 @@ permalink: /research/morning/monitor/
       <span class="monitor-heat monitor-heat--high">🔶 高热</span>
       <span class="monitor-source-badge monitor-source-badge--x">X</span>
     </div>
-    <div class="monitor-item-card__meta"><span>热度 121</span><span>2026-04-04</span><span>1 条相关</span></div>
+    <div class="monitor-item-card__meta"><span>热度 121</span><span>2026-04-04</span><span>2 条相关</span></div>
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">该帖称头部竞赛已很难给出单一冠军：OpenAI 以约 8520 亿美元估值和热度占优，Anthropic 凭约 190 亿美元 run-rate 强在企业与安全，Google DeepMind 则靠 Gemini 3/Gemma 4 抢下多模态 agent 位置，显示比拼已转向分场景护城河。</p>
+    <p class="monitor-item-card__summary">内容关注 OpenAI、Anthropic 和 Gemini 的能力比较，重点在推理、多模态、价格和开发者可用性上的差异。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
-    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-04 · 当前展示为单条高置信信号</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-04 · 同事件已合并 2 条相关来源</p>
   </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/grok/status/2040517088893083666" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
-</article>
-
-<article class="monitor-item-card">
-  <div class="monitor-item-card__top">
-    <div class="monitor-item-card__badges">
-      <span class="monitor-rank">5</span>
-      <span class="monitor-heat monitor-heat--high">🔶 高热</span>
-      <span class="monitor-source-badge monitor-source-badge--x">X</span>
-    </div>
-    <div class="monitor-item-card__meta"><span>热度 116</span><span>9likes, 3rt</span><span>2026-04-09</span><span>1 条相关</span></div>
-  </div>
-  <div class="monitor-item-card__section">
-    <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">这条消息称 Meta Superintelligence Lab 发布多模态推理模型 Muse Spark，突出 thought compression 与 parallel agents 两个机制，值得看的是讨论焦点落在多代理并行和思维压缩这类具体设计，而不是单纯比参数规模或通用榜单名次。</p>
-  </div>
-  <div class="monitor-item-card__section monitor-item-card__section--soft">
-    <p class="monitor-item-card__section-label">信息概览</p>
-    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-09 · 当前展示为单条高置信信号 · 互动：9likes, 3rt</p>
-  </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/Marktechpost/status/2042382842152567005" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/grok/status/2040517088893083666" target="_blank" rel="noopener noreferrer">查看主链接</a><a class="monitor-link monitor-link--alt" href="https://x.com/grok/status/2041813841244196893" target="_blank" rel="noopener noreferrer">关联来源 1</a></div>
 </article>
     </div>
   </div>
@@ -458,7 +538,7 @@ permalink: /research/morning/monitor/
         <p class="monitor-topic__tagline">筛选插件、同步、知识库组织和数字花园相关的高质量讨论。</p>
       </div>
     </div>
-    <div class="monitor-topic__count">6 张卡片 · 合并自 6 条候选</div>
+    <div class="monitor-topic__count">4 张卡片 · 合并自 9 条候选</div>
   </div>
   <div class="monitor-topic__body">
     <div class="monitor-topic__chips"><span class="monitor-topic__chip">插件</span><span class="monitor-topic__chip">同步</span><span class="monitor-topic__chip">知识库</span></div>
@@ -472,17 +552,17 @@ permalink: /research/morning/monitor/
       <span class="monitor-heat monitor-heat--high">🔶 高热</span>
       <span class="monitor-source-badge monitor-source-badge--x">X</span>
     </div>
-    <div class="monitor-item-card__meta"><span>热度 129</span><span>2026-04-07</span><span>1 条相关</span></div>
+    <div class="monitor-item-card__meta"><span>热度 129</span><span>2026-04-07</span><span>3 条相关</span></div>
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">一条法语推文把 Obsidian 称为 2026 年最适合开发者的工具，核心理由是本地 Markdown 带来零锁定、图谱视图能把想法连成网络，再加上 Dataview、Tasks、Templater、Excalidraw 等插件，可同时覆盖知识管理、任务编排和可视化表达。</p>
+    <p class="monitor-item-card__summary">作者预告一场从零开始的 Obsidian 教学，并解释自己为何从 Notion 转向基于 Markdown 的笔记工作流。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
-    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-07 · 当前展示为单条高置信信号</p>
+    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-07 · 同事件已合并 3 条相关来源</p>
   </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/feyroozecode/status/2041444082535309540" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/feyroozecode/status/2041444082535309540" target="_blank" rel="noopener noreferrer">查看主链接</a><a class="monitor-link monitor-link--alt" href="https://x.com/NemuriumTech/status/2042288298295771293" target="_blank" rel="noopener noreferrer">关联来源 1</a><a class="monitor-link monitor-link--alt" href="https://x.com/gagansaluja08/status/2042335236080517490" target="_blank" rel="noopener noreferrer">关联来源 2</a></div>
 </article>
 
 <article class="monitor-item-card">
@@ -490,19 +570,19 @@ permalink: /research/morning/monitor/
     <div class="monitor-item-card__badges">
       <span class="monitor-rank">2</span>
       <span class="monitor-heat monitor-heat--high">🔶 高热</span>
-      <span class="monitor-source-badge monitor-source-badge--x">X</span>
+      <span class="monitor-source-badge monitor-source-badge--web">博客/网页</span>
     </div>
-    <div class="monitor-item-card__meta"><span>热度 123</span><span>2026-04-09</span><span>1 条相关</span></div>
+    <div class="monitor-item-card__meta"><span>热度 119</span><span>2026-04-06</span><span>4 条相关</span></div>
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">有用户把 Obsidian vault 从个人笔记库改造成 7 个 AI agent 共享的大脑，代理直接读写 Markdown，所有决策、任务和交接都在同一仓库里完成，说明 Obsidian 正被用作多代理协作的状态层和知识中枢，而不只是记事工具。</p>
+    <p class="monitor-item-card__summary">文章围绕 Obsidian 的 vault 同步与跨端管理展开，重点比较 不同同步方案 在稳定性、成本和维护复杂度上的差异。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
-    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-09 · 当前展示为单条高置信信号</p>
+    <p class="monitor-item-card__factline">来源：博客/网页 · 时间：2026-04-06 · 同事件已合并 4 条相关来源</p>
   </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/NemuriumTech/status/2042288298295771293" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://www.aimoneytools.net/blog/obsidian-agent-skills-claude-code" target="_blank" rel="noopener noreferrer">查看主链接</a><a class="monitor-link monitor-link--alt" href="https://github.com/paperclipai/paperclip/issues/2789" target="_blank" rel="noopener noreferrer">关联来源 1</a><a class="monitor-link monitor-link--alt" href="https://dev.to/met_architect/i-built-a-local-first-obsidian-suite-to-safely-feed-my-vault-to-ai-9c9" target="_blank" rel="noopener noreferrer">关联来源 2</a><a class="monitor-link monitor-link--alt" href="https://x.com/momo_mattomo/status/2041214234361549197" target="_blank" rel="noopener noreferrer">关联来源 3</a></div>
 </article>
 
 <article class="monitor-item-card">
@@ -512,17 +592,17 @@ permalink: /research/morning/monitor/
       <span class="monitor-heat monitor-heat--high">🔶 高热</span>
       <span class="monitor-source-badge monitor-source-badge--web">博客/网页</span>
     </div>
-    <div class="monitor-item-card__meta"><span>热度 119</span><span>2026-04-06</span><span>1 条相关</span></div>
+    <div class="monitor-item-card__meta"><span>热度 118</span><span>2026-04-05</span><span>1 条相关</span></div>
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">这篇文章称 Obsidian CEO Steph Ango（kepano）开源了 5 个官方 obsidian-skills，让 Claude Code、Codex CLI 和 OpenCode 能按 Obsidian 语法、CLI、Canvas 格式及网页导入规则直接操作 vault，意味着 AI 代理接入 Obsidian 开始有官方方案。</p>
+    <p class="monitor-item-card__summary">内容聚焦 Obsidian 的 插件生态 或发布工作流，重点在如何把知识库进一步自动化、结构化并复用到日常写作。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
-    <p class="monitor-item-card__factline">来源：博客/网页 · 时间：2026-04-06 · 当前展示为单条高置信信号</p>
+    <p class="monitor-item-card__factline">来源：博客/网页 · 时间：2026-04-05 · 当前展示为单条高置信信号</p>
   </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://www.aimoneytools.net/blog/obsidian-agent-skills-claude-code" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
+  <div class="monitor-item-card__links"><a class="monitor-link" href="https://switch2mac.medium.com/i-built-an-obsidian-plugin-ef41a4d87989" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
 
 <article class="monitor-item-card">
@@ -536,53 +616,13 @@ permalink: /research/morning/monitor/
   </div>
   <div class="monitor-item-card__section">
     <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">一条讨论认为，把知识系统建在 Obsidian vault 上的关键价值不只是 Markdown 文件可控，而是图谱结构更贴近真实知识簇，比扁平目录更适合表达概念关系，这对需要上下文关联的知识整理和 AI 检索都更有优势。</p>
-  </div>
-  <div class="monitor-item-card__section monitor-item-card__section--soft">
-    <p class="monitor-item-card__section-label">信息概览</p>
-    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-09 · 当前展示为单条高置信信号</p>
-  </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/gagansaluja08/status/2042335236080517490" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
-</article>
-
-<article class="monitor-item-card">
-  <div class="monitor-item-card__top">
-    <div class="monitor-item-card__badges">
-      <span class="monitor-rank">5</span>
-      <span class="monitor-heat monitor-heat--high">🔶 高热</span>
-      <span class="monitor-source-badge monitor-source-badge--x">X</span>
-    </div>
-    <div class="monitor-item-card__meta"><span>热度 117</span><span>2026-04-09</span><span>1 条相关</span></div>
-  </div>
-  <div class="monitor-item-card__section">
-    <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">Grok 给出的 Obsidian 组织方案是维护一个统一的 second brain，而不是按业务拆成多个库，再通过 /Biz1/、/Biz2/ 这类文件夹、MOCs（内容地图）和标签做分区，这样既能保留跨业务的图谱关联，又能避免知识被切成互不连通的孤岛。</p>
+    <p class="monitor-item-card__summary">这条分享把 Obsidian 当作第二大脑和共享上下文层，用来给其他 AI 工具持续提供可调用的个人知识背景。</p>
   </div>
   <div class="monitor-item-card__section monitor-item-card__section--soft">
     <p class="monitor-item-card__section-label">信息概览</p>
     <p class="monitor-item-card__factline">来源：X · 时间：2026-04-09 · 当前展示为单条高置信信号</p>
   </div>
   <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/grok/status/2042366227343978895" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
-</article>
-
-<article class="monitor-item-card">
-  <div class="monitor-item-card__top">
-    <div class="monitor-item-card__badges">
-      <span class="monitor-rank">6</span>
-      <span class="monitor-heat monitor-heat--high">🔶 高热</span>
-      <span class="monitor-source-badge monitor-source-badge--x">X</span>
-    </div>
-    <div class="monitor-item-card__meta"><span>热度 115</span><span>1likes</span><span>2026-04-06</span><span>1 条相关</span></div>
-  </div>
-  <div class="monitor-item-card__section">
-    <p class="monitor-item-card__section-label">总结</p>
-    <p class="monitor-item-card__summary">这条入门帖给出把资料迁入 Obsidian 的最短路径：先安装应用并创建本地 Vault，再到设置中启用社区插件并安装官方 Importer，用它把外部内容导入仓库，重点强调 Obsidian 以文件夹为核心、迁移路径清晰且有官方插件支撑。</p>
-  </div>
-  <div class="monitor-item-card__section monitor-item-card__section--soft">
-    <p class="monitor-item-card__section-label">信息概览</p>
-    <p class="monitor-item-card__factline">来源：X · 时间：2026-04-06 · 当前展示为单条高置信信号 · 互动：1likes</p>
-  </div>
-  <div class="monitor-item-card__links"><a class="monitor-link" href="https://x.com/momo_mattomo/status/2041214234361549197" target="_blank" rel="noopener noreferrer">查看主链接</a></div>
 </article>
     </div>
   </div>
@@ -597,10 +637,10 @@ permalink: /research/morning/monitor/
   <div class="monitor-trend-card__score">147</div>
   <div class="monitor-trend-card__meta">
     <span class="monitor-trend-bar">▓▓▓▓▓▓▓▓▓▓</span>
-    <span>均值 133 · 7 张卡片（合并自 7 条候选）</span>
+    <span>均值 127 · 9 张卡片（合并自 12 条候选）</span>
   </div>
   <div class="monitor-trend-card__meta">主要来源：博客/网页</div>
-  <div class="monitor-trend-card__summary">Codex 本轮发展更像从云端异步修仓库代理，向子代理编排与工具生态平台继续外扩，核心卖点是并行执行、测试验证和合入效率。反过来，CLI 在 MCP 接入、WSL2 握手和 Windows 更新链路上的故障，说明本地落地稳定性仍是短板。</div>
+  <div class="monitor-trend-card__summary">讨论重点是拿 Codex 与 Claude 做实战对比，关注真实任务完成率、稳定性以及失败时的恢复能力。</div>
 </article>
 <article class="monitor-trend-card topic--claude-code">
   <div class="monitor-trend-card__top">
@@ -610,10 +650,10 @@ permalink: /research/morning/monitor/
   <div class="monitor-trend-card__score">141</div>
   <div class="monitor-trend-card__meta">
     <span class="monitor-trend-bar">▓▓▓▓▓▓▓▓▓▓</span>
-    <span>均值 134 · 5 张卡片（合并自 6 条候选）</span>
+    <span>均值 128 · 8 张卡片（合并自 12 条候选）</span>
   </div>
   <div class="monitor-trend-card__meta">主要来源：博客/网页</div>
-  <div class="monitor-trend-card__summary">Claude Code 本轮信号集中在“终端优先的自主代理”定位继续清晰，多会话管理和可视化编排开始进入实际工作流。与此同时，权限绕过与假成功写入等问题暴露出其在长链路自动化和 CI 场景里的可信执行风险。</div>
+  <div class="monitor-trend-card__summary">这篇内容把 Claude Code 与 Cursor 和 Codex 放在一起比较，重点看复杂任务处理、自主执行深度和团队协作场景里的差异。</div>
 </article>
 <article class="monitor-trend-card topic--large-models">
   <div class="monitor-trend-card__top">
@@ -623,10 +663,10 @@ permalink: /research/morning/monitor/
   <div class="monitor-trend-card__score">141</div>
   <div class="monitor-trend-card__meta">
     <span class="monitor-trend-bar">▓▓▓▓▓▓▓▓▓▓</span>
-    <span>均值 126 · 5 张卡片（合并自 5 条候选）</span>
+    <span>均值 129 · 4 张卡片（合并自 7 条候选）</span>
   </div>
   <div class="monitor-trend-card__meta">主要来源：X</div>
-  <div class="monitor-trend-card__summary">大模型讨论正从“谁是总冠军”转向按场景分层竞争，OpenAI、Anthropic、Google、Meta 各自卡位综合能力、企业安全、多模态与基准表现。技术焦点也在从堆参数和榜单，转向多代理推理怎样被压缩进更低成本、更稳定、可部署的模型系统。</div>
+  <div class="monitor-trend-card__summary">这条内容关注 OpenAI、Anthropic 和 Gemini 的新版本变化，重点在推理能力、上下文长度、多模态支持和产品化速度上的直接竞争。</div>
 </article>
 <article class="monitor-trend-card topic--obsidian">
   <div class="monitor-trend-card__top">
@@ -636,10 +676,10 @@ permalink: /research/morning/monitor/
   <div class="monitor-trend-card__score">129</div>
   <div class="monitor-trend-card__meta">
     <span class="monitor-trend-bar">▓▓▓▓▓▓▓▓▓░</span>
-    <span>均值 120 · 6 张卡片（合并自 6 条候选）</span>
+    <span>均值 120 · 4 张卡片（合并自 9 条候选）</span>
   </div>
   <div class="monitor-trend-card__meta">主要来源：X</div>
-  <div class="monitor-trend-card__summary">Obsidian 本轮明显从个人笔记工具转向 AI 工作流的本地知识中枢，官方 skills 让 Claude Code、Codex CLI 等代理可直接按规则读写 vault。围绕单库治理、图谱结构和插件编排的实践在增多，说明它正被当作多代理协作的状态层来建设。</div>
+  <div class="monitor-trend-card__summary">作者预告一场从零开始的 Obsidian 教学，并解释自己为何从 Notion 转向基于 Markdown 的笔记工作流。</div>
 </article></div>
 <div class="monitor-tips">
   <p class="monitor-tips__title">阅读建议</p>

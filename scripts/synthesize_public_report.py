@@ -171,31 +171,31 @@ TOPIC_STRONG_TERMS = {
     ),
 }
 
-MAX_CURATION_POOL = int(os.environ.get("REPORT_MAX_CURATION_POOL", "80"))
+MAX_CURATION_POOL = int(os.environ.get("REPORT_MAX_CURATION_POOL", "120"))
 MAX_CURATION_PER_SOURCE = int(os.environ.get("REPORT_MAX_CURATION_PER_SOURCE", "25"))
 
 SOURCE_KEEP_CAP = {
-    "web": int(os.environ.get("REPORT_SOURCE_CAP_WEB", "25")),
-    "hn": int(os.environ.get("REPORT_SOURCE_CAP_HN", "20")),
-    "x": int(os.environ.get("REPORT_SOURCE_CAP_X", "12")),
-    "youtube": int(os.environ.get("REPORT_SOURCE_CAP_YOUTUBE", "10")),
-    "reddit": int(os.environ.get("REPORT_SOURCE_CAP_REDDIT", "8")),
+    "web": int(os.environ.get("REPORT_SOURCE_CAP_WEB", "35")),
+    "hn": int(os.environ.get("REPORT_SOURCE_CAP_HN", "28")),
+    "x": int(os.environ.get("REPORT_SOURCE_CAP_X", "20")),
+    "youtube": int(os.environ.get("REPORT_SOURCE_CAP_YOUTUBE", "14")),
+    "reddit": int(os.environ.get("REPORT_SOURCE_CAP_REDDIT", "12")),
 }
 
 MIN_TOPIC_SCORE_BY_SOURCE = {
     "web": 1,
     "hn": 1,
-    "x": 2,
-    "youtube": 2,
-    "reddit": 2,
+    "x": 1,
+    "youtube": 1,
+    "reddit": 1,
 }
 
 MIN_OVERALL_SCORE_BY_SOURCE = {
-    "web": int(os.environ.get("REPORT_MIN_OVERALL_WEB", "45")),
-    "hn": int(os.environ.get("REPORT_MIN_OVERALL_HN", "42")),
-    "x": int(os.environ.get("REPORT_MIN_OVERALL_X", "56")),
-    "youtube": int(os.environ.get("REPORT_MIN_OVERALL_YOUTUBE", "52")),
-    "reddit": int(os.environ.get("REPORT_MIN_OVERALL_REDDIT", "56")),
+    "web": int(os.environ.get("REPORT_MIN_OVERALL_WEB", "38")),
+    "hn": int(os.environ.get("REPORT_MIN_OVERALL_HN", "36")),
+    "x": int(os.environ.get("REPORT_MIN_OVERALL_X", "48")),
+    "youtube": int(os.environ.get("REPORT_MIN_OVERALL_YOUTUBE", "46")),
+    "reddit": int(os.environ.get("REPORT_MIN_OVERALL_REDDIT", "48")),
 }
 
 TOPIC_RULES = {

@@ -445,7 +445,7 @@ filter_monitor_sources() {
     IFS=',' read -ra source <<< "$raw_sources"
     for source in "${source[@]}"; do
         case "$source" in
-            web|hn|x|youtube)
+            web|hn|x|youtube|reddit)
                 preferred+=("$source")
                 ;;
         esac
