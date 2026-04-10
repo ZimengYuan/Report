@@ -12,3 +12,4 @@ This index lists public reports only. Raw captures are written to `artifacts/raw
 | archive.md | [archive.md](./archive.md) |
 | index.md | [index.md](./index.md) |
 | 四主题监控简报 | [monitor-2026-04-09.md](./monitor-2026-04-09.md) |
+| 四主题监控简报 | [monitor-2026-04-10.md](./monitor-2026-04-10.md) |
