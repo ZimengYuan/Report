@@ -16,3 +16,4 @@ This index lists public reports only. Raw captures are written to `artifacts/raw
 | 四主题监控简报 | [monitor-2026-04-11.md](./monitor-2026-04-11.md) |
 | 四主题监控简报 | [monitor-2026-04-12.md](./monitor-2026-04-12.md) |
 | 四主题监控简报 | [monitor-2026-04-13.md](./monitor-2026-04-13.md) |
+| 四主题监控简报 | [monitor-2026-04-14.md](./monitor-2026-04-14.md) |
